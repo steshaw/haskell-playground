@@ -1,0 +1,5 @@
+Learn Haskell
+Learn Scala
+Learn Erlang
+Learn Oz
+Read Real World Haskell
