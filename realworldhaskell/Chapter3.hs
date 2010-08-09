@@ -20,10 +20,10 @@ len4 :: (F.Foldable foldable, Num n) => foldable a -> n
 len4 xs = F.foldMap (\n -> Sum 1) xs >>> getSum
 
 meanOverFractionals :: (Fractional a) => [a] -> a
-meanOverFractionals xs = sum xs / (fromIntegral $ length xs)
+meanOverFractionals xs = sum xs / len4 xs
 
 meanOverIntegrals :: (Integral a, Fractional b) => [a] -> b
-meanOverIntegrals xs = (fromIntegral $ sum xs) / (fromIntegral $ length xs)
+meanOverIntegrals xs = (fromIntegral $ sum xs) / len4 xs
 
 class (Num a) => ToFractional a where
   toFractional :: (Fractional b) => a -> b
