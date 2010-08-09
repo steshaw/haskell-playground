@@ -53,7 +53,8 @@ instance (Fractional a) => ToFractional a where
 -}
 
 instance (Real n) => ToFractional n where
-  toFractional = toRational >.> fromRational
+  toFractional = realToFrac
+--  toFractional = toRational >.> fromRational
 {-
 instance ToFractional Double where
   toFractional = id
@@ -63,3 +64,6 @@ instance ToFractional Float where
 
 mean3 :: (ToFractional a, Fractional b) => [a] -> b
 mean3 xs = (toFractional $ sum xs) / (len4 xs)
+
+mean4 :: (Real a, Fractional b) => [a] -> b
+mean4 xs = (realToFrac $ sum xs) / (len4 xs)
