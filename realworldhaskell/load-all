@@ -1,0 +1,5 @@
+#!/bin/bash
+
+for file in *.hs; do
+  echo ':q' | ghci $file
+done
