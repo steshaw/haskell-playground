@@ -2,7 +2,7 @@
 % : %.hs
 	ghc --make $@
 
-all: \
+PROGS := \
   catGirlfriend \
   colours \
   copyFile \
@@ -19,3 +19,8 @@ all: \
   todo \
   upcase \
   upGirlfriend \
+
+
+all: ${PROGS}
+clean:
+	rm ${PROGS}

@@ -1,6 +1,8 @@
+{-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
+
 module Chapter3 where
 
-import Steshaw ((>>>))
+import Steshaw ((>>>), (>.>))
 import Data.Monoid
 import qualified Data.Foldable as F
 
@@ -23,20 +25,35 @@ meanOverFractionals xs = sum xs / (fromIntegral $ length xs)
 meanOverIntegrals :: (Integral a, Fractional b) => [a] -> b
 meanOverIntegrals xs = (fromIntegral $ sum xs) / (fromIntegral $ length xs)
 
-class ToFractional a where
+class (Num a) => ToFractional a where
   toFractional :: (Fractional b) => a -> b
 
 {-
-instance (Num a) => ToFractional a where
+--
+-- Needs extensions FlexibleInstances + UndecidableInstances.
+--
+instance (Integral a) => ToFractional a where
   toFractional = fromIntegral
 -}
 
+{-
 instance ToFractional Integer where
   toFractional = fromIntegral
 
 instance ToFractional Int where
   toFractional = fromIntegral
+-}
 
+{-
+--
+-- FIXME: Causes duplicate with instance (Integral a) => ToFractional a
+--
+instance (Fractional a) => ToFractional a where
+  toFractional = id
+-}
+
+instance (Real n) => ToFractional n where
+  toFractional = toRational >.> fromRational
 {-
 instance ToFractional Double where
   toFractional = id
@@ -44,4 +61,5 @@ instance ToFractional Float where
   toFractional = id
 -}
 
+mean3 :: (ToFractional a, Fractional b) => [a] -> b
 mean3 xs = (toFractional $ sum xs) / (len4 xs)
