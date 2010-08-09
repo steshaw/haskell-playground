@@ -1,0 +1,3 @@
+module Steshaw where
+
+(>>>) = flip ($)
