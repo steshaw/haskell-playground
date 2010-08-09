@@ -3,7 +3,9 @@
 module Chapter3 where
 
 import Steshaw ((>>>), (>.>))
+import Tree
 import Data.Monoid
+import Data.List(sortBy)
 import qualified Data.Foldable as F
 
 len1 :: [a] -> Integer
@@ -52,6 +54,9 @@ instance (Fractional a) => ToFractional a where
   toFractional = id
 -}
 
+toFrac :: (Real a, Fractional b) => a -> b
+toFrac = toRational >.> fromRational
+
 instance (Real n) => ToFractional n where
   toFractional = realToFrac
 --  toFractional = toRational >.> fromRational
@@ -67,3 +72,18 @@ mean3 xs = (toFractional $ sum xs) / (len4 xs)
 
 mean4 :: (Real a, Fractional b) => [a] -> b
 mean4 xs = (realToFrac $ sum xs) / (len4 xs)
+
+mkPalindrome xs = xs ++ (reverse xs)
+
+isPalindrome xs = xs == (reverse xs)
+
+sortBySubLength xs = sortBy (\a b -> length a `compare` length b) xs
+
+intersperse :: a -> [[a]] -> [a]
+intersperse _ [] = []
+intersperse a xs = foldl1 (\acc b -> acc ++ (a:b)) xs
+
+treeHeight Empty = 0
+treeHeight (Node _ l r) = 1 + max (treeHeight l) (treeHeight r)
+
+-- TODO: from 9).
