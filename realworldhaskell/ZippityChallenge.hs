@@ -14,6 +14,8 @@
 -- Thankfully the learnyouahaskell.com seemed to cover this with the use of Control.Applicative.
 --
 
+module ZippityChallenge where
+
 import Control.Applicative
 import Steshaw((>>>))
 
