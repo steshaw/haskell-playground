@@ -1,0 +1,3 @@
+#!/bin/bash
+
+grep -l '^main =' *.hs | sed 's/\.hs//'
