@@ -1,5 +1,6 @@
+module Main where
 
 import Data.Char(toUpper)
 
-main = do
-  getContents >>= (\contents -> putStr $ map toUpper contents)
+main :: IO ()
+main = getContents >>= (\ contents -> putStr $ map toUpper contents)
