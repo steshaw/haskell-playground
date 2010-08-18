@@ -2,7 +2,7 @@
 % : %.hs
 	ghc --make $@
 
-PROGS := copy fixeols readDouble tempFileFun toUpperBanner toupper
+PROGS := copy find fixeols readDouble tempFileFun toUpperBanner toupper
 
 
 all: ${PROGS}
