@@ -17,11 +17,14 @@ col n = liftA $ flip (!!) (n-1) >.> read
 columns :: String -> [[String]]
 columns = lines >.> liftA split
 
-data Usage = Usage {peak :: Double, offPeak :: Double} deriving Show
+data InternetUsage = InternetUsage {peak :: Double, offPeak :: Double} deriving Show
 
-sumPeakAndOffPeak :: String -> Usage
-sumPeakAndOffPeak s = Usage (sum (col 7 cols)) (sum (col 8 cols))
-  where cols = columns s
+sumPeakAndOffPeak :: String -> InternetUsage
+sumPeakAndOffPeak s =
+    InternetUsage <$> sumColumn 7 <*> sumColumn 8 $ cols
+  where
+    sumColumn n cols = sum (col n cols)
+    cols = columns s
 
 main = do
   interact $ sumPeakAndOffPeak >.> show
