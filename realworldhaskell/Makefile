@@ -6,4 +6,4 @@ PROGS := copy find fixeols readDouble tempFileFun sumInternetUsage toUpperBanner
 
 all: ${PROGS}
 clean:
-	rm ${PROGS}
+	rm -f ${PROGS}

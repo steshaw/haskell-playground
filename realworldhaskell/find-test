@@ -1,0 +1,20 @@
+#!/bin/bash
+
+try() {
+  echo trying "$@"
+  #find "$@" \! -type l | sort >find.out.expected
+  find "$@" | sort >find.out.expected
+  ./find "$@" | sort >find.out.actual
+  diff find.out.expected find.out.actual
+  #
+  # TODO: Should compare stderr too as it will differ currently when files do not exist as in the "a b c" case
+  # TODO: as ./find aborts when it cannot find a file.
+  #
+}
+
+try ..
+try .
+try *
+try a b c
+#FIXME: not working :(
+#try /usr/share
