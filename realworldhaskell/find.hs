@@ -9,10 +9,9 @@ import System.Environment (getArgs)
 import Control.Monad (forM, forM_, filterM)
 import System.Directory (
   Permissions(..), getPermissions, getModificationTime, doesFileExist, doesDirectoryExist, getDirectoryContents)
-import System.FilePath ((</>))
+import System.FilePath (takeExtension, (</>))
 import System.Time (ClockTime)
 import Control.Exception (handle, IOException)
---import System.IO.Error
 import System.IO
 
 slipperyGetDirectoryContents :: FilePath -> IO [FilePath]
@@ -74,12 +73,16 @@ trueP _ _ _ _ = True
 
 pathP path _ _ _ = path
 
+extensionP path perms size modifiedT = takeExtension (pathP path perms size modifiedT)
+
 sizeP _ _ (Just size) _ = size
 sizeP _ _ Nothing _ = -1
 
 findWithP args p = forM_ args $ \ path -> betterFind p path >>= mapM_ putStrLn
 
-sizeEq n path perms size modifiedT = (sizeP path perms size modifiedT) == n
+sizeEq      p path perms size modifiedT = (sizeP      path perms size modifiedT) == p
+pathEq      p path perms size modifiedT = (pathP      path perms size modifiedT) == p
+extensionEq p path perms size modifiedT = (extensionP path perms size modifiedT) == p
 
 sizeGe n path perms size modifiedT = (sizeP path perms size modifiedT) >= n
 sizeGt n path perms size modifiedT = (sizeP path perms size modifiedT) >  n
@@ -87,15 +90,26 @@ sizeGt n path perms size modifiedT = (sizeP path perms size modifiedT) >  n
 sizeLe n path perms size modifiedT = (sizeP path perms size modifiedT) <= n
 sizeLt n path perms size modifiedT = (sizeP path perms size modifiedT) <  n
 
+inK n = n * 1024
+inM n = inK n * 1024
+inG n = inM n * 1024
+
+-- Find Haskell source files greather than 4k.
+-- TODO: Change to search for Haskell source files > 300 lines.
+customP path perms size modifiedT =
+  extensionEq ".hs" path perms size modifiedT && sizeGt (inK 4) path perms size modifiedT
+
 main = do
   args <- getArgs
   case args of
     "-dirs":args    -> findWithP args isDirectoryP
-    "-eq":size:args -> findWithP args $ sizeEq $ read size
-    "-ge":size:args -> findWithP args $ sizeGe $ read size
-    "-gt":size:args -> findWithP args $ sizeGt $ read size
-    "-le":size:args -> findWithP args $ sizeLe $ read size
-    "-lt":size:args -> findWithP args $ sizeLt $ read size
+    "-1":args           -> findWithP args $ customP
+    "-pathEq":path:args -> findWithP args $ pathEq $ path
+    "-sizeEq":size:args -> findWithP args $ sizeEq $ read size
+    "-sizeGe":size:args -> findWithP args $ sizeGe $ read size
+    "-sizeGt":size:args -> findWithP args $ sizeGt $ read size
+    "-sizeLe":size:args -> findWithP args $ sizeLe $ read size
+    "-sizeLt":size:args -> findWithP args $ sizeLt $ read size
     otherwise       -> findWithP args trueP
 
 -- NOTE: unused
