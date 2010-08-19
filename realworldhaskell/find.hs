@@ -113,6 +113,7 @@ main = do
     "-dirs":args    -> findWithP args isDirectoryP
     "-1":args           -> findWithP args $ customP
     "-pathEq":path:args -> findWithP args $ pathEq $ path
+    "-extEq":ext:args   -> findWithP args $ extensionEq $ ext
     "-sizeEq":size:args -> findWithP args $ sizeEq $ read size
     "-sizeGe":size:args -> findWithP args $ sizeGe $ read size
     "-sizeGt":size:args -> findWithP args $ sizeGt $ read size
