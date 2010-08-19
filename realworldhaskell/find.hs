@@ -84,18 +84,25 @@ sizeP _ _ (Just size) _ = size
 sizeP _ _ Nothing _ = -1
 
 eqP :: (Eq a) => InfoP a -> a -> InfoP Bool
-eqP       f p path perms size modifiedT = (f path perms size modifiedT) == p
+eqP f p path perms size modifiedT = (f path perms size modifiedT) == p
 
-sizeEq      p = eqP sizeP p      
-pathEq      p = eqP pathP p
-extensionEq p = eqP extensionP p
+--sizeEq, pathEq, extensionEq :: a -> Predicate
+sizeEq :: Integer -> Predicate
+sizeEq      p = sizeP `eqP` p
 
+pathEq :: FilePath -> Predicate
+pathEq      p = pathP `eqP` p
+
+extensionEq :: String -> Predicate
+extensionEq p = extensionP `eqP` p
+
+sizeGe, sizeGt, sizeLe, sizeLt :: Integer -> Predicate
 sizeGe n path perms size modifiedT = (sizeP path perms size modifiedT) >= n
 sizeGt n path perms size modifiedT = (sizeP path perms size modifiedT) >  n
-
 sizeLe n path perms size modifiedT = (sizeP path perms size modifiedT) <= n
 sizeLt n path perms size modifiedT = (sizeP path perms size modifiedT) <  n
 
+inK, inM, inG :: (Num a) => a -> a
 inK n = n * 1024
 inM n = inK n * 1024
 inG n = inM n * 1024
