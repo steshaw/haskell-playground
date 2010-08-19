@@ -80,9 +80,10 @@ sizeP _ _ Nothing _ = -1
 
 findWithP args p = forM_ args $ \ path -> betterFind p path >>= mapM_ putStrLn
 
-sizeEq      p path perms size modifiedT = (sizeP      path perms size modifiedT) == p
-pathEq      p path perms size modifiedT = (pathP      path perms size modifiedT) == p
-extensionEq p path perms size modifiedT = (extensionP path perms size modifiedT) == p
+eqP       f p path perms size modifiedT = (f path perms size modifiedT) == p
+sizeEq      p path perms size modifiedT = eqP sizeP p      path perms size modifiedT
+pathEq      p path perms size modifiedT = eqP pathP p      path perms size modifiedT
+extensionEq p path perms size modifiedT = eqP extensionP p path perms size modifiedT
 
 sizeGe n path perms size modifiedT = (sizeP path perms size modifiedT) >= n
 sizeGt n path perms size modifiedT = (sizeP path perms size modifiedT) >  n
