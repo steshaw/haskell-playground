@@ -8,7 +8,9 @@
 import System.Environment (getArgs)
 import Control.Monad (forM, forM_, filterM)
 import System.Directory (
-  Permissions(..), getPermissions, getModificationTime, doesFileExist, doesDirectoryExist, getDirectoryContents)
+  Permissions(..), getPermissions, getModificationTime, 
+  doesFileExist, doesDirectoryExist, getDirectoryContents
+ )
 import System.FilePath (takeExtension, (</>))
 import System.Time (ClockTime)
 import Control.Exception (handle, IOException)
@@ -34,7 +36,7 @@ find topPath = do
         if isDirectory then find path else return [path]
       return (topPath:(concat paths))
     else do
-      hPutStrLn stderr $ "check if file exists " ++ topPath
+--      hPutStrLn stderr $ "check if file exists " ++ topPath
       isFile <- doesFileExist topPath
       if isFile
         then return [topPath]
@@ -42,7 +44,8 @@ find topPath = do
 
 type OptionalSize = Maybe Integer
 type LastModified = ClockTime
-type Predicate = FilePath -> Permissions -> OptionalSize -> LastModified -> Bool
+type InfoP a = FilePath -> Permissions -> OptionalSize -> LastModified -> a
+type Predicate = InfoP Bool
 
 -- FIXME: Exception handling problems causing resource leaks.
 getFileSizeBadly path = do
@@ -71,19 +74,21 @@ isDirectoryP filePath perms size lastModified = searchable perms
 trueP :: Predicate
 trueP _ _ _ _ = True
 
+pathP :: InfoP FilePath
 pathP path _ _ _ = path
 
 extensionP path perms size modifiedT = takeExtension (pathP path perms size modifiedT)
 
+sizeP :: InfoP Integer
 sizeP _ _ (Just size) _ = size
 sizeP _ _ Nothing _ = -1
 
-findWithP args p = forM_ args $ \ path -> betterFind p path >>= mapM_ putStrLn
-
+eqP :: (Eq a) => InfoP a -> a -> InfoP Bool
 eqP       f p path perms size modifiedT = (f path perms size modifiedT) == p
-sizeEq      p path perms size modifiedT = eqP sizeP p      path perms size modifiedT
-pathEq      p path perms size modifiedT = eqP pathP p      path perms size modifiedT
-extensionEq p path perms size modifiedT = eqP extensionP p path perms size modifiedT
+
+sizeEq      p = eqP sizeP p      
+pathEq      p = eqP pathP p
+extensionEq p = eqP extensionP p
 
 sizeGe n path perms size modifiedT = (sizeP path perms size modifiedT) >= n
 sizeGt n path perms size modifiedT = (sizeP path perms size modifiedT) >  n
@@ -99,6 +104,8 @@ inG n = inM n * 1024
 -- TODO: Change to search for Haskell source files > 300 lines.
 customP path perms size modifiedT =
   extensionEq ".hs" path perms size modifiedT && sizeGt (inK 4) path perms size modifiedT
+
+findWithP args p = forM_ args $ \ path -> betterFind p path >>= mapM_ putStrLn
 
 main = do
   args <- getArgs
