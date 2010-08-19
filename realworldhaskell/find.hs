@@ -12,8 +12,8 @@ import System.Directory (
 import System.FilePath ((</>))
 import System.Time (ClockTime)
 import Control.Exception (handle, IOException)
-import System.IO.Error
-import System.IO (stderr, hPutStrLn)
+--import System.IO.Error
+import System.IO
 
 slipperyGetDirectoryContents :: FilePath -> IO [FilePath]
 slipperyGetDirectoryContents path =
@@ -45,8 +45,14 @@ type OptionalSize = Maybe Integer
 type LastModified = ClockTime
 type Predicate = FilePath -> Permissions -> OptionalSize -> LastModified -> Bool
 
+getFileSizeBadly path = do
+  h <- openFile path ReadMode
+  size <- hFileSize h
+  hClose h
+  return size
+
 getFileSize :: FilePath -> IO (OptionalSize)
-getFileSize path = return Nothing
+getFileSize path = getFileSizeBadly path >>= \size -> return (Just size)
 
 betterFind :: Predicate -> FilePath -> IO [FilePath]
 betterFind p path = find path >>= filterM check
@@ -72,10 +78,13 @@ sizeP _ _ Nothing _ = -1
 
 findWithP args p = forM_ args $ \ path -> betterFind p path >>= mapM_ putStrLn
 
+sizeGe geSize path perms size modifiedT = (sizeP path perms size modifiedT) > geSize
+
 main = do
   args <- getArgs
   case args of
     "-dirs":args -> findWithP args isDirectoryP
+    "-1":args    -> findWithP args $ sizeGe 1024
     otherwise    -> findWithP args trueP
 
 -- NOTE: unused
