@@ -15,9 +15,6 @@ import Control.Exception (handle, IOException)
 import System.IO.Error
 import System.IO (stderr, hPutStrLn)
 
---import qualified Control.Exception as Ex
---import qualified Control.OldException as OldEx
-
 slipperyGetDirectoryContents :: FilePath -> IO [FilePath]
 slipperyGetDirectoryContents path =
   catch (getDirectoryContents path)
@@ -32,7 +29,6 @@ find topPath = do
     then do
       names <- slipperyGetDirectoryContents topPath
       let properNames = filter (`notElem` [".", ".."]) names
-      --let properNames = names -- keep "." and ".." if they appear
       paths <- forM properNames $ \ name -> do
         let path = topPath </> name
         isDirectory <- doesDirectoryExist path
@@ -69,11 +65,18 @@ isDirectoryP filePath perms size lastModified = searchable perms
 trueP :: Predicate
 trueP _ _ _ _ = True
 
+pathP path _ _ _ = path
+
+sizeP _ _ (Just size) _ = size
+sizeP _ _ Nothing _ = -1
+
+findWithP args p = forM_ args $ \ path -> betterFind p path >>= mapM_ putStrLn
+
 main = do
   args <- getArgs
   case args of
-    "-dirs":args -> forM_ args $ \ path -> betterFind isDirectoryP path >>= mapM_ putStrLn
-    otherwise    -> forM_ args $ \ path -> betterFind trueP path >>= mapM_ putStrLn
+    "-dirs":args -> findWithP args isDirectoryP
+    otherwise    -> findWithP args trueP
 
 -- NOTE: unused
 firstMain =
