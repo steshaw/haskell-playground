@@ -79,15 +79,23 @@ sizeP _ _ Nothing _ = -1
 
 findWithP args p = forM_ args $ \ path -> betterFind p path >>= mapM_ putStrLn
 
-sizeGe geSize path perms size modifiedT = (sizeP path perms size modifiedT) >= geSize
-sizeGt gtSize path perms size modifiedT = (sizeP path perms size modifiedT) >  gtSize
+sizeEq n path perms size modifiedT = (sizeP path perms size modifiedT) == n
+
+sizeGe n path perms size modifiedT = (sizeP path perms size modifiedT) >= n
+sizeGt n path perms size modifiedT = (sizeP path perms size modifiedT) >  n
+
+sizeLe n path perms size modifiedT = (sizeP path perms size modifiedT) <= n
+sizeLt n path perms size modifiedT = (sizeP path perms size modifiedT) <  n
 
 main = do
   args <- getArgs
   case args of
     "-dirs":args    -> findWithP args isDirectoryP
+    "-eq":size:args -> findWithP args $ sizeEq $ read size
     "-ge":size:args -> findWithP args $ sizeGe $ read size
     "-gt":size:args -> findWithP args $ sizeGt $ read size
+    "-le":size:args -> findWithP args $ sizeLe $ read size
+    "-lt":size:args -> findWithP args $ sizeLt $ read size
     otherwise       -> findWithP args trueP
 
 -- NOTE: unused
