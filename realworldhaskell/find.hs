@@ -45,6 +45,7 @@ type OptionalSize = Maybe Integer
 type LastModified = ClockTime
 type Predicate = FilePath -> Permissions -> OptionalSize -> LastModified -> Bool
 
+-- FIXME: Exception handling problems causing resource leaks.
 getFileSizeBadly path = do
   h <- openFile path ReadMode
   size <- hFileSize h
@@ -52,7 +53,7 @@ getFileSizeBadly path = do
   return size
 
 getFileSize :: FilePath -> IO (OptionalSize)
-getFileSize path = getFileSizeBadly path >>= \size -> return (Just size)
+getFileSize path = getFileSizeBadly path >>= \size -> return $ Just size
 
 betterFind :: Predicate -> FilePath -> IO [FilePath]
 betterFind p path = find path >>= filterM check
@@ -78,14 +79,16 @@ sizeP _ _ Nothing _ = -1
 
 findWithP args p = forM_ args $ \ path -> betterFind p path >>= mapM_ putStrLn
 
-sizeGe geSize path perms size modifiedT = (sizeP path perms size modifiedT) > geSize
+sizeGe geSize path perms size modifiedT = (sizeP path perms size modifiedT) >= geSize
+sizeGt gtSize path perms size modifiedT = (sizeP path perms size modifiedT) >  gtSize
 
 main = do
   args <- getArgs
   case args of
-    "-dirs":args -> findWithP args isDirectoryP
-    "-1":args    -> findWithP args $ sizeGe 1024
-    otherwise    -> findWithP args trueP
+    "-dirs":args    -> findWithP args isDirectoryP
+    "-ge":size:args -> findWithP args $ sizeGe $ read size
+    "-gt":size:args -> findWithP args $ sizeGt $ read size
+    otherwise       -> findWithP args trueP
 
 -- NOTE: unused
 firstMain =
