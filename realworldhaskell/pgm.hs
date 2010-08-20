@@ -51,20 +51,13 @@ parseP5 s =
       parseNat s >$> onJust $$ \ (width, s) ->
         skipSpaces s >$> onJust $$ \ s ->
           parseNat s >$> onJust $$ \ (height, s) ->
-              case skipSpaces s of
-                Nothing -> Nothing
-                Just s  ->
-                  case parseNat s of
-                    Nothing -> Nothing
-                    Just (maxGrey, s) ->
-                      if maxGrey > 255 || maxGrey <= 0 then Nothing
-                      else
-                        case skipSpaces s of
-                          Nothing -> Nothing
-                          Just s  -> 
-                            case parseNumBytes (width * height) s of
-                              Nothing -> Nothing
-                              Just (bitmap, s) -> Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
+            skipSpaces s >$> onJust $$ \ s ->
+              parseNat s >$> onJust $$ \ (maxGrey, s) ->
+                if maxGrey > 255 || maxGrey <= 0 then Nothing
+                else Just (maxGrey, s) >$> onJust $$ \_ ->
+                  skipSpaces s >$> onJust $$ \s ->
+                    parseNumBytes (width * height) s >$> onJust $$ \ (bitmap, s) ->
+                      Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
 
 skipHeader :: L.ByteString -> L.ByteString -> Maybe L.ByteString
 skipHeader prefix s =
