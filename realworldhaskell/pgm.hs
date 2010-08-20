@@ -1,10 +1,10 @@
 module Main where
 
-import Steshaw
+import Steshaw ((>$>))
 
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Lazy as L
-import Data.Char (isSpace, chr)
+import Data.Char (isSpace)
 
 import System.Environment (getProgName, getArgs)
 import Data.List (genericDrop)
