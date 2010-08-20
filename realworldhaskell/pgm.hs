@@ -46,8 +46,9 @@ parseP5 s =
     skipSpaces >>= parseNat >>= \ (width, s) ->
       skipSpaces s >>= parseNat >>= \ (height, s) ->
         skipSpaces s >>= parseNat >>= checkMaxGrey >>= \ (maxGrey, s) ->
-            skipSpaces s >>= parseNumBytes (width * height) >>= \ (bitmap, s) ->
-              Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
+            parseNumBytes 1 s >>= \ (_, s) ->
+              parseNumBytes (width * height) s >>= \ (bitmap, s) ->
+                Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
 
 munchString :: L.ByteString -> L.ByteString -> Maybe L.ByteString
 munchString prefix s =
@@ -85,7 +86,7 @@ munchSpace s =
 
 parseNat :: L.ByteString -> Maybe (Int, L.ByteString)
 parseNat s =
-  L8.readInt s >>= \ (n, rest) -> 
+  L8.readInt s >>= \ (n, rest) ->
     if n <= 0 then Nothing else Just (n, rest)
 
 parseNumBytes :: Int -> L.ByteString -> Maybe (L.ByteString, L.ByteString)
