@@ -34,29 +34,20 @@ data Greymap = Greymap {
 instance Show Greymap where
   show (Greymap info _) = show info
 
---
--- My own concoction of >>? from RWH p238 (in my attempt to refactor step-by-step instead of
--- introducing a prebaked abstraction). Basically monadic bind (>>=) for Maybe.
---
-onJust f x =
-  case x of
-    Nothing -> Nothing
-    Just a -> f a
-
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: L.ByteString -> Maybe (Greymap, L.ByteString)
 parseP5 s =
-  munchString (L8.pack "P5") s >$> onJust $$ \ s ->
-    skipSpaces s >$> onJust $$ \ s ->
-      parseNat s >$> onJust $$ \ (width, s) ->
-        skipSpaces s >$> onJust $$ \ s ->
-          parseNat s >$> onJust $$ \ (height, s) ->
-            skipSpaces s >$> onJust $$ \ s ->
-              parseNat s >$> onJust $$ \ (maxGrey, s) ->
+  munchString (L8.pack "P5") s >>= \ s ->
+    skipSpaces s >>= \ s ->
+      parseNat s >>= \ (width, s) ->
+        skipSpaces s >>= \ s ->
+          parseNat s >>= \ (height, s) ->
+            skipSpaces s >>= \ s ->
+              parseNat s >>= \ (maxGrey, s) ->
                 if maxGrey > 255 || maxGrey <= 0 then Nothing
-                else Just (maxGrey, s) >$> onJust $$ \_ ->
-                  skipSpaces s >$> onJust $$ \s ->
-                    parseNumBytes (width * height) s >$> onJust $$ \ (bitmap, s) ->
+                else Just (maxGrey, s) >>= \_ ->
+                  skipSpaces s >>= \s ->
+                    parseNumBytes (width * height) s >>= \ (bitmap, s) ->
                       Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
 
 munchString :: L.ByteString -> L.ByteString -> Maybe L.ByteString
