@@ -42,17 +42,12 @@ checkMaxGrey r@(maxGrey, s) =
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: L.ByteString -> Maybe (Greymap, L.ByteString)
 parseP5 s =
-  munchString (L8.pack "P5") s >>= \ s ->
-    skipSpaces s >>= \ s ->
-      parseNat s >>= \ (width, s) ->
-        skipSpaces s >>= \ s ->
-          parseNat s >>= \ (height, s) ->
-            skipSpaces s >>= \ s ->
-              parseNat s >>= \ r ->
-                checkMaxGrey r >>= \ (maxGrey, s) ->
-                  skipSpaces s >>= \ s ->
-                    parseNumBytes (width * height) s >>= \ (bitmap, s) ->
-                      Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
+  munchString (L8.pack "P5") s >>=
+    skipSpaces >>= parseNat >>= \ (width, s) ->
+      skipSpaces s >>= parseNat >>= \ (height, s) ->
+        skipSpaces s >>= parseNat >>= checkMaxGrey >>= \ (maxGrey, s) ->
+            skipSpaces s >>= parseNumBytes (width * height) >>= \ (bitmap, s) ->
+              Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
 
 munchString :: L.ByteString -> L.ByteString -> Maybe L.ByteString
 munchString prefix s =
