@@ -1,6 +1,9 @@
 
+import Steshaw
+
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Lazy as L
+import Data.Char (isSpace, chr)
 
 import System.Environment (getProgName, getArgs)
 import Data.List (genericDrop)
@@ -15,12 +18,19 @@ main = do
       putStrLn (show (parseP5 s))
     otherwise -> hPutStrLn stderr $ "usage: " ++ progName ++ " <file>"
 
-data Greymap = Greymap {
+data PgmInfo = PgmInfo {
   greyWidth :: Int,
   greyHeight :: Int,
-  greyMax :: Int,
-  greyData :: L.ByteString
+  greyMax :: Int
 } deriving (Eq, Show)
+
+data Greymap = Greymap {
+  pgmInfo :: PgmInfo,
+  greyData :: L.ByteString
+} deriving (Eq)
+
+instance Show Greymap where
+  show (Greymap info _) = show info
 
 parseP5 :: L.ByteString -> Maybe (Greymap, L.ByteString)
 
@@ -30,24 +40,71 @@ parseP5 s =
   case skipHeader (L8.pack "P5") s of
     Nothing -> Nothing
     Just s ->
-      case parseNat s of
+      case skipSpaces s of
         Nothing -> Nothing
-        Just (width, s) ->
+        Just s  ->
           case parseNat s of
             Nothing -> Nothing
-            Just (height, s) ->
-              case parseNat s of
+            Just (width, s) ->
+              case skipSpaces s of
                 Nothing -> Nothing
-                Just (maxGrey, s) ->
-                  case parseNumBytes (width * height) s of
+                Just s  ->
+                  case parseNat s of
                     Nothing -> Nothing
-                    Just (bitmap, s) -> Just (Greymap width height maxGrey bitmap, s)
+                    Just (height, s) ->
+                      case skipSpaces s of
+                        Nothing -> Nothing
+                        Just s  ->
+                          case parseNat s of
+                            Nothing -> Nothing
+                            Just (maxGrey, s) ->
+                              case skipSpaces s of
+                                Nothing -> Nothing
+                                Just s  ->
+                                  case parseNumBytes (width * height) s of
+                                    Nothing -> Nothing
+                                    Just (bitmap, s) -> Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
 
 skipHeader :: L.ByteString -> L.ByteString -> Maybe L.ByteString
-skipHeader prefix s = 
+skipHeader prefix s =
   if prefix `L8.isPrefixOf` s
   then Just (L.drop (L.length prefix) s)
   else Nothing
+
+skipSpaces :: L.ByteString -> Maybe L.ByteString
+skipSpaces s =
+  let 
+    a = takeSpace s
+    b = case a of
+          Nothing -> Nothing
+          Just (s) -> Just $ dropSpacesAndComments s
+  in b
+
+dropSpacesAndComments :: L.ByteString -> L.ByteString
+dropSpacesAndComments s =
+  let c = (L.index s 0) >>> word8ToChar
+  in if c == '#' then dropSpacesAndComments (dropComments s)
+     else if isSpace c then dropSpacesAndComments (dropSpaces s) else s
+
+dropComments :: L.ByteString -> L.ByteString
+dropComments s =
+  if (L.take 1 s  == L8.pack "#") 
+  then L.drop 1 s >>> L.dropWhile (word8ToChar >.> (/= '\n')) >>> L.drop 1
+  else s
+
+dropSpaces :: L.ByteString -> L.ByteString
+dropSpaces s = L.dropWhile (word8ToChar >.> isSpace) s
+
+-- Must have a space. Munch it.
+takeSpace :: L.ByteString -> Maybe L.ByteString
+takeSpace s =
+  if L.null s then Nothing
+  else
+    if isSpace (word8ToChar $ s `L.index` 0)
+    then Just (L.drop 1 s)
+    else Nothing
+
+word8ToChar w8 = chr $ fromIntegral w8
 
 parseNat :: L.ByteString -> Maybe (Int, L.ByteString)
 parseNat s =
