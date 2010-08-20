@@ -35,7 +35,8 @@ instance Show Greymap where
   show (Greymap info _) = show info
 
 checkMaxGrey r@(maxGrey, s) =
-  if maxGrey > 255 || maxGrey <= 0 then Nothing
+  if maxGrey > 255 || maxGrey <= 0
+  then Nothing
   else Just r
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
@@ -61,9 +62,7 @@ munchString prefix s =
 
 skipSpaces :: L.ByteString -> Maybe L.ByteString
 skipSpaces s =
-  case munchSpace s of
-    Nothing -> Nothing
-    Just (s) -> Just $ dropSpacesAndComments s
+  munchSpace s >>= \ s -> Just $ dropSpacesAndComments s
 
 dropSpacesAndComments :: L.ByteString -> L.ByteString
 dropSpacesAndComments s =
@@ -91,9 +90,8 @@ munchSpace s =
 
 parseNat :: L.ByteString -> Maybe (Int, L.ByteString)
 parseNat s =
-  case L8.readInt s of
-    Nothing -> Nothing
-    Just (n, rest) -> if n <= 0 then Nothing else Just (n, rest)
+  L8.readInt s >>= \ (n, rest) -> 
+    if n <= 0 then Nothing else Just (n, rest)
 
 parseNumBytes :: Int -> L.ByteString -> Maybe (L.ByteString, L.ByteString)
 parseNumBytes count s =
