@@ -34,6 +34,10 @@ data Greymap = Greymap {
 instance Show Greymap where
   show (Greymap info _) = show info
 
+checkMaxGrey r@(maxGrey, s) =
+  if maxGrey > 255 || maxGrey <= 0 then Nothing
+  else Just r
+
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: L.ByteString -> Maybe (Greymap, L.ByteString)
 parseP5 s =
@@ -43,10 +47,9 @@ parseP5 s =
         skipSpaces s >>= \ s ->
           parseNat s >>= \ (height, s) ->
             skipSpaces s >>= \ s ->
-              parseNat s >>= \ (maxGrey, s) ->
-                if maxGrey > 255 || maxGrey <= 0 then Nothing
-                else Just (maxGrey, s) >>= \_ ->
-                  skipSpaces s >>= \s ->
+              parseNat s >>= \ r ->
+                checkMaxGrey r >>= \ (maxGrey, s) ->
+                  skipSpaces s >>= \ s ->
                     parseNumBytes (width * height) s >>= \ (bitmap, s) ->
                       Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
 
