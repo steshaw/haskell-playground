@@ -1,10 +1,11 @@
 module Steshaw where
 
---infixl 0 >>>
---(>>>) = flip ($)
-
 infixl 0 >$>
 (>$>) = flip ($)
+
+-- Needed a ($) that binds a little less tightly to make it easy to use with (>$>).
+infixr 1 $$
+($$) = ($)
 
 infixl 9 >.>
 (>.>) = flip (.)
