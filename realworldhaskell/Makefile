@@ -2,7 +2,16 @@
 % : %.hs
 	ghc --make $@
 
-PROGS := copy find fixeols readDouble tempFileFun sumInternetUsage toUpperBanner toupper
+PROGS := \
+  copy \
+  find \
+  fixeols \
+  pgm \
+  readDouble \
+  sumInternetUsage \
+  tempFileFun \
+  toUpperBanner \
+  toupper \
 
 all: ${PROGS}
 clean:

@@ -1,7 +1,19 @@
 
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Lazy as L
+
+import System.Environment (getProgName, getArgs)
 import Data.List (genericDrop)
+import System.IO (withFile, hPutStrLn, stderr, IOMode(ReadMode))
+
+main = do
+  args <- getArgs
+  progName <- getProgName
+  case args of
+    [file] -> withFile file ReadMode $ \ handle -> do
+      s <- L.hGetContents handle
+      putStrLn (show (parseP5 s))
+    otherwise -> hPutStrLn stderr $ "usage: " ++ progName ++ " <file>"
 
 data Greymap = Greymap {
   greyWidth :: Int,

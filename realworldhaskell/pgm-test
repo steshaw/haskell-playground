@@ -1,0 +1,5 @@
+#!/bin/bash
+
+./pgm reese_witherspoon.pgm
+./pgm half.pgm
+./pgm comments.pgm
