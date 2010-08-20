@@ -46,7 +46,7 @@ onJust f x =
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: L.ByteString -> Maybe (Greymap, L.ByteString)
 parseP5 s =
-  skipHeader (L8.pack "P5") s >$> onJust $$ \ s ->
+  munchString (L8.pack "P5") s >$> onJust $$ \ s ->
     skipSpaces s >$> onJust $$ \ s ->
       parseNat s >$> onJust $$ \ (width, s) ->
         skipSpaces s >$> onJust $$ \ s ->
@@ -59,8 +59,8 @@ parseP5 s =
                     parseNumBytes (width * height) s >$> onJust $$ \ (bitmap, s) ->
                       Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
 
-skipHeader :: L.ByteString -> L.ByteString -> Maybe L.ByteString
-skipHeader prefix s =
+munchString :: L.ByteString -> L.ByteString -> Maybe L.ByteString
+munchString prefix s =
   if prefix `L8.isPrefixOf` s
   then Just (L.drop (L.length prefix) s)
   else Nothing
@@ -76,29 +76,27 @@ skipSpaces s =
 
 dropSpacesAndComments :: L.ByteString -> L.ByteString
 dropSpacesAndComments s =
-  let c = (L.index s 0) >$> word8ToChar
+  let c = (L8.index s 0)
   in if c == '#' then dropSpacesAndComments (dropComments s)
      else if isSpace c then dropSpacesAndComments (dropSpaces s) else s
 
 dropComments :: L.ByteString -> L.ByteString
 dropComments s =
-  if (L.take 1 s  == L8.pack "#")
-  then L.drop 1 s >$> L.dropWhile (word8ToChar >.> (/= '\n')) >$> L.drop 1
+  if L.take 1 s  == L8.pack "#"
+  then L.drop 1 s >$> L8.dropWhile (/= '\n') >$> L.drop 1
   else s
 
 dropSpaces :: L.ByteString -> L.ByteString
-dropSpaces s = L.dropWhile (word8ToChar >.> isSpace) s
+dropSpaces s = L8.dropWhile isSpace s
 
 -- Must have a space. Munch it.
 takeSpace :: L.ByteString -> Maybe L.ByteString
 takeSpace s =
   if L.null s then Nothing
   else
-    if isSpace (word8ToChar $ s `L.index` 0)
+    if isSpace (s `L8.index` 0)
     then Just (L.drop 1 s)
     else Nothing
-
-word8ToChar w8 = chr $ fromIntegral w8
 
 parseNat :: L.ByteString -> Maybe (Int, L.ByteString)
 parseNat s =
