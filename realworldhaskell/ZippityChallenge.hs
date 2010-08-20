@@ -17,7 +17,7 @@
 module ZippityChallenge where
 
 import Control.Applicative
-import Steshaw((>>>))
+import Steshaw((>$>))
 
 --
 -- Examples given are:
@@ -71,9 +71,9 @@ altZipWith3' = gzl $ (\a b c -> a + b * c) <$> z [1..3] <*> z [4..9] <*> z [7..]
 --
 -- ... or perhaps with getZipList at the end where it is less distracting:
 --
-altZip3'' = (,,) <$> z [1..3] <*> z [4..9] <*> z [7..] >>> getZipList
+altZip3'' = (,,) <$> z [1..3] <*> z [4..9] <*> z [7..] >$> getZipList
 
-altZipWith3'' = (\a b c -> a + b * c) <$> z [1..3] <*> z [4..9] <*> z [7..] >>> getZipList
+altZipWith3'' = (\a b c -> a + b * c) <$> z [1..3] <*> z [4..9] <*> z [7..] >$> getZipList
 
 --
 -- FIXME: Strangely, the type signatures of <$> and <*> still look alien to me :(.

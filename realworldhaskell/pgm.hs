@@ -32,10 +32,20 @@ data Greymap = Greymap {
 instance Show Greymap where
   show (Greymap info _) = show info
 
-parseP5 :: L.ByteString -> Maybe (Greymap, L.ByteString)
+
+onJust f x =
+  case x of
+    Nothing -> Nothing
+    Just a -> f a
+
+{-
+newParseP5 =
+--  skipHeader (L8.pack "P5") >$> onJust (\ s -> Just (L8.pack "FIXME"))
+  onJust (\ s -> Just (L8.pack "FIXME")) (skipHeader (L8.pack "P5"))
+-}
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
--- FIXME: parse whitespace
+parseP5 :: L.ByteString -> Maybe (Greymap, L.ByteString)
 parseP5 s =
   case skipHeader (L8.pack "P5") s of
     Nothing -> Nothing
@@ -62,7 +72,7 @@ parseP5 s =
                               else
                                 case skipSpaces s of
                                   Nothing -> Nothing
-                                  Just s  ->
+                                  Just s  -> 
                                     case parseNumBytes (width * height) s of
                                       Nothing -> Nothing
                                       Just (bitmap, s) -> Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
@@ -84,14 +94,14 @@ skipSpaces s =
 
 dropSpacesAndComments :: L.ByteString -> L.ByteString
 dropSpacesAndComments s =
-  let c = (L.index s 0) >>> word8ToChar
+  let c = (L.index s 0) >$> word8ToChar
   in if c == '#' then dropSpacesAndComments (dropComments s)
      else if isSpace c then dropSpacesAndComments (dropSpaces s) else s
 
 dropComments :: L.ByteString -> L.ByteString
 dropComments s =
   if (L.take 1 s  == L8.pack "#") 
-  then L.drop 1 s >>> L.dropWhile (word8ToChar >.> (/= '\n')) >>> L.drop 1
+  then L.drop 1 s >$> L.dropWhile (word8ToChar >.> (/= '\n')) >$> L.drop 1
   else s
 
 dropSpaces :: L.ByteString -> L.ByteString

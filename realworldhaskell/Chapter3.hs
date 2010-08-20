@@ -2,7 +2,7 @@
 
 module Chapter3 where
 
-import Steshaw ((>>>), (>.>))
+import Steshaw ((>$>), (>.>))
 import Tree
 import Data.Monoid
 import Data.List(sortBy)
@@ -19,7 +19,7 @@ len3 :: [a] -> Integer
 len3 xs = foldl (\ acc n -> acc + 1) 0 xs
 
 len4 :: (F.Foldable foldable, Num n) => foldable a -> n
-len4 xs = F.foldMap (\n -> Sum 1) xs >>> getSum
+len4 xs = F.foldMap (\n -> Sum 1) xs >$> getSum
 
 meanOverFractionals :: (Fractional a) => [a] -> a
 meanOverFractionals xs = sum xs / len4 xs

@@ -1,7 +1,10 @@
 module Steshaw where
 
-infixl 0 >>>
-(>>>) = flip ($)
+--infixl 0 >>>
+--(>>>) = flip ($)
+
+infixl 0 >$>
+(>$>) = flip ($)
 
 infixl 9 >.>
 (>.>) = flip (.)
