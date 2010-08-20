@@ -67,12 +67,9 @@ munchString prefix s =
 
 skipSpaces :: L.ByteString -> Maybe L.ByteString
 skipSpaces s =
-  let
-    a = takeSpace s
-    b = case a of
-          Nothing -> Nothing
-          Just (s) -> Just $ dropSpacesAndComments s
-  in b
+  case munchSpace s of
+    Nothing -> Nothing
+    Just (s) -> Just $ dropSpacesAndComments s
 
 dropSpacesAndComments :: L.ByteString -> L.ByteString
 dropSpacesAndComments s =
@@ -89,9 +86,9 @@ dropComments s =
 dropSpaces :: L.ByteString -> L.ByteString
 dropSpaces s = L8.dropWhile isSpace s
 
--- Must have a space. Munch it.
-takeSpace :: L.ByteString -> Maybe L.ByteString
-takeSpace s =
+-- Must have a space.
+munchSpace :: L.ByteString -> Maybe L.ByteString
+munchSpace s =
   if L.null s then Nothing
   else
     if isSpace (s `L8.index` 0)
