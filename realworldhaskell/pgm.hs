@@ -10,6 +10,8 @@ import System.Environment (getProgName, getArgs)
 import Data.List (genericDrop)
 import System.IO (withFile, hPutStrLn, stderr, IOMode(ReadMode))
 
+import Control.Monad.Error
+
 main :: IO ()
 main = do
   args <- getArgs
@@ -34,39 +36,57 @@ data Greymap = Greymap {
 instance Show Greymap where
   show (Greymap info _) = show info
 
-checkValid :: (a -> Bool) -> a -> Maybe a
-checkValid f a = if f a then Just a else Nothing
-
-checkMaxGrey parseResult =
-    checkValid goodMaxGrey parseResult
-  where
-    goodMaxGrey (maxGrey, s) = maxGrey > 0 && maxGrey <= 255
-
 -- TODO: Position/ParseInfo as yet unused
 type Position = Integer
 data ParseInfo = ParseInfo L.ByteString Position
 
 --type ParseResult = Either String L.ByteString
 type ParseResult q a = q (a, L.ByteString)
-type ParseResult' a = ParseResult Maybe a
+--type ParseResult' a = ParseResult Maybe a
+type ParseResult' a = ParseResult (Either String) a
+
+parseError errMsg = Left errMsg
+parseOk a rest = Right (a, rest)
+
+fromMaybe :: (a -> Maybe L.ByteString) -> (a -> ParseResult' ())
+fromMaybe f a = case f a of
+  Nothing -> parseError "oops"
+  Just a -> parseOk () a
+
+fromMaybe2 :: (a -> Maybe (b, L.ByteString)) -> (a -> ParseResult' b)
+fromMaybe2 f a = case f a of
+  Nothing -> parseError "oops"
+  Just (b, rest) -> parseOk b rest
+
+checkMaxGrey (maxGrey, s) =
+  if maxGrey > 0 && maxGrey <= 255
+  then parseOk maxGrey s
+  else parseError ("Illegal maxGrey value: " ++ show maxGrey)
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: L.ByteString -> ParseResult' Greymap
 parseP5 s =
-  munchString (L8.pack "P5") s >>= skipSpaces >>= parseNat >>= \ (width, s) ->
-    skipSpaces s >>= parseNat >>= \ (height, s) ->
-      skipSpaces s >>= parseNat >>= checkMaxGrey >>= \ (maxGrey, s) ->
-          parseNumBytes 1 s >>= \ (_, s) ->
-            parseNumBytes (width * height) s >>= \ (bitmap, s) ->
-              Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
+  fromMaybe (munchString (L8.pack "P5")) s >>= \ (_, s) ->
+    fromMaybe skipSpaces s >>= \ (_, s) -> parseNat s >>= \ (width, s) ->
+      fromMaybe skipSpaces s >>= \ (_, s) -> parseNat s >>= \ (height, s) ->
+        fromMaybe skipSpaces s >>= \ (_, s) -> 
+          parseNat s >>= checkMaxGrey >>= \ (maxGrey, s) ->
+            parseNumBytes 1 s >>= \ (_, s) ->
+              parseNumBytes (width * height) s >>= \ (bitmap, s) ->
+                parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
 
 parseNat :: L.ByteString -> ParseResult' Int
 parseNat s =
-  L8.readInt s >>= \ (n, rest) ->
-    if n <= 0 then Nothing else Just (n, rest)
+  fromMaybe2 L8.readInt s >>= \ (n, rest) ->
+    if n <= 0 
+    then parseError $ "Natural number must be > 0: " ++ show n
+    else parseOk n rest
 
 parseNumBytes :: Int -> L.ByteString -> ParseResult' L.ByteString
-parseNumBytes count s =
+parseNumBytes count s = (fromMaybe2 (parseNumBytesOld count)) s
+
+parseNumBytesOld :: Int -> L.ByteString -> Maybe (L.ByteString, L.ByteString)
+parseNumBytesOld count s =
   let
     result = L.splitAt (fromIntegral count) s
   in
