@@ -83,15 +83,11 @@ parseNat s =
     else parseOk n rest
 
 parseNumBytes :: Int -> L.ByteString -> ParseResult' L.ByteString
-parseNumBytes count s = (fromMaybe2 (parseNumBytesOld count)) s
-
-parseNumBytesOld :: Int -> L.ByteString -> Maybe (L.ByteString, L.ByteString)
-parseNumBytesOld count s =
-  let
-    result = L.splitAt (fromIntegral count) s
-  in
-    if L.length (fst result) < (fromIntegral count) then Nothing
-    else Just result
+parseNumBytes count s =
+  case L.splitAt (fromIntegral count) s of
+    (r, _) | L.length (r) < (fromIntegral count) ->
+      parseError $ "Insufficient bytes trying to get " ++ (show count) ++ " bytes"
+    (r, rest) -> parseOk r rest
 
 munchString :: L.ByteString -> L.ByteString -> Maybe L.ByteString
 munchString prefix s =
@@ -152,12 +148,17 @@ testCases =
   ,test (testString "p5") $ Left "oops"
   ,test (testString "P5") $ Left "oops"
   ,test (testString "P5 1 1 255\n\000") $
-    Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\0"), L8.empty)
-  ,test (testString $ "P5 1 1 255\n" ++ replicate (1) '\0') $
-    Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\0"), L8.empty)
-  ,test (testString $ "P5 1 1 256\n" ++ replicate (1) '\0') $
+    Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\000"), L8.empty)
+  ,test (testString "P5 1 1 255") $ Left "Insufficient bytes trying to get 1 bytes"
+  ,test (testString "P5 2 2 255\n") $ Left "Insufficient bytes trying to get 4 bytes"
+  ,test (testString "P5 1 1 255\n\000!") $
+    Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\000")
+          ,L8.pack "!")
+  ,test (testString $ "P5 1 1 255\n" ++ replicate (1) '\000') $
+    Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\000"), L8.empty)
+  ,test (testString $ "P5 1 1 256\n" ++ replicate (1) '\000') $
     Left "Illegal maxGrey value: 256"
-  ,test (testString $ "P5 -1" ++ replicate (1) '\0') $
+  ,test (testString $ "P5 -1" ++ replicate (1) '\000') $
     Left "Natural number must be > 0: -1"
   ]
 
