@@ -47,15 +47,17 @@ type ParseResult' a = ParseResult (Either ErrorMessage) a
 parseError errMsg = Left errMsg
 parseOk a rest = Right (a, rest)
 
-fromMaybeNoResult :: ErrorMessage -> (a -> Maybe L.ByteString) -> (a -> ParseResult' ())
-fromMaybeNoResult errMsg f a = case f a of
-  Nothing -> parseError errMsg
-  Just a -> parseOk () a
-
 fromMaybe :: ErrorMessage -> (a -> Maybe (b, L.ByteString)) -> (a -> ParseResult' b)
 fromMaybe errMsg f a = case f a of
   Nothing -> parseError errMsg
   Just (b, rest) -> parseOk b rest
+
+maybeToMaybe :: Maybe L.ByteString -> Maybe ((), L.ByteString)
+maybeToMaybe Nothing  = Nothing
+maybeToMaybe (Just a) = Just ((), a)
+
+fromMaybeUnit :: ErrorMessage -> (a -> Maybe L.ByteString) -> (a -> ParseResult' ())
+fromMaybeUnit errMsg f = fromMaybe errMsg (maybeToMaybe . f)
 
 checkMaxGrey (maxGrey, s) =
   if maxGrey > 0 && maxGrey <= 255
@@ -76,7 +78,8 @@ parseP5 s =
                   parseNumBytes (width * height) s >>= \ (bitmap, s) ->
                     parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
 
-parseHeader = fromMaybeNoResult "Cannot parse header" (munchString (L8.pack "P5"))
+parseHeader :: L.ByteString -> ParseResult' ()
+parseHeader = fromMaybeUnit "Cannot parse header" (munchString (L8.pack "P5"))
 
 parseNat :: L.ByteString -> ParseResult' Int
 parseNat s =
@@ -99,7 +102,7 @@ munchString prefix s =
   else Nothing
 
 skipSpaces :: L.ByteString -> ParseResult' ()
-skipSpaces = fromMaybeNoResult "Cannot skip spaces" skipSpacesOld
+skipSpaces = fromMaybeUnit "Cannot skip spaces" skipSpacesOld
 
 skipSpacesOld :: L.ByteString -> Maybe L.ByteString
 skipSpacesOld s =
