@@ -157,7 +157,7 @@ testCases =
     Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\0"), L8.empty)
   ,test (testString $ "P5 1 1 256\n" ++ replicate (1) '\0') $
     Left "Illegal maxGrey value: 256"
-  ,test (testString $ "P5 -1 1 256\n" ++ replicate (1) '\0') $
+  ,test (testString $ "P5 -1" ++ replicate (1) '\0') $
     Left "Natural number must be > 0: -1"
   ]
 
