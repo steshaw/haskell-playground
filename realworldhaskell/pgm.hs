@@ -1,4 +1,4 @@
-module Main where
+--module Main where
 
 import Steshaw ((>$>))
 
@@ -34,10 +34,13 @@ data Greymap = Greymap {
 instance Show Greymap where
   show (Greymap info _) = show info
 
-checkMaxGrey r@(maxGrey, s) =
-  if maxGrey > 255 || maxGrey <= 0
-  then Nothing
-  else Just r
+checkValid :: (a -> Bool) -> a -> Maybe a
+checkValid f a = if f a then Just a else Nothing
+
+checkMaxGrey parseResult = 
+    checkValid goodMaxGrey parseResult
+  where 
+    goodMaxGrey (maxGrey, s) = maxGrey > 0 && maxGrey <= 255
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: L.ByteString -> Maybe (Greymap, L.ByteString)
