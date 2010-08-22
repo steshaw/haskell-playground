@@ -40,20 +40,21 @@ instance Show Greymap where
 type Position = Integer
 data ParseInfo = ParseInfo L.ByteString Position
 
+type ErrorMessage = String
 type ParseResult q a = q (a, L.ByteString)
-type ParseResult' a = ParseResult (Either String) a
+type ParseResult' a = ParseResult (Either ErrorMessage) a
 
 parseError errMsg = Left errMsg
 parseOk a rest = Right (a, rest)
 
-fromMaybe :: (a -> Maybe L.ByteString) -> (a -> ParseResult' ())
-fromMaybe f a = case f a of
-  Nothing -> parseError "oops"
+fromMaybeNoResult :: ErrorMessage -> (a -> Maybe L.ByteString) -> (a -> ParseResult' ())
+fromMaybeNoResult errMsg f a = case f a of
+  Nothing -> parseError errMsg
   Just a -> parseOk () a
 
-fromMaybe2 :: (a -> Maybe (b, L.ByteString)) -> (a -> ParseResult' b)
-fromMaybe2 f a = case f a of
-  Nothing -> parseError "oops"
+fromMaybe :: ErrorMessage -> (a -> Maybe (b, L.ByteString)) -> (a -> ParseResult' b)
+fromMaybe errMsg f a = case f a of
+  Nothing -> parseError errMsg
   Just (b, rest) -> parseOk b rest
 
 checkMaxGrey (maxGrey, s) =
@@ -64,20 +65,22 @@ checkMaxGrey (maxGrey, s) =
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: L.ByteString -> ParseResult' Greymap
 parseP5 s =
-  fromMaybe (munchString (L8.pack "P5")) s >>= \ (_, s) ->
-    fromMaybe skipSpaces s >>= \ (_, s) ->
+  parseHeader s >>= \ (_, s) ->
+    skipSpaces s >>= \ (_, s) ->
       parseNat s >>= \ (width, s) ->
-        fromMaybe skipSpaces s >>= \ (_, s) ->
+        skipSpaces s >>= \ (_, s) ->
           parseNat s >>= \ (height, s) ->
-            fromMaybe skipSpaces s >>= \ (_, s) ->
+            skipSpaces s >>= \ (_, s) ->
               parseNat s >>= checkMaxGrey >>= \ (maxGrey, s) ->
                 parseNumBytes 1 s >>= \ (_, s) ->
                   parseNumBytes (width * height) s >>= \ (bitmap, s) ->
                     parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
 
+parseHeader = fromMaybeNoResult "Cannot parse header" (munchString (L8.pack "P5"))
+
 parseNat :: L.ByteString -> ParseResult' Int
 parseNat s =
-  fromMaybe2 L8.readInt s >>= \ (n, rest) ->
+  fromMaybe "Cannot parse int" L8.readInt s >>= \ (n, rest) ->
     if n <= 0 
     then parseError $ "Natural number must be > 0: " ++ show n
     else parseOk n rest
@@ -95,8 +98,11 @@ munchString prefix s =
   then Just (L.drop (L.length prefix) s)
   else Nothing
 
-skipSpaces :: L.ByteString -> Maybe L.ByteString
-skipSpaces s =
+skipSpaces :: L.ByteString -> ParseResult' ()
+skipSpaces = fromMaybeNoResult "Cannot skip spaces" skipSpacesOld
+
+skipSpacesOld :: L.ByteString -> Maybe L.ByteString
+skipSpacesOld s =
   munchSpace s >>= \ s -> Just $ dropSpacesAndComments s
 
 dropSpacesAndComments :: L.ByteString -> L.ByteString
@@ -141,12 +147,13 @@ test actual expected = do
 
 testCases = 
   [
-   test (testString "") $ Left "oops"
-  ,test (testString "1") $ Left "oops"
-  ,test (testString "12") $ Left "oops"
-  ,test (testString "p2") $ Left "oops"
-  ,test (testString "p5") $ Left "oops"
-  ,test (testString "P5") $ Left "oops"
+   test (testString "") $ Left "Cannot parse header"
+  ,test (testString "1") $ Left "Cannot parse header"
+  ,test (testString "12") $ Left "Cannot parse header"
+  ,test (testString "p2") $ Left "Cannot parse header"
+  ,test (testString "p5") $ Left "Cannot parse header"
+  ,test (testString "P5") $ Left "Cannot skip spaces"
+  ,test (testString "P5  foo") $ Left "Cannot parse int"
   ,test (testString "P5 1 1 255\n\000") $
     Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\000"), L8.empty)
   ,test (testString "P5 1 1 255") $ Left "Insufficient bytes trying to get 1 bytes"
