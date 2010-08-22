@@ -48,9 +48,10 @@ data ParseInfo = ParseInfo L.ByteString Position
 
 --type ParseResult = Either String L.ByteString
 type ParseResult q a = q (a, L.ByteString)
+type ParseResult' a = ParseResult Maybe a
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
-parseP5 :: L.ByteString -> ParseResult Maybe Greymap
+parseP5 :: L.ByteString -> ParseResult' Greymap
 parseP5 s =
   munchString (L8.pack "P5") s >>= skipSpaces >>= parseNat >>= \ (width, s) ->
     skipSpaces s >>= parseNat >>= \ (height, s) ->
@@ -59,12 +60,12 @@ parseP5 s =
             parseNumBytes (width * height) s >>= \ (bitmap, s) ->
               Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
 
-parseNat :: L.ByteString -> ParseResult Maybe Int
+parseNat :: L.ByteString -> ParseResult' Int
 parseNat s =
   L8.readInt s >>= \ (n, rest) ->
     if n <= 0 then Nothing else Just (n, rest)
 
-parseNumBytes :: Int -> L.ByteString -> ParseResult Maybe L.ByteString
+parseNumBytes :: Int -> L.ByteString -> ParseResult' L.ByteString
 parseNumBytes count s =
   let
     result = L.splitAt (fromIntegral count) s
