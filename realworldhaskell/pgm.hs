@@ -37,9 +37,9 @@ instance Show Greymap where
 checkValid :: (a -> Bool) -> a -> Maybe a
 checkValid f a = if f a then Just a else Nothing
 
-checkMaxGrey parseResult = 
+checkMaxGrey parseResult =
     checkValid goodMaxGrey parseResult
-  where 
+  where
     goodMaxGrey (maxGrey, s) = maxGrey > 0 && maxGrey <= 255
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
@@ -70,7 +70,7 @@ dropSpacesAndComments s =
 
 dropComments :: L.ByteString -> L.ByteString
 dropComments s =
-  if L.take 1 s  == L8.pack "#"
+  if L8.head s  == '#'
   then L.drop 1 s >$> L8.dropWhile (/= '\n') >$> L.drop 1
   else s
 
