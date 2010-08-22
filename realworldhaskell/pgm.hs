@@ -65,9 +65,9 @@ checkMaxGrey (maxGrey, s) =
 parseP5 :: L.ByteString -> ParseResult' Greymap
 parseP5 s =
   fromMaybe (munchString (L8.pack "P5")) s >>= \ (_, s) ->
-    fromMaybe skipSpaces s >>= \ (_, s) -> 
+    fromMaybe skipSpaces s >>= \ (_, s) ->
       parseNat s >>= \ (width, s) ->
-        fromMaybe skipSpaces s >>= \ (_, s) -> 
+        fromMaybe skipSpaces s >>= \ (_, s) ->
           parseNat s >>= \ (height, s) ->
             fromMaybe skipSpaces s >>= \ (_, s) ->
               parseNat s >>= checkMaxGrey >>= \ (maxGrey, s) ->
@@ -127,3 +127,38 @@ munchSpace s =
     then Just (L.drop 1 s)
     else Nothing
 
+--
+-- Some test cases.
+-- 
+
+testString s = parseP5 $ L8.pack s
+
+test :: (Show a, Eq a) => a -> a -> IO ()
+test actual expected = do
+  if actual /= expected
+    then do
+      putStrLn "FAILURE:"
+      putStrLn $ "actual  : " ++ (show actual)
+      putStrLn $ "expected: " ++ (show expected)
+      putStrLn ""
+    else putStr "."
+
+testCases = 
+  [
+   test (testString "") $ Left "oops"
+  ,test (testString "1") $ Left "oops"
+  ,test (testString "12") $ Left "oops"
+  ,test (testString "p2") $ Left "oops"
+  ,test (testString "p5") $ Left "oops"
+  ,test (testString "P5") $ Left "oops"
+  ,test (testString "P5 1 1 255\n\000") $
+    Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\0"), L8.empty)
+  ,test (testString $ "P5 1 1 255\n" ++ replicate (1) '\0') $
+    Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\0"), L8.empty)
+  ,test (testString $ "P5 1 1 256\n" ++ replicate (1) '\0') $
+    Left "Illegal maxGrey value: 256"
+  ,test (testString $ "P5 -1 1 256\n" ++ replicate (1) '\0') $
+    Left "Natural number must be > 0: -1"
+  ]
+
+tests = sequence_ testCases >> putStrLn ""
