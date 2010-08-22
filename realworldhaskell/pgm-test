@@ -1,5 +1,6 @@
 #!/bin/bash
 
+(echo 'tests'; echo ':q') | ghci pgm.hs
 ./pgm reese_witherspoon.pgm
 ./pgm half.pgm
 ./pgm comments.pgm
