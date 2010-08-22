@@ -42,8 +42,15 @@ checkMaxGrey parseResult =
   where
     goodMaxGrey (maxGrey, s) = maxGrey > 0 && maxGrey <= 255
 
+-- TODO: Position/ParseInfo as yet unused
+type Position = Integer
+data ParseInfo = ParseInfo L.ByteString Position
+
+--type ParseResult = Either String L.ByteString
+type ParseResult q a = q (a, L.ByteString)
+
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
-parseP5 :: L.ByteString -> Maybe (Greymap, L.ByteString)
+parseP5 :: L.ByteString -> ParseResult Maybe Greymap
 parseP5 s =
   munchString (L8.pack "P5") s >>= skipSpaces >>= parseNat >>= \ (width, s) ->
     skipSpaces s >>= parseNat >>= \ (height, s) ->
@@ -51,6 +58,19 @@ parseP5 s =
           parseNumBytes 1 s >>= \ (_, s) ->
             parseNumBytes (width * height) s >>= \ (bitmap, s) ->
               Just (Greymap (PgmInfo width height maxGrey) bitmap, s)
+
+parseNat :: L.ByteString -> ParseResult Maybe Int
+parseNat s =
+  L8.readInt s >>= \ (n, rest) ->
+    if n <= 0 then Nothing else Just (n, rest)
+
+parseNumBytes :: Int -> L.ByteString -> ParseResult Maybe L.ByteString
+parseNumBytes count s =
+  let
+    result = L.splitAt (fromIntegral count) s
+  in
+    if L.length (fst result) < (fromIntegral count) then Nothing
+    else Just result
 
 munchString :: L.ByteString -> L.ByteString -> Maybe L.ByteString
 munchString prefix s =
@@ -85,17 +105,4 @@ munchSpace s =
     if isSpace (s `L8.index` 0)
     then Just (L.drop 1 s)
     else Nothing
-
-parseNat :: L.ByteString -> Maybe (Int, L.ByteString)
-parseNat s =
-  L8.readInt s >>= \ (n, rest) ->
-    if n <= 0 then Nothing else Just (n, rest)
-
-parseNumBytes :: Int -> L.ByteString -> Maybe (L.ByteString, L.ByteString)
-parseNumBytes count s =
-  let
-    result = L.splitAt (fromIntegral count) s
-  in
-    if L.length (fst result) < (fromIntegral count) then Nothing
-    else Just result
 
