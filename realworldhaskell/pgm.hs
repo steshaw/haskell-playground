@@ -40,9 +40,7 @@ instance Show Greymap where
 type Position = Integer
 data ParseInfo = ParseInfo L.ByteString Position
 
---type ParseResult = Either String L.ByteString
 type ParseResult q a = q (a, L.ByteString)
---type ParseResult' a = ParseResult Maybe a
 type ParseResult' a = ParseResult (Either String) a
 
 parseError errMsg = Left errMsg
@@ -67,13 +65,15 @@ checkMaxGrey (maxGrey, s) =
 parseP5 :: L.ByteString -> ParseResult' Greymap
 parseP5 s =
   fromMaybe (munchString (L8.pack "P5")) s >>= \ (_, s) ->
-    fromMaybe skipSpaces s >>= \ (_, s) -> parseNat s >>= \ (width, s) ->
-      fromMaybe skipSpaces s >>= \ (_, s) -> parseNat s >>= \ (height, s) ->
+    fromMaybe skipSpaces s >>= \ (_, s) -> 
+      parseNat s >>= \ (width, s) ->
         fromMaybe skipSpaces s >>= \ (_, s) -> 
-          parseNat s >>= checkMaxGrey >>= \ (maxGrey, s) ->
-            parseNumBytes 1 s >>= \ (_, s) ->
-              parseNumBytes (width * height) s >>= \ (bitmap, s) ->
-                parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
+          parseNat s >>= \ (height, s) ->
+            fromMaybe skipSpaces s >>= \ (_, s) ->
+              parseNat s >>= checkMaxGrey >>= \ (maxGrey, s) ->
+                parseNumBytes 1 s >>= \ (_, s) ->
+                  parseNumBytes (width * height) s >>= \ (bitmap, s) ->
+                    parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
 
 parseNat :: L.ByteString -> ParseResult' Int
 parseNat s =
