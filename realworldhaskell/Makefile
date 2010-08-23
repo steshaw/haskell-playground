@@ -6,6 +6,7 @@ PROGS := \
   copy \
   find \
   fixeols \
+  jsonMain \
   pgm \
   readDouble \
   sumInternetUsage \
