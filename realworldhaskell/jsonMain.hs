@@ -2,6 +2,7 @@ module Main () where
 
 import Json
 import Prettify
+import Control.Monad (forM_)
 
 getJsonObject (JsonObject o) = o
 
@@ -9,6 +10,7 @@ main =
   do
     printEm $ JsonNull
     printEm $ JsonString "hi"
+    printEm $ JsonString "This\nis\tfun"
     printEm $ JsonNumber 3.14
     printEm $ JsonBool True
     printEm $ JsonBool False
@@ -20,7 +22,9 @@ main =
     printEm json3
   where
     printEm json = do
+      putStrLn $ replicate 80 '-'
       putStrLn $ "           Raw: " ++ show json
       putStrLn $ "        Render: " ++ renderJson json
       putStrLn $ "Pretty compact: " ++ compact (prettyJson json)
-      putStrLn ""
+      forM_ [15, 30, 60] $ \ width ->
+        putStrLn $ "     Pretty " ++ (show width) ++ ": " ++ pretty width (prettyJson json)
