@@ -1,11 +1,11 @@
-module Prettify.CheckRun where
+module Main () where
 
 import Prettify.Check
 import Test.QuickCheck.Batch
 
 options = TestOptions {
-  no_of_tests = 1000,
-  length_of_tests = 5,
+  no_of_tests = 500,
+  length_of_tests = 2,
   debug_tests = False
 }
 

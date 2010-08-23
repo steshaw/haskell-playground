@@ -1,0 +1,21 @@
+Name:      Prettify
+Version:   0.1
+
+-- a comment :)
+
+Synopsis:  Pretty printing library from "Real World Haskell" with JSON support.
+Description:
+  Simple pretty-printing library to learn how to develop a Haskell package.
+Author: Steven shaw
+Maintainer: steshaw@gmail.com
+
+Cabal-Version: >= 1.2
+
+build-type: Simple
+
+library
+  Exposed-Modules:
+    Prettify
+    Json
+  Build-depends:
+    base >= 2.0

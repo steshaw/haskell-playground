@@ -12,13 +12,14 @@ instance Arbitrary Char where
   coarbitrary = undefined
 
 instance Arbitrary Doc where
-  arbitrary = choose (1,6) >>= \n -> case (n::Int) of
-    1 -> return Empty
-    2 -> arbitrary >>= return . char
-    3 -> arbitrary >>= return . text
-    4 -> return Line
-    5 -> arbitrary >>= \ doc1 -> arbitrary >>= \ doc2 -> return (Concat doc1 doc2)
-    6 -> arbitrary >>= \ doc1 -> arbitrary >>= \ doc2 -> return (Union doc1 doc2)
+  arbitrary = oneof 
+    [ return Empty
+    , arbitrary >>= return . char
+    , arbitrary >>= return . text
+    , return Line
+    , arbitrary >>= \ doc1 -> arbitrary >>= \ doc2 -> return (Concat doc1 doc2)
+    , arbitrary >>= \ doc1 -> arbitrary >>= \ doc2 -> return (Union doc1 doc2)
+    ]
   coarbitrary = undefined
 
 prop_empty_id x = 
