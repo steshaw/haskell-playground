@@ -24,7 +24,8 @@ double d = text $ show d
 line = Line
 
 (<>) :: Doc -> Doc -> Doc
--- TODO: handle special case of Empty for x and y
+Empty <> y = y
+x <> Empty = x
 x <> y = x `Concat` y
 
 fold :: (Doc -> Doc -> Doc) -> [Doc] -> Doc
@@ -32,10 +33,15 @@ fold f = foldr f empty
 
 -- Concat for Docs.
 hcat :: [Doc] -> Doc
-hcat = fold Concat
+hcat = fold ((<>))
 
 fsep :: [Doc] -> Doc
 fsep = fold (</>)
+
+punctuate :: Doc -> [Doc] -> [Doc]
+punctuate p [] = []
+punctuate p [d] = [d]
+punctuate p (d:ds) = (d <> p) : punctuate p ds
 
 (</>) :: Doc -> Doc -> Doc
 x </> y = x <> softline <> y
