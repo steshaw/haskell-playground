@@ -10,14 +10,19 @@ options = TestOptions {
 }
 
 main = do
-  runTests "simple" options [
+  runTests "pretty" options [
     run prop_pretty_eg1,
     run prop_pretty_eg2,
-    run prop_rpn_eg1,
-    run prop_rpn_eg2
+    run prop_pretty_eg3
     ]
 
-  runTests "proper" options [
+  runTests "rpn" options [
+    run prop_rpn_eg1,
+    run prop_rpn_eg2,
+    run prop_rpn_eg3
+    ]
+
+  runTests "props" options [
     run prop_pretty_1,
     run prop_pretty_2
     ]
