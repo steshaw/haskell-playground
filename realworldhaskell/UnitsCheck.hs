@@ -15,4 +15,5 @@ main = do
     ,run prop_eg2
     ,run prop_eg3
     ,run prop_eg4
+    ,run prop_eg5
     ]
