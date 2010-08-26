@@ -52,3 +52,6 @@ prop_eg9 = show ((units 50 "m" * sin (units 90 "deg")) :: UnitFrac (Expr Double)
 
 eg10 = units 50 "m" * sin (units 90 "deg") :: UnitFrac (Expr Double)
 prop_eg10 = show eg10 == "50.0*sin(((2.0*pi)*90.0)/360.0)_m"
+
+
+prop_eg13 = show (units (Symbol "x") "m" * sin (units 90 "deg")) == "x*sin(((2.0*pi)*90.0)/360.0)_m"
