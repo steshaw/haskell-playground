@@ -7,8 +7,10 @@ PROGS := \
   find \
   fixeols \
   jsonMain \
+  NumExprCheck \
   pgm \
   readDouble \
+  Setup \
   sumInternetUsage \
   tempFileFun \
   toUpperBanner \
