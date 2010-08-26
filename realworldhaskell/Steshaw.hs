@@ -17,3 +17,5 @@ infixl 9 >.>
 --
 d :: (Num a) => [a] -> a
 d = foldl (\ acc i -> acc * 1000 + i) 0
+
+todo functionName = error $ "Implement " ++ functionName
