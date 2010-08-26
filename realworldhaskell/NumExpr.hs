@@ -40,6 +40,9 @@ simplify (Mul e 1) = e
 simplify (Add e1 e2) = Add (simplify e1) (simplify e2)
 simplify other = other
 
+testExpr :: Num a => a
+testExpr = 2 * 5 + 3
+
 --
 -- QuickChecks
 --
@@ -61,3 +64,11 @@ prop_rpn_eg1 = (rpnShow $ 5 + 1 * 3) == "5 1 3 * +"
 prop_rpn_eg2 = (rpnShow $ 5 * 1 + 3) == "5 1 * 3 +"
 prop_rpn_eg3 = (rpnShow $ simplify $ 5 + 1 * 3) == "5 3 +"
 prop_rpn_eg4 = (rpnShow $ 5 + (Symbol "x") * 3) == "5 x 3 * +"
+
+prop_test_1 = testExpr == 13
+prop_test_2 = rpnShow testExpr == "2 5 * 3 +"
+prop_test_3 = prettyShow testExpr == "(2*5)+3"
+prop_test_4 = testExpr + 5 == 18
+prop_test_5 = prettyShow (testExpr + 5) == "((2*5)+3)+5"
+prop_test_6 = rpnShow (testExpr + 5) == "2 5 * 3 + 5 +"
+
