@@ -15,6 +15,7 @@ PROGS := \
   tempFileFun \
   toUpperBanner \
   toupper \
+  UnitsCheck \
 
 all: ${PROGS}
 clean:

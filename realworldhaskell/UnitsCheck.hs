@@ -16,4 +16,7 @@ main = do
     ,run prop_eg3
     ,run prop_eg4
     ,run prop_eg5
+    ,run prop_eg6
+    ,run prop_eg7
+    ,run prop_eg8
     ]

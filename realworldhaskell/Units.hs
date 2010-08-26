@@ -23,6 +23,13 @@ instance Fractional UnitFrac where
   (UnitFrac n1 u1) / (UnitFrac n2 u2) | u1 == u2  = UnitFrac (n1 / n2) []
                                       | otherwise = UnitFrac (n1 / n2) (u1 ++ u2)
 
+degreesToRadians n = n / (360 / (2 * pi))
+
+instance Floating UnitFrac where
+  -- XXX: What is this "1.0" unit?
+  sin (UnitFrac n ["rad"]) = UnitFrac (sin n) ["1.0"]
+  sin (UnitFrac n ["deg"]) = sin (UnitFrac (degreesToRadians n) ["rad"])
+
 units n unit = UnitFrac n [unit]
 
 --
@@ -36,3 +43,6 @@ prop_eg2 = units 5 "m" + units 2 "s" == units 7 "?"
 prop_eg3 = units 5 "m" + units 2 "m" == units 7 "m"
 prop_eg4 = units 5 "m" / 2 == units 2.5 "m"
 prop_eg5 = show (10 * units 5 "m" / units 2 "s") == "25.0_m/s"
+prop_eg6 = show (sin (units (pi / 2) "rad")) == "1.0_1.0"
+prop_eg7 = show (sin (units 90 "deg")) == "1.0_1.0"
+prop_eg8 = show ((units 50 "m") * sin (units 90 "deg")) == "50.0m"
