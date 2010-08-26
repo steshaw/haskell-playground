@@ -15,4 +15,9 @@ main = do
     run prop_pretty_eg2,
     run prop_rpn_eg1,
     run prop_rpn_eg2
-   ]
+    ]
+
+  runTests "proper" options [
+    run prop_pretty_1,
+    run prop_pretty_2
+    ]
