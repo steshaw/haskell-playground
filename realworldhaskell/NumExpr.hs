@@ -71,4 +71,3 @@ prop_test_3 = prettyShow testExpr == "(2*5)+3"
 prop_test_4 = testExpr + 5 == 18
 prop_test_5 = prettyShow (testExpr + 5) == "((2*5)+3)+5"
 prop_test_6 = rpnShow (testExpr + 5) == "2 5 * 3 + 5 +"
-
