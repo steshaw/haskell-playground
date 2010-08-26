@@ -4,12 +4,17 @@ import Steshaw
 import Data.List (intercalate)
 import Test.QuickCheck
 
-data Expr n = 
-    Atom n
+data Expr n
+  = Atom n
   | Symbol String
+  | Fn1 String (Expr n)
   | Add (Expr n) (Expr n)
   | Mul (Expr n) (Expr n)
+  | Div (Expr n) (Expr n)
   deriving (Eq, Show)
+
+--instance (Show n) => Show (Expr n) where
+--  show = prettyShow
 
 instance (Num n) => Num (Expr n) where
   fromInteger i = Atom (fromInteger i)
@@ -17,15 +22,21 @@ instance (Num n) => Num (Expr n) where
   e1 * e2 = e1 `Mul` e2
 
 instance Fractional n => Fractional (Expr n) where
+  e1 / e2 = Div e1 e2
+
 instance Floating n => Floating (Expr n) where
+  sin n = Fn1 "sin" n
+  pi = Atom pi
 
 prettyShow :: (Show n) => (Expr n) -> String
 prettyShow expr = f False expr
   where
     f _ (Atom n) = show n
     f _ (Symbol s) = s
+    f _ (Fn1 name e) = name ++ "(" ++ f False e ++ ")"
     f braceRequired (Add e1 e2) = showExpr braceRequired "+" e1 e2
     f braceRequired (Mul e1 e2) = showExpr braceRequired "*" e1 e2
+    f braceRequired (Div e1 e2) = showExpr braceRequired "/" e1 e2
     showExpr True op e1 e2 = "(" ++ f True e1 ++ op ++ f True e2 ++ ")"
     showExpr False op e1 e2 = f True e1 ++ op ++ f True e2
 
@@ -58,9 +69,9 @@ prop_pretty_eg2 = (prettyShow $ 5 * 1 + 3) == "(5*1)+3"
 prop_pretty_eg3 = (prettyShow $ simplify $ 5 + 1 * 3) == "5+3"
 prop_pretty_eg4 = (prettyShow $ 5 + (Symbol "x") * 3) == "5+(x*3)"
 
-prop_pretty_1 a@(Atom na) b@(Atom nb) c@(Atom nc) = 
+prop_pretty_1 a@(Atom na) b@(Atom nb) c@(Atom nc) =
   (prettyShow $ a * b + c) == "(" ++ show na ++ "*" ++ show nb ++ ")+" ++ show nc
-prop_pretty_2 a@(Atom na) b@(Atom nb) c@(Atom nc) = 
+prop_pretty_2 a@(Atom na) b@(Atom nb) c@(Atom nc) =
   (prettyShow $ a + b * c) == show na ++ "+(" ++ show nb ++ "*" ++ show nc ++ ")"
 
 prop_rpn_eg1 = (rpnShow $ 5 + 1 * 3) == "5 1 3 * +"
