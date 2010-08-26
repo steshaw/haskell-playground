@@ -45,10 +45,13 @@ prettyShow expr = f False expr
 rpnShowExpr op e1 e2 = intercalate " " [rpnShow e1, rpnShow e2, op]
 
 rpnShow :: (Show n) => (Expr n) -> String
-rpnShow (Atom n) = show n
-rpnShow (Symbol s) = s
-rpnShow (Add e1 e2) = rpnShowExpr "+" e1 e2
-rpnShow (Mul e1 e2) = rpnShowExpr "*" e1 e2
+rpnShow (Atom n)     = show n
+rpnShow (Symbol s)   = s
+rpnShow (Fn0 name)   = name
+rpnShow (Fn1 name e) = (rpnShow e) ++ " " ++ name
+rpnShow (Add e1 e2)  = rpnShowExpr "+" e1 e2
+rpnShow (Mul e1 e2)  = rpnShowExpr "*" e1 e2
+rpnShow (Div e1 e2)  = rpnShowExpr "/" e1 e2
 
 simplify :: (Num n) => Expr n -> Expr n
 simplify (Mul 1 e) = e

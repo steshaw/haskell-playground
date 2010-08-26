@@ -34,6 +34,8 @@ instance (Floating n) => Floating (UnitFrac n) where
 
 units n unit = UnitFrac n [unit]
 
+dropUnits (UnitFrac n units) = n
+
 --
 -- QuickCheck
 --
@@ -48,10 +50,9 @@ prop_eg5 = show (10 * units 5 "m" / units 2 "s") == "25.0_m/s"
 prop_eg6 = show (sin (units (pi / 2) "rad")) == "1.0"
 prop_eg7 = show (sin (units 90 "deg")) == "1.0"
 prop_eg8 = show ((units 50 "m") * sin (units 90 "deg")) == "50.0_m"
-prop_eg9 = show ((units 50 "m" * sin (units 90 "deg")) :: UnitFrac (Expr Double)) == "50.0*sin((2.0*pi)*90.0)/360.0)_m"
-
+prop_eg9 = show ((units 50 "m" * sin (units 90 "deg")) :: UnitFrac (Expr Double)) == "50.0*sin(((2.0*pi)*90.0)/360.0)_m"
 eg10 = units 50 "m" * sin (units 90 "deg") :: UnitFrac (Expr Double)
 prop_eg10 = show eg10 == "50.0*sin(((2.0*pi)*90.0)/360.0)_m"
-
-
+prop_eg11 = prettyShow (dropUnits $ units 50 "m" * sin (units 90 "deg")) == "50.0*sin(((2.0*pi)*90.0)/360.0)"
+prop_eg12 = (rpnShow $ dropUnits $ units 50 "m" * sin (units 90 "deg")) == "50.0 2.0 pi * 90.0 * 360.0 / sin *"
 prop_eg13 = show (units (Symbol "x") "m" * sin (units 90 "deg")) == "x*sin(((2.0*pi)*90.0)/360.0)_m"

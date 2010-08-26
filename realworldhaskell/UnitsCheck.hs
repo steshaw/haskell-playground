@@ -10,7 +10,7 @@ options = TestOptions {
 }
 
 main = do
-  runTests "" options 
+  runTests "units" options 
     [run prop_eg1
     ,run prop_eg2
     ,run prop_eg3
@@ -19,4 +19,9 @@ main = do
     ,run prop_eg6
     ,run prop_eg7
     ,run prop_eg8
+    ,run prop_eg9
+    ,run prop_eg10
+    ,run prop_eg11
+    ,run prop_eg12
+    ,run prop_eg13
     ]
