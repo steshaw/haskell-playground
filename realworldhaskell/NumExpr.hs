@@ -7,6 +7,7 @@ import Test.QuickCheck
 data Expr n
   = Atom n
   | Symbol String
+  | Fn0 String
   | Fn1 String (Expr n)
   | Add (Expr n) (Expr n)
   | Mul (Expr n) (Expr n)
@@ -26,13 +27,14 @@ instance Fractional n => Fractional (Expr n) where
 
 instance Floating n => Floating (Expr n) where
   sin n = Fn1 "sin" n
-  pi = Atom pi
+  pi = Fn0 "pi"
 
 prettyShow :: (Show n) => (Expr n) -> String
 prettyShow expr = f False expr
   where
     f _ (Atom n) = show n
     f _ (Symbol s) = s
+    f _ (Fn0 name ) = name
     f _ (Fn1 name e) = name ++ "(" ++ f False e ++ ")"
     f braceRequired (Add e1 e2) = showExpr braceRequired "+" e1 e2
     f braceRequired (Mul e1 e2) = showExpr braceRequired "*" e1 e2
