@@ -4,19 +4,22 @@ import Steshaw
 import Data.List (intercalate)
 import Test.QuickCheck
 
-data Expr = 
-    Atom Integer
+data Expr n = 
+    Atom n
   | Symbol String
-  | Add Expr Expr
-  | Mul Expr Expr
+  | Add (Expr n) (Expr n)
+  | Mul (Expr n) (Expr n)
   deriving (Eq, Show)
 
-instance Num Expr where
-  fromInteger i = Atom i
+instance (Num n) => Num (Expr n) where
+  fromInteger i = Atom (fromInteger i)
   e1 + e2 = e1 `Add` e2
   e1 * e2 = e1 `Mul` e2
 
-prettyShow :: Expr -> String
+instance Fractional n => Fractional (Expr n) where
+instance Floating n => Floating (Expr n) where
+
+prettyShow :: (Show n) => (Expr n) -> String
 prettyShow expr = f False expr
   where
     f _ (Atom n) = show n
@@ -28,13 +31,13 @@ prettyShow expr = f False expr
 
 rpnShowExpr op e1 e2 = intercalate " " [rpnShow e1, rpnShow e2, op]
 
-rpnShow :: Expr -> String
+rpnShow :: (Show n) => (Expr n) -> String
 rpnShow (Atom n) = show n
 rpnShow (Symbol s) = s
 rpnShow (Add e1 e2) = rpnShowExpr "+" e1 e2
 rpnShow (Mul e1 e2) = rpnShowExpr "*" e1 e2
 
-simplify :: Expr -> Expr
+simplify :: (Num n) => Expr n -> Expr n
 simplify (Mul 1 e) = e
 simplify (Mul e 1) = e
 simplify (Add e1 e2) = Add (simplify e1) (simplify e2)
@@ -47,7 +50,7 @@ testExpr = 2 * 5 + 3
 -- QuickChecks
 --
 
-instance Arbitrary Expr where
+instance Arbitrary n => Arbitrary (Expr n) where
   arbitrary = arbitrary >>= \n -> return $ Atom n
 
 prop_pretty_eg1 = (prettyShow $ 5 + 1 * 3) == "5+(1*3)"

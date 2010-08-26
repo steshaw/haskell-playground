@@ -3,11 +3,11 @@ module Main where
 import NumExpr
 import Test.QuickCheck.Batch
 
-options = TestOptions {
-  no_of_tests = 100,
-  length_of_tests = 1,
-  debug_tests = False
-}
+options = TestOptions 
+  {no_of_tests = 100
+  ,length_of_tests = 1
+  ,debug_tests = False
+  }
 
 main = do
   runTests "pretty" options 
@@ -34,11 +34,6 @@ main = do
     ]
 
   runTests "props" options
-    [run prop_pretty_1
-    ,run prop_pretty_2
-    ]
-
-  runTests "props" options
-    [run prop_pretty_1
-    ,run prop_pretty_2
+    [run (prop_pretty_1 :: (Expr Int) -> (Expr Int) -> (Expr Int) -> Bool)
+    ,run (prop_pretty_2 :: (Expr Int) -> (Expr Int) -> (Expr Int) -> Bool)
     ]
