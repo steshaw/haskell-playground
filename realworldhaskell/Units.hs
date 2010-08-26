@@ -1,17 +1,18 @@
 module Units where
 
+import NumExpr
 import Data.List (intercalate)
 
 type Units = [String]
 
-data UnitFrac = UnitFrac Double Units
+data UnitFrac n = UnitFrac n Units
   deriving (Eq)
 
-instance Show UnitFrac where
+instance (Show n) => Show (UnitFrac n) where
   show (UnitFrac n []) = show n
   show (UnitFrac n units) = show n ++ "_" ++ (intercalate "/" units)
 
-instance Num UnitFrac where
+instance (Num n) => Num (UnitFrac n) where
   fromInteger n = UnitFrac (fromInteger n) []
   (UnitFrac n1 u1) + (UnitFrac n2 u2) | u1 == u2  = UnitFrac (n1 + n2) u1
                                       | otherwise = error "Mismatched units in add or subtract"
@@ -19,13 +20,13 @@ instance Num UnitFrac where
   (UnitFrac n1 u1) * (UnitFrac n2 u2) | u1 == u2  = UnitFrac (n1 * n2) u1 -- FIXME
                                       | otherwise = UnitFrac (n1 * n2) (u1 ++ u2)
 
-instance Fractional UnitFrac where
+instance (Fractional n) => Fractional (UnitFrac n) where
   (UnitFrac n1 u1) / (UnitFrac n2 u2) | u1 == u2  = UnitFrac (n1 / n2) []
                                       | otherwise = UnitFrac (n1 / n2) (u1 ++ u2)
 
 degreesToRadians n = n / (360 / (2 * pi))
 
-instance Floating UnitFrac where
+instance (Floating n) => Floating (UnitFrac n) where
   -- XXX: What is this "1.0" unit?
   sin (UnitFrac n ["rad"]) = UnitFrac (sin n) ["1.0"]
   sin (UnitFrac n ["deg"]) = sin (UnitFrac (degreesToRadians n) ["rad"])
