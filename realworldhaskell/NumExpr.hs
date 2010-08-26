@@ -12,10 +12,10 @@ data Expr n
   | Add (Expr n) (Expr n)
   | Mul (Expr n) (Expr n)
   | Div (Expr n) (Expr n)
-  deriving (Eq, Show)
+  deriving (Eq)
 
---instance (Show n) => Show (Expr n) where
---  show = prettyShow
+instance (Show n) => Show (Expr n) where
+  show = prettyShow
 
 instance (Num n) => Num (Expr n) where
   fromInteger i = Atom (fromInteger i)

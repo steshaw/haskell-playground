@@ -29,7 +29,7 @@ degreesToRadians n = 2 * pi * n / 360
 
 instance (Floating n) => Floating (UnitFrac n) where
   -- XXX: What is this "1.0" unit?
-  sin (UnitFrac n ["rad"]) = UnitFrac (sin n) ["1.0"]
+  sin (UnitFrac n ["rad"]) = UnitFrac (sin n) []
   sin (UnitFrac n ["deg"]) = sin (UnitFrac (degreesToRadians n) ["rad"])
 
 units n unit = UnitFrac n [unit]
@@ -45,7 +45,10 @@ prop_eg2 = units 5 "m" + units 2 "s" == units 7 "?"
 prop_eg3 = units 5 "m" + units 2 "m" == units 7 "m"
 prop_eg4 = units 5 "m" / 2 == units 2.5 "m"
 prop_eg5 = show (10 * units 5 "m" / units 2 "s") == "25.0_m/s"
-prop_eg6 = show (sin (units (pi / 2) "rad")) == "1.0_1.0"
-prop_eg7 = show (sin (units 90 "deg")) == "1.0_1.0"
-prop_eg8 = show ((units 50 "m") * sin (units 90 "deg")) == "50.0m"
+prop_eg6 = show (sin (units (pi / 2) "rad")) == "1.0"
+prop_eg7 = show (sin (units 90 "deg")) == "1.0"
+prop_eg8 = show ((units 50 "m") * sin (units 90 "deg")) == "50.0_m"
 prop_eg9 = show ((units 50 "m" * sin (units 90 "deg")) :: UnitFrac (Expr Double)) == "50.0*sin((2.0*pi)*90.0)/360.0)_m"
+
+eg10 = units 50 "m" * sin (units 90 "deg") :: UnitFrac (Expr Double)
+prop_eg10 = show eg10 == "50.0*sin(((2.0*pi)*90.0)/360.0)_m"
