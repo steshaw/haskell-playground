@@ -103,10 +103,10 @@ instance Monad Parser where
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: Parser Greymap
 parseP5 =
-  parseHeader >> skipSpaces >> parseNat >>= \ (width) ->
+  parseHeader >> skipSpaces >> parseNat >>= \ width ->
     skipSpaces >>
       parseNat >>= \ height ->
-        skipSpaces >> parseNat >>= \grey -> 
+        skipSpaces >> parseNat >>= \ grey -> 
           checkMaxGrey grey >>= \ maxGrey ->
             parseNumBytes 1 >>
               parseNumBytes (width * height) >>= \ bitmap -> 
@@ -115,7 +115,7 @@ parseP5 =
 headerErrMsg = "Invalid header. Must be \"P5\"."
 
 parseHeader :: ParserIgnored
-parseHeader = Parser $ \s ->
+parseHeader = Parser $ \ s ->
   if L8.pack "P5" `L8.isPrefixOf` s
   then parseOkIgnored $ L.drop 2 s
   else parseError headerErrMsg
@@ -123,7 +123,7 @@ parseHeader = Parser $ \s ->
 parseNat :: Parser Int
 parseNat =
   (fromMaybe "Cannot parse int" L8.readInt) >>= \ n ->
-    getStream >>= \s -> (Parser $ \ s ->
+    getStream >>= \ s -> (Parser $ \ s ->
       if n <= 0
       then parseError $ "Natural number must be > 0: " ++ show n
       else parseOk n s)
