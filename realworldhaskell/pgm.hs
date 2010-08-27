@@ -51,6 +51,7 @@ type ParseFunction a = ParseStream -> ParseResult a
 data Parser a = Parser (ParseFunction a)
 type ParserIgnored = Parser ()
 
+-- Is this function really "runParser" or "getParserFunction". Would the type sig be the same for either?
 runParser (Parser f) s = f s
 
 -- Adapted from RWH p243 (there called getState).
@@ -66,6 +67,7 @@ parseError errMsg = Left errMsg
 parseOk :: a -> ParseFunction a
 parseOk a = \ s -> Right (a, s)
 -- Parse ok but result will be ignored or not relevant.
+parseOkIgnored :: ParseFunction ()
 parseOkIgnored = parseOk ()
 
 fromMaybe :: ErrorMessage -> (ParseStream -> Maybe (a, ParseStream)) -> Parser a
