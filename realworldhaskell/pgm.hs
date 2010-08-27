@@ -1,4 +1,5 @@
 --
+--
 -- PGM parser. See RWH Ch10.
 --
 module Main where
@@ -22,7 +23,7 @@ main = do
   case args of
     [file] -> withFile file ReadMode $ \ handle -> do
       s <- L.hGetContents handle
-      putStrLn (show ((runParser parseP5) s))
+      putStrLn (show ((runParser parseP5) ParseInfo {parseStream = s, parsePosition = 0}))
     otherwise -> hPutStrLn stderr $ "usage: " ++ progName ++ " <file>"
 
 data PgmInfo = PgmInfo {
@@ -42,11 +43,11 @@ instance Show Greymap where
 -- TODO: Position/ParseInfo as yet unused
 type Position = Integer
 type ParseStream = L.ByteString
-data ParseInfo = ParseInfo { parseStream :: ParseStream, parsePosition :: Position }
+data ParseInfo = ParseInfo { parseStream :: ParseStream, parsePosition :: Position } deriving (Eq, Show)
 type ErrorMessage = String
-type ParseValue a = (a, ParseStream) -- value produced + rest of byte stream to parse
+type ParseValue a = (a, ParseInfo)
 type ParseResult a = Either ErrorMessage (ParseValue a)
-type ParseFunction a = ParseStream -> ParseResult a
+type ParseFunction a = ParseInfo -> ParseResult a
 data Parser a = Parser (ParseFunction a)
 type ParserIgnored = Parser ()
 
@@ -57,18 +58,18 @@ parserBind :: Parser a -> (a -> Parser b) -> Parser b
 p1 `parserBind` aToP2 = Parser $ \ s ->
   case runParser p1 s of
     Left errMsg -> Left errMsg
-    Right (firstResult, newStream) -> runParser (aToP2 firstResult) newStream
+    Right (firstResult, firstInfo) -> runParser (aToP2 firstResult) firstInfo
 
 instance Monad Parser where
   (>>=) = parserBind
   return a = Parser (\ s -> parseOk a s)
 
 -- Adapted from RWH p243 (there called getState).
-getStream :: Parser ParseStream
-getStream = Parser $ \ s -> parseOk s s
+getInfo :: Parser ParseInfo
+getInfo = Parser $ \ s -> parseOk s s
 
-putStream :: ParserIgnored
-putStream = Parser $ \ s -> parseOkIgnored s
+putInfo :: ParserIgnored
+putInfo = Parser $ \ s -> parseOkIgnored s
 
 parseError :: String -> ParseResult a
 parseError errMsg = Left errMsg
@@ -81,9 +82,9 @@ parseOkIgnored :: ParseFunction ()
 parseOkIgnored = parseOk ()
 
 fromMaybe :: ErrorMessage -> (ParseStream -> Maybe (a, ParseStream)) -> Parser a
-fromMaybe errMsg f = Parser $ \s -> case f s of
+fromMaybe errMsg f = Parser $ \s -> case f (parseStream s) of
   Nothing -> parseError errMsg
-  Just (b, rest) -> parseOk b rest
+  Just (a, rest) -> parseOk a (ParseInfo rest 0) -- FIXME: 0 position
 
 maybeToMaybeUnit :: Maybe L.ByteString -> Maybe ((), L.ByteString)
 maybeToMaybeUnit Nothing  = Nothing
@@ -114,24 +115,24 @@ headerErrMsg = "Invalid header. Must be \"P5\"."
 
 parseHeader :: ParserIgnored
 parseHeader = Parser $ \ s ->
-  if L8.pack "P5" `L8.isPrefixOf` s
-  then parseOkIgnored $ L.drop 2 s
+  if L8.pack "P5" `L8.isPrefixOf` (parseStream s)
+  then parseOkIgnored s {parseStream = L.drop 2 (parseStream s), parsePosition = 2 + parsePosition s}
   else parseError headerErrMsg
 
 parseNat :: Parser Int
 parseNat =
   (fromMaybe "Cannot parse int" L8.readInt) >>= \ n ->
-    getStream >>= \ s -> (Parser $ \ s ->
+    getInfo >>= \ s -> (Parser $ \ s ->
       if n <= 0
       then parseError $ "Natural number must be > 0: " ++ show n
       else parseOk n s)
 
 parseNumBytes :: Int -> Parser L.ByteString
 parseNumBytes count = Parser $ \ s ->
-  case L.splitAt (fromIntegral count) s of
+  case L.splitAt (fromIntegral count) (parseStream s) of
     (r, _) | L.length (r) < (fromIntegral count) ->
       parseError $ "Insufficient bytes trying to get " ++ (show count) ++ " bytes"
-    (r, rest) -> parseOk r rest
+    (r, rest) -> parseOk r (ParseInfo rest 0) -- FIXME 0 position
 
 skipSpaces :: ParserIgnored
 skipSpaces = fromMaybeUnit "Cannot skip spaces" skipSpacesOld
@@ -168,7 +169,7 @@ munchSpace s =
 -- Some test cases.
 --
 
-testString s = runParser parseP5 $ L8.pack s
+testString s = runParser parseP5 (ParseInfo (L8.pack s) 0)
 
 test :: (Show a, Eq a) => a -> a -> IO ()
 test actual expected = do
@@ -190,14 +191,14 @@ testCases =
   ,test (testString "P5") $ Left "Cannot skip spaces"
   ,test (testString "P5  foo") $ Left "Cannot parse int"
   ,test (testString "P5 1 1 255\n\000") $
-    Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\000"), L8.empty)
+    Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\000"), ParseInfo L8.empty 0)
   ,test (testString "P5 1 1 255") $ Left "Insufficient bytes trying to get 1 bytes"
   ,test (testString "P5 2 2 255\n") $ Left "Insufficient bytes trying to get 4 bytes"
   ,test (testString "P5 1 1 255\n\000!") $
     Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\000")
-          ,L8.pack "!")
+          ,ParseInfo (L8.pack "!") 0)
   ,test (testString $ "P5 1 1 255\n" ++ replicate (1) '\000') $
-    Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\000"), L8.empty)
+    Right (Greymap (PgmInfo {greyWidth = 1, greyHeight = 1, greyMax = 255}) (L8.pack "\000"), ParseInfo L8.empty 0)
   ,test (testString $ "P5 1 1 256\n" ++ replicate (1) '\000') $
     Left "Illegal maxGrey value: 256"
   ,test (testString $ "P5 -1" ++ replicate (1) '\000') $
