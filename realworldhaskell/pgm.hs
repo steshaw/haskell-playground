@@ -42,6 +42,8 @@ data ParseInfo = ParseInfo L.ByteString Position
 
 type ErrorMessage = String
 type ParseResult a = Either ErrorMessage (a, L.ByteString)
+type Parser a = L.ByteString -> ParseResult a
+type ParserIgnored = Parser ()
 
 parseError errMsg = Left errMsg
 parseOk a rest = Right (a, rest)
@@ -66,7 +68,7 @@ checkMaxGrey (maxGrey, s) =
   else parseError ("Illegal maxGrey value: " ++ show maxGrey)
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
-parseP5 :: L.ByteString -> ParseResult Greymap
+parseP5 :: Parser Greymap
 parseP5 s =
   parseHeader s >>= \ (_, s) ->
     skipSpaces s >>= \ (_, s) ->
@@ -81,27 +83,27 @@ parseP5 s =
 
 headerErrMsg = "Invalid header. Must be \"P5\"."
 
-parseHeader :: L.ByteString -> ParseResult ()
+parseHeader :: ParserIgnored
 parseHeader s =
   if L8.pack "P5" `L8.isPrefixOf` s
   then parseOkIgnored $ L.drop 2 s
   else parseError headerErrMsg
 
-parseNat :: L.ByteString -> ParseResult Int
+parseNat :: Parser Int
 parseNat s =
   fromMaybe "Cannot parse int" L8.readInt s >>= \ (n, rest) ->
     if n <= 0 
     then parseError $ "Natural number must be > 0: " ++ show n
     else parseOk n rest
 
-parseNumBytes :: Int -> L.ByteString -> ParseResult L.ByteString
+parseNumBytes :: Int -> Parser L.ByteString
 parseNumBytes count s =
   case L.splitAt (fromIntegral count) s of
     (r, _) | L.length (r) < (fromIntegral count) ->
       parseError $ "Insufficient bytes trying to get " ++ (show count) ++ " bytes"
     (r, rest) -> parseOk r rest
 
-skipSpaces :: L.ByteString -> ParseResult ()
+skipSpaces :: ParserIgnored
 skipSpaces = fromMaybeUnit "Cannot skip spaces" skipSpacesOld
 
 skipSpacesOld :: L.ByteString -> Maybe L.ByteString
