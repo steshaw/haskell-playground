@@ -1,3 +1,6 @@
+--
+-- PGM parser. See RWH Ch10.
+--
 module Main where
 
 import Steshaw ((>$>))
@@ -10,6 +13,7 @@ import System.Environment (getProgName, getArgs)
 import System.IO (withFile, hPutStrLn, stderr, IOMode(ReadMode))
 
 import Control.Monad.Error () -- Just need Monad (Either e) instance. Strange that this works.
+import Debug.Trace
 
 main :: IO ()
 main = do
@@ -39,11 +43,19 @@ instance Show Greymap where
 type Position = Integer
 data ParseInfo = ParseInfo L.ByteString Position
 
+type ParseStream = L.ByteString
 type ErrorMessage = String
-type ParseValue a = (a, L.ByteString) -- value produced + rest of byte stream to parse
+type ParseValue a = (a, ParseStream) -- value produced + rest of byte stream to parse
 type ParseResult a = Either ErrorMessage (ParseValue a)
-type Parser a = L.ByteString -> ParseResult a
+type Parser a = ParseStream -> ParseResult a
 type ParserIgnored = Parser ()
+
+-- Adapted from RWH p243 (there called getState).
+getStream :: Parser ParseStream
+getStream s = parseOk s s
+
+putStream :: ParserIgnored
+putStream s = parseOkIgnored s
 
 parseError errMsg = Left errMsg
 parseOk a rest = Right (a, rest)
@@ -67,19 +79,30 @@ checkMaxGrey (maxGrey, s) =
   then parseOk maxGrey s
   else parseError ("Illegal maxGrey value: " ++ show maxGrey)
 
+(!>>=) :: Parser a -> (a -> Parser b) -> Parser b
+p1 !>>= p2 = \ s ->
+  case p1 s of
+    Left errMsg -> Left errMsg
+    Right (firstResult, newStream) -> p2 firstResult newStream
+
+p1 !>> p2 = p1 !>>= \_ -> p2
+
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: Parser Greymap
-parseP5 s =
-  parseHeader s >>= \ (_, s) ->
-    skipSpaces s >>= \ (_, s) ->
-      parseNat s >>= \ (width, s) ->
-        skipSpaces s >>= \ (_, s) ->
-          parseNat s >>= \ (height, s) ->
-            skipSpaces s >>= \ (_, s) ->
-              parseNat s >>= checkMaxGrey >>= \ (maxGrey, s) ->
-                parseNumBytes 1 s >>= \ (_, s) ->
-                  parseNumBytes (width * height) s >>= \ (bitmap, s) ->
-                    parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
+parseP5 s0 =
+  (parseHeader !>>= \ _ ->
+    getStream ) s0 >>= \ (_,s) ->
+      (trace "issued getStream!" putStream) s0 >>= \ (_, _) ->  -- evilily put the original stream back into the flow.
+        putStream s >>= \ (_, s) -> -- fix evil by putting proper stream back into the flow.
+          (trace ("issued putStream " ++ (take 5 $ L8.unpack s0)) skipSpaces) s >>= \ (_, s) ->
+            parseNat s >>= \ (width, s) ->
+              skipSpaces s >>= \ (_, s) ->
+                parseNat s >>= \ (height, s) ->
+                  skipSpaces s >>= \ (_, s) ->
+                    parseNat s >>= checkMaxGrey >>= \ (maxGrey, s) ->
+                      parseNumBytes 1 s >>= \ (_, s) ->
+                        parseNumBytes (width * height) s >>= \ (bitmap, s) ->
+                          parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
 
 headerErrMsg = "Invalid header. Must be \"P5\"."
 
