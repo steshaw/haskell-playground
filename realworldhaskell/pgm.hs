@@ -7,10 +7,7 @@ import qualified Data.ByteString.Lazy as L
 import Data.Char (isSpace)
 
 import System.Environment (getProgName, getArgs)
-import Data.List (genericDrop)
 import System.IO (withFile, hPutStrLn, stderr, IOMode(ReadMode))
-
-import Control.Monad.Error
 
 main :: IO ()
 main = do
@@ -151,7 +148,7 @@ test actual expected = do
       putStrLn ""
     else putStr "."
 
-testCases = 
+testCases =
   [
    test (testString "") $ Left headerErrMsg
   ,test (testString "1") $ Left headerErrMsg
