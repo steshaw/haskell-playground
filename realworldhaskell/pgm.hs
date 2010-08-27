@@ -41,9 +41,8 @@ instance Show Greymap where
 
 -- TODO: Position/ParseInfo as yet unused
 type Position = Integer
-data ParseInfo = ParseInfo L.ByteString Position
-
 type ParseStream = L.ByteString
+data ParseInfo = ParseInfo ParseStream Position
 type ErrorMessage = String
 type ParseValue a = (a, ParseStream) -- value produced + rest of byte stream to parse
 type ParseResult a = Either ErrorMessage (ParseValue a)
@@ -53,6 +52,16 @@ type ParserIgnored = Parser ()
 
 -- Is this function really "runParser" or "getParserFunction". Would the type sig be the same for either?
 runParser (Parser f) s = f s
+
+parserBind :: Parser a -> (a -> Parser b) -> Parser b
+p1 `parserBind` aToP2 = Parser $ \ s ->
+  case runParser p1 s of
+    Left errMsg -> Left errMsg
+    Right (firstResult, newStream) -> runParser (aToP2 firstResult) newStream
+
+instance Monad Parser where
+  (>>=) = parserBind
+  return a = Parser (\ s -> parseOk a s)
 
 -- Adapted from RWH p243 (there called getState).
 getStream :: Parser ParseStream
@@ -88,16 +97,6 @@ checkMaxGrey grey = Parser $ \ s ->
   if grey > 0 && grey <= 255
   then parseOk grey s
   else parseError ("Illegal maxGrey value: " ++ show grey)
-
-parserBind :: Parser a -> (a -> Parser b) -> Parser b
-p1 `parserBind` aToP2 = Parser $ \ s ->
-  case runParser p1 s of
-    Left errMsg -> Left errMsg
-    Right (firstResult, newStream) -> runParser (aToP2 firstResult) newStream
-
-instance Monad Parser where
-  (>>=) = parserBind
-  return a = Parser (\ s -> parseOk a s)
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: Parser Greymap
