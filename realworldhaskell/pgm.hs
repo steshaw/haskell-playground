@@ -91,18 +91,16 @@ p1 !>> p2 = p1 !>>= \_ -> p2
 parseP5 :: Parser Greymap
 parseP5 s0 =
   (parseHeader !>>= \ _ ->
-    getStream ) s0 >>= \ (_,s) ->
-      (trace "issued getStream!" putStream) s0 >>= \ (_, _) ->  -- evilily put the original stream back into the flow.
-        putStream s >>= \ (_, s) -> -- fix evil by putting proper stream back into the flow.
-          (trace ("issued putStream " ++ (take 5 $ L8.unpack s0)) skipSpaces) s >>= \ (_, s) ->
-            parseNat s >>= \ (width, s) ->
+    getStream !>>
+      skipSpaces !>> getStream) s0 >>= \ (_, s) ->
+        parseNat s >>= \ (width, s) ->
+          skipSpaces s >>= \ (_, s) ->
+            parseNat s >>= \ (height, s) ->
               skipSpaces s >>= \ (_, s) ->
-                parseNat s >>= \ (height, s) ->
-                  skipSpaces s >>= \ (_, s) ->
-                    parseNat s >>= checkMaxGrey >>= \ (maxGrey, s) ->
-                      parseNumBytes 1 s >>= \ (_, s) ->
-                        parseNumBytes (width * height) s >>= \ (bitmap, s) ->
-                          parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
+                parseNat s >>= checkMaxGrey >>= \ (maxGrey, s) ->
+                  parseNumBytes 1 s >>= \ (_, s) ->
+                    parseNumBytes (width * height) s >>= \ (bitmap, s) ->
+                      parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
 
 headerErrMsg = "Invalid header. Must be \"P5\"."
 
