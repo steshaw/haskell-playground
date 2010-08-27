@@ -74,10 +74,11 @@ maybeToMaybe (Just a) = Just ((), a)
 fromMaybeUnit :: ErrorMessage -> (a -> Maybe L.ByteString) -> (a -> ParseResult ())
 fromMaybeUnit errMsg f = fromMaybe errMsg (maybeToMaybe . f)
 
-checkMaxGrey (maxGrey, s) =
-  if maxGrey > 0 && maxGrey <= 255
-  then parseOk maxGrey s
-  else parseError ("Illegal maxGrey value: " ++ show maxGrey)
+checkMaxGrey :: Int -> Parser Int
+checkMaxGrey grey s =
+  if grey > 0 && grey <= 255
+  then parseOk grey s
+  else parseError ("Illegal maxGrey value: " ++ show grey)
 
 (!>>=) :: Parser a -> (a -> Parser b) -> Parser b
 p1 !>>= p2 = \ s ->
@@ -90,17 +91,12 @@ p1 !>> p2 = p1 !>>= \_ -> p2
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: Parser Greymap
 parseP5 s0 =
-  (parseHeader !>>= \ _ ->
-    getStream !>>
-      skipSpaces !>> getStream) s0 >>= \ (_, s) ->
-        parseNat s >>= \ (width, s) ->
-          skipSpaces s >>= \ (_, s) ->
-            parseNat s >>= \ (height, s) ->
-              skipSpaces s >>= \ (_, s) ->
-                parseNat s >>= checkMaxGrey >>= \ (maxGrey, s) ->
-                  parseNumBytes 1 s >>= \ (_, s) ->
-                    parseNumBytes (width * height) s >>= \ (bitmap, s) ->
-                      parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
+  (parseHeader !>> skipSpaces !>> parseNat !>>= \ (width) ->
+     skipSpaces !>> parseNat !>>= \ height ->
+       skipSpaces !>> parseNat !>>= \grey -> checkMaxGrey grey !>>= \ maxGrey ->
+           parseNumBytes 1 !>>
+             parseNumBytes (width * height) !>>= \ bitmap ->
+               parseOk (Greymap (PgmInfo width height maxGrey) bitmap)) s0
 
 headerErrMsg = "Invalid header. Must be \"P5\"."
 
