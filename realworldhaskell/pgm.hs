@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeSynonymInstances #-}
+--{-# LANGUAGE TypeSynonymInstances #-}
 --
 -- PGM parser. See RWH Ch10.
 --
@@ -64,7 +64,7 @@ putStream = Parser $ \ s -> parseOkIgnored s
 parseError :: String -> ParseResult a
 parseError errMsg = Left errMsg
 
-parseOk :: a -> ParseStream -> ParseResult a
+parseOk :: a -> ParseFunction a
 parseOk a s = Right (a, s)
 
 -- Parse ok but result will be ignored or not relevant.
@@ -88,28 +88,29 @@ checkMaxGrey grey = Parser $ \ s ->
   then parseOk grey s
   else parseError ("Illegal maxGrey value: " ++ show grey)
 
-(!>>=) :: Parser a -> (a -> Parser b) -> Parser b
-p1 !>>= aToP2 = Parser $ \ s ->
+parserBind :: Parser a -> (a -> Parser b) -> Parser b
+p1 `parserBind` aToP2 = Parser $ \ s ->
   case runParser p1 s of
     Left errMsg -> Left errMsg
     Right (firstResult, newStream) -> runParser (aToP2 firstResult) newStream
 
 (!>>) :: Parser a -> Parser b -> Parser b
-p1 !>> p2 = p1 !>>= \_ -> p2
+p1 !>> p2 = p1 `parserBind` \_ -> p2
 
 instance Monad Parser where
-  (>>=) = (!>>=)
+  (>>=) = parserBind
+--  return a = Parser (\ s -> parseOk a)
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: Parser Greymap
 parseP5 =
-  parseHeader !>> skipSpaces !>> parseNat !>>= \ (width) ->
-    skipSpaces !>>
-      parseNat !>>= \ height ->
-        skipSpaces !>> parseNat !>>= \grey -> 
-          checkMaxGrey grey !>>= \ maxGrey ->
-            parseNumBytes 1 !>>
-              parseNumBytes (width * height) !>>= \ bitmap -> 
+  parseHeader >> skipSpaces >> parseNat >>= \ (width) ->
+    skipSpaces >>
+      parseNat >>= \ height ->
+        skipSpaces >> parseNat >>= \grey -> 
+          checkMaxGrey grey >>= \ maxGrey ->
+            parseNumBytes 1 >>
+              parseNumBytes (width * height) >>= \ bitmap -> 
                 Parser $ \ s -> 
                   parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
 
@@ -123,14 +124,11 @@ parseHeader = Parser $ \s ->
 
 parseNat :: Parser Int
 parseNat =
-  (fromMaybe "Cannot parse int" L8.readInt) !>>= \ n ->
-    getStream !>>= \s -> (Parser $ \ s ->
+  (fromMaybe "Cannot parse int" L8.readInt) >>= \ n ->
+    getStream >>= \s -> (Parser $ \ s ->
       if n <= 0
       then parseError $ "Natural number must be > 0: " ++ show n
       else parseOk n s)
-{-
-      Parser $ \_ -> parseError "oops!"
--}
 
 parseNumBytes :: Int -> Parser L.ByteString
 parseNumBytes count = Parser $ \ s ->
