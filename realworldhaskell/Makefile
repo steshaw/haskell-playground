@@ -17,6 +17,12 @@ PROGS := \
   toupper \
   UnitsCheck \
 
+.PHONY: pgm-test
+pgm-test: pgm
+	./pgm-test
+
 all: ${PROGS}
+
+.PHONY: clean
 clean:
 	rm -f ${PROGS}
