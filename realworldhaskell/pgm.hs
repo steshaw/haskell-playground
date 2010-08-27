@@ -90,13 +90,13 @@ p1 !>> p2 = p1 !>>= \_ -> p2
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: Parser Greymap
-parseP5 s0 =
-  (parseHeader !>> skipSpaces !>> parseNat !>>= \ (width) ->
-     skipSpaces !>> parseNat !>>= \ height ->
-       skipSpaces !>> parseNat !>>= \grey -> checkMaxGrey grey !>>= \ maxGrey ->
-           parseNumBytes 1 !>>
-             parseNumBytes (width * height) !>>= \ bitmap ->
-               parseOk (Greymap (PgmInfo width height maxGrey) bitmap)) s0
+parseP5 =
+  parseHeader !>> skipSpaces !>> parseNat !>>= \ (width) ->
+   skipSpaces !>> parseNat !>>= \ height ->
+     skipSpaces !>> parseNat !>>= \grey -> checkMaxGrey grey !>>= \ maxGrey ->
+       parseNumBytes 1 !>>
+         parseNumBytes (width * height) !>>= \ bitmap ->
+           parseOk (Greymap (PgmInfo width height maxGrey) bitmap)
 
 headerErrMsg = "Invalid header. Must be \"P5\"."
 
