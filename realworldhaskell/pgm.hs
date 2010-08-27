@@ -45,6 +45,8 @@ type ParseResult a = Either ErrorMessage (a, L.ByteString)
 
 parseError errMsg = Left errMsg
 parseOk a rest = Right (a, rest)
+-- Parse ok but result will be ignored or not relevant.
+parseOkIgnored rest = parseOk () rest
 
 fromMaybe :: ErrorMessage -> (a -> Maybe (b, L.ByteString)) -> (a -> ParseResult b)
 fromMaybe errMsg f a = case f a of
@@ -77,8 +79,13 @@ parseP5 s =
                   parseNumBytes (width * height) s >>= \ (bitmap, s) ->
                     parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
 
+headerErrMsg = "Invalid header. Must be \"P5\"."
+
 parseHeader :: L.ByteString -> ParseResult ()
-parseHeader = fromMaybeUnit "Cannot parse header" (munchString (L8.pack "P5"))
+parseHeader s =
+  if L8.pack "P5" `L8.isPrefixOf` s
+  then parseOkIgnored $ L.drop 2 s
+  else parseError headerErrMsg
 
 parseNat :: L.ByteString -> ParseResult Int
 parseNat s =
@@ -93,12 +100,6 @@ parseNumBytes count s =
     (r, _) | L.length (r) < (fromIntegral count) ->
       parseError $ "Insufficient bytes trying to get " ++ (show count) ++ " bytes"
     (r, rest) -> parseOk r rest
-
-munchString :: L.ByteString -> L.ByteString -> Maybe L.ByteString
-munchString prefix s =
-  if prefix `L8.isPrefixOf` s
-  then Just (L.drop (L.length prefix) s)
-  else Nothing
 
 skipSpaces :: L.ByteString -> ParseResult ()
 skipSpaces = fromMaybeUnit "Cannot skip spaces" skipSpacesOld
@@ -149,11 +150,11 @@ test actual expected = do
 
 testCases = 
   [
-   test (testString "") $ Left "Cannot parse header"
-  ,test (testString "1") $ Left "Cannot parse header"
-  ,test (testString "12") $ Left "Cannot parse header"
-  ,test (testString "p2") $ Left "Cannot parse header"
-  ,test (testString "p5") $ Left "Cannot parse header"
+   test (testString "") $ Left headerErrMsg
+  ,test (testString "1") $ Left headerErrMsg
+  ,test (testString "12") $ Left headerErrMsg
+  ,test (testString "p2") $ Left headerErrMsg
+  ,test (testString "p5") $ Left headerErrMsg
   ,test (testString "P5") $ Left "Cannot skip spaces"
   ,test (testString "P5  foo") $ Left "Cannot parse int"
   ,test (testString "P5 1 1 255\n\000") $
