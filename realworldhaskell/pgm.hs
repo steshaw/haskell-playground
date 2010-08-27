@@ -41,7 +41,8 @@ type Position = Integer
 data ParseInfo = ParseInfo L.ByteString Position
 
 type ErrorMessage = String
-type ParseResult a = Either ErrorMessage (a, L.ByteString)
+type ParseValue a = (a, L.ByteString) -- value produced + rest of byte stream to parse
+type ParseResult a = Either ErrorMessage (ParseValue a)
 type Parser a = L.ByteString -> ParseResult a
 type ParserIgnored = Parser ()
 
