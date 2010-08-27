@@ -66,6 +66,7 @@ parseError errMsg = Left errMsg
 
 parseOk :: a -> ParseFunction a
 parseOk a = \ s -> Right (a, s)
+
 -- Parse ok but result will be ignored or not relevant.
 parseOkIgnored :: ParseFunction ()
 parseOkIgnored = parseOk ()
@@ -75,12 +76,12 @@ fromMaybe errMsg f = Parser $ \s -> case f s of
   Nothing -> parseError errMsg
   Just (b, rest) -> parseOk b rest
 
-maybeToMaybe :: Maybe L.ByteString -> Maybe ((), L.ByteString)
-maybeToMaybe Nothing  = Nothing
-maybeToMaybe (Just a) = Just ((), a)
+maybeToMaybeUnit :: Maybe L.ByteString -> Maybe ((), L.ByteString)
+maybeToMaybeUnit Nothing  = Nothing
+maybeToMaybeUnit (Just a) = Just ((), a)
 
 fromMaybeUnit :: ErrorMessage -> (ParseStream -> Maybe L.ByteString) -> ParserIgnored
-fromMaybeUnit errMsg f = fromMaybe errMsg (maybeToMaybe . f)
+fromMaybeUnit errMsg f = fromMaybe errMsg (maybeToMaybeUnit . f)
 
 checkMaxGrey :: Int -> Parser Int
 checkMaxGrey grey = Parser $ \ s ->
