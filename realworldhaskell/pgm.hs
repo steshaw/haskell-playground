@@ -1,4 +1,3 @@
---{-# LANGUAGE TypeSynonymInstances #-}
 --
 -- PGM parser. See RWH Ch10.
 --
@@ -99,7 +98,7 @@ p1 !>> p2 = p1 `parserBind` \_ -> p2
 
 instance Monad Parser where
   (>>=) = parserBind
---  return a = Parser (\ s -> parseOk a)
+  return a = Parser (\ s -> parseOk a s)
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: Parser Greymap
