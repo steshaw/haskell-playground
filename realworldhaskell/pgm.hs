@@ -110,8 +110,7 @@ parseP5 =
           checkMaxGrey grey >>= \ maxGrey ->
             parseNumBytes 1 >>
               parseNumBytes (width * height) >>= \ bitmap -> 
-                Parser $ \ s -> 
-                  parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
+                return (Greymap (PgmInfo width height maxGrey) bitmap)
 
 headerErrMsg = "Invalid header. Must be \"P5\"."
 
