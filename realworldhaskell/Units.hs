@@ -24,11 +24,9 @@ instance (Fractional n) => Fractional (UnitFrac n) where
   (UnitFrac n1 u1) / (UnitFrac n2 u2) | u1 == u2  = UnitFrac (n1 / n2) []
                                       | otherwise = UnitFrac (n1 / n2) (u1 ++ u2)
 
---degreesToRadians n = n / (360 / (2 * pi))
 degreesToRadians n = 2 * pi * n / 360
 
 instance (Floating n) => Floating (UnitFrac n) where
-  -- XXX: What is this "1.0" unit?
   sin (UnitFrac n ["rad"]) = UnitFrac (sin n) []
   sin (UnitFrac n ["deg"]) = sin (UnitFrac (degreesToRadians n) ["rad"])
 
