@@ -95,9 +95,6 @@ p1 `parserBind` aToP2 = Parser $ \ s ->
     Left errMsg -> Left errMsg
     Right (firstResult, newStream) -> runParser (aToP2 firstResult) newStream
 
-(!>>) :: Parser a -> Parser b -> Parser b
-p1 !>> p2 = p1 `parserBind` \_ -> p2
-
 instance Monad Parser where
   (>>=) = parserBind
   return a = Parser (\ s -> parseOk a s)
