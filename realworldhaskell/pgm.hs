@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeSynonymInstances #-}
 --
 -- PGM parser. See RWH Ch10.
 --
@@ -22,7 +23,7 @@ main = do
   case args of
     [file] -> withFile file ReadMode $ \ handle -> do
       s <- L.hGetContents handle
-      putStrLn (show (parseP5 s))
+      putStrLn (show ((runParser parseP5) s))
     otherwise -> hPutStrLn stderr $ "usage: " ++ progName ++ " <file>"
 
 data PgmInfo = PgmInfo {
@@ -47,23 +48,30 @@ type ParseStream = L.ByteString
 type ErrorMessage = String
 type ParseValue a = (a, ParseStream) -- value produced + rest of byte stream to parse
 type ParseResult a = Either ErrorMessage (ParseValue a)
-type Parser a = ParseStream -> ParseResult a
+type ParseFunction a = ParseStream -> ParseResult a
+data Parser a = Parser (ParseFunction a)
 type ParserIgnored = Parser ()
+
+runParser (Parser f) s = f s
 
 -- Adapted from RWH p243 (there called getState).
 getStream :: Parser ParseStream
-getStream s = parseOk s s
+getStream = Parser $ \ s -> parseOk s s
 
 putStream :: ParserIgnored
-putStream s = parseOkIgnored s
+putStream = Parser $ \ s -> parseOkIgnored s
 
+parseError :: String -> ParseResult a
 parseError errMsg = Left errMsg
-parseOk a rest = Right (a, rest)
--- Parse ok but result will be ignored or not relevant.
-parseOkIgnored rest = parseOk () rest
 
-fromMaybe :: ErrorMessage -> (a -> Maybe (b, L.ByteString)) -> (a -> ParseResult b)
-fromMaybe errMsg f a = case f a of
+parseOk :: a -> ParseStream -> ParseResult a
+parseOk a s = Right (a, s)
+
+-- Parse ok but result will be ignored or not relevant.
+parseOkIgnored = \ rest -> parseOk () rest
+
+fromMaybe :: ErrorMessage -> (ParseStream -> Maybe (a, ParseStream)) -> Parser a
+fromMaybe errMsg f = Parser $ \s -> case f s of
   Nothing -> parseError errMsg
   Just (b, rest) -> parseOk b rest
 
@@ -71,50 +79,61 @@ maybeToMaybe :: Maybe L.ByteString -> Maybe ((), L.ByteString)
 maybeToMaybe Nothing  = Nothing
 maybeToMaybe (Just a) = Just ((), a)
 
-fromMaybeUnit :: ErrorMessage -> (a -> Maybe L.ByteString) -> (a -> ParseResult ())
+fromMaybeUnit :: ErrorMessage -> (ParseStream -> Maybe L.ByteString) -> ParserIgnored
 fromMaybeUnit errMsg f = fromMaybe errMsg (maybeToMaybe . f)
 
 checkMaxGrey :: Int -> Parser Int
-checkMaxGrey grey s =
+checkMaxGrey grey = Parser $ \ s ->
   if grey > 0 && grey <= 255
   then parseOk grey s
   else parseError ("Illegal maxGrey value: " ++ show grey)
 
 (!>>=) :: Parser a -> (a -> Parser b) -> Parser b
-p1 !>>= p2 = \ s ->
-  case p1 s of
+p1 !>>= aToP2 = Parser $ \ s ->
+  case runParser p1 s of
     Left errMsg -> Left errMsg
-    Right (firstResult, newStream) -> p2 firstResult newStream
+    Right (firstResult, newStream) -> runParser (aToP2 firstResult) newStream
 
+(!>>) :: Parser a -> Parser b -> Parser b
 p1 !>> p2 = p1 !>>= \_ -> p2
+
+instance Monad Parser where
+  (>>=) = (!>>=)
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: Parser Greymap
 parseP5 =
   parseHeader !>> skipSpaces !>> parseNat !>>= \ (width) ->
-   skipSpaces !>> parseNat !>>= \ height ->
-     skipSpaces !>> parseNat !>>= \grey -> checkMaxGrey grey !>>= \ maxGrey ->
-       parseNumBytes 1 !>>
-         parseNumBytes (width * height) !>>= \ bitmap ->
-           parseOk (Greymap (PgmInfo width height maxGrey) bitmap)
+    skipSpaces !>>
+      parseNat !>>= \ height ->
+        skipSpaces !>> parseNat !>>= \grey -> 
+          checkMaxGrey grey !>>= \ maxGrey ->
+            parseNumBytes 1 !>>
+              parseNumBytes (width * height) !>>= \ bitmap -> 
+                Parser $ \ s -> 
+                  parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
 
 headerErrMsg = "Invalid header. Must be \"P5\"."
 
 parseHeader :: ParserIgnored
-parseHeader s =
+parseHeader = Parser $ \s ->
   if L8.pack "P5" `L8.isPrefixOf` s
   then parseOkIgnored $ L.drop 2 s
   else parseError headerErrMsg
 
 parseNat :: Parser Int
-parseNat s =
-  fromMaybe "Cannot parse int" L8.readInt s >>= \ (n, rest) ->
-    if n <= 0 
-    then parseError $ "Natural number must be > 0: " ++ show n
-    else parseOk n rest
+parseNat =
+  (fromMaybe "Cannot parse int" L8.readInt) !>>= \ n ->
+    getStream !>>= \s -> (Parser $ \ s ->
+      if n <= 0
+      then parseError $ "Natural number must be > 0: " ++ show n
+      else parseOk n s)
+{-
+      Parser $ \_ -> parseError "oops!"
+-}
 
 parseNumBytes :: Int -> Parser L.ByteString
-parseNumBytes count s =
+parseNumBytes count = Parser $ \ s ->
   case L.splitAt (fromIntegral count) s of
     (r, _) | L.length (r) < (fromIntegral count) ->
       parseError $ "Insufficient bytes trying to get " ++ (show count) ++ " bytes"
@@ -155,7 +174,7 @@ munchSpace s =
 -- Some test cases.
 --
 
-testString s = parseP5 $ L8.pack s
+testString s = runParser parseP5 $ L8.pack s
 
 test :: (Show a, Eq a) => a -> a -> IO ()
 test actual expected = do
