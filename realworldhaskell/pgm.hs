@@ -41,13 +41,12 @@ type Position = Integer
 data ParseInfo = ParseInfo L.ByteString Position
 
 type ErrorMessage = String
-type ParseResult q a = q (a, L.ByteString)
-type ParseResult' a = ParseResult (Either ErrorMessage) a
+type ParseResult a = Either ErrorMessage (a, L.ByteString)
 
 parseError errMsg = Left errMsg
 parseOk a rest = Right (a, rest)
 
-fromMaybe :: ErrorMessage -> (a -> Maybe (b, L.ByteString)) -> (a -> ParseResult' b)
+fromMaybe :: ErrorMessage -> (a -> Maybe (b, L.ByteString)) -> (a -> ParseResult b)
 fromMaybe errMsg f a = case f a of
   Nothing -> parseError errMsg
   Just (b, rest) -> parseOk b rest
@@ -56,7 +55,7 @@ maybeToMaybe :: Maybe L.ByteString -> Maybe ((), L.ByteString)
 maybeToMaybe Nothing  = Nothing
 maybeToMaybe (Just a) = Just ((), a)
 
-fromMaybeUnit :: ErrorMessage -> (a -> Maybe L.ByteString) -> (a -> ParseResult' ())
+fromMaybeUnit :: ErrorMessage -> (a -> Maybe L.ByteString) -> (a -> ParseResult ())
 fromMaybeUnit errMsg f = fromMaybe errMsg (maybeToMaybe . f)
 
 checkMaxGrey (maxGrey, s) =
@@ -65,7 +64,7 @@ checkMaxGrey (maxGrey, s) =
   else parseError ("Illegal maxGrey value: " ++ show maxGrey)
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
-parseP5 :: L.ByteString -> ParseResult' Greymap
+parseP5 :: L.ByteString -> ParseResult Greymap
 parseP5 s =
   parseHeader s >>= \ (_, s) ->
     skipSpaces s >>= \ (_, s) ->
@@ -78,17 +77,17 @@ parseP5 s =
                   parseNumBytes (width * height) s >>= \ (bitmap, s) ->
                     parseOk (Greymap (PgmInfo width height maxGrey) bitmap) s
 
-parseHeader :: L.ByteString -> ParseResult' ()
+parseHeader :: L.ByteString -> ParseResult ()
 parseHeader = fromMaybeUnit "Cannot parse header" (munchString (L8.pack "P5"))
 
-parseNat :: L.ByteString -> ParseResult' Int
+parseNat :: L.ByteString -> ParseResult Int
 parseNat s =
   fromMaybe "Cannot parse int" L8.readInt s >>= \ (n, rest) ->
     if n <= 0 
     then parseError $ "Natural number must be > 0: " ++ show n
     else parseOk n rest
 
-parseNumBytes :: Int -> L.ByteString -> ParseResult' L.ByteString
+parseNumBytes :: Int -> L.ByteString -> ParseResult L.ByteString
 parseNumBytes count s =
   case L.splitAt (fromIntegral count) s of
     (r, _) | L.length (r) < (fromIntegral count) ->
@@ -101,7 +100,7 @@ munchString prefix s =
   then Just (L.drop (L.length prefix) s)
   else Nothing
 
-skipSpaces :: L.ByteString -> ParseResult' ()
+skipSpaces :: L.ByteString -> ParseResult ()
 skipSpaces = fromMaybeUnit "Cannot skip spaces" skipSpacesOld
 
 skipSpacesOld :: L.ByteString -> Maybe L.ByteString
@@ -134,7 +133,7 @@ munchSpace s =
 
 --
 -- Some test cases.
--- 
+--
 
 testString s = parseP5 $ L8.pack s
 
