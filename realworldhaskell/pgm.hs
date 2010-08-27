@@ -42,7 +42,7 @@ instance Show Greymap where
 -- TODO: Position/ParseInfo as yet unused
 type Position = Integer
 type ParseStream = L.ByteString
-data ParseInfo = ParseInfo ParseStream Position
+data ParseInfo = ParseInfo { parseStream :: ParseStream, parsePosition :: Position }
 type ErrorMessage = String
 type ParseValue a = (a, ParseStream) -- value produced + rest of byte stream to parse
 type ParseResult a = Either ErrorMessage (ParseValue a)
@@ -104,10 +104,10 @@ parseP5 =
   parseHeader >> skipSpaces >> parseNat >>= \ width ->
     skipSpaces >>
       parseNat >>= \ height ->
-        skipSpaces >> parseNat >>= \ grey -> 
+        skipSpaces >> parseNat >>= \ grey ->
           checkMaxGrey grey >>= \ maxGrey ->
             parseNumBytes 1 >>
-              parseNumBytes (width * height) >>= \ bitmap -> 
+              parseNumBytes (width * height) >>= \ bitmap ->
                 return (Greymap (PgmInfo width height maxGrey) bitmap)
 
 headerErrMsg = "Invalid header. Must be \"P5\"."
