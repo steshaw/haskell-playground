@@ -9,6 +9,8 @@ import Data.Char (isSpace)
 import System.Environment (getProgName, getArgs)
 import System.IO (withFile, hPutStrLn, stderr, IOMode(ReadMode))
 
+import Control.Monad.Error () -- Just need Monad (Either e) instance. Strange that this works.
+
 main :: IO ()
 main = do
   args <- getArgs
