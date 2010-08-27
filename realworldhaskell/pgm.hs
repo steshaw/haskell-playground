@@ -64,10 +64,9 @@ parseError :: String -> ParseResult a
 parseError errMsg = Left errMsg
 
 parseOk :: a -> ParseFunction a
-parseOk a s = Right (a, s)
-
+parseOk a = \ s -> Right (a, s)
 -- Parse ok but result will be ignored or not relevant.
-parseOkIgnored = \ rest -> parseOk () rest
+parseOkIgnored = parseOk ()
 
 fromMaybe :: ErrorMessage -> (ParseStream -> Maybe (a, ParseStream)) -> Parser a
 fromMaybe errMsg f = Parser $ \s -> case f s of
