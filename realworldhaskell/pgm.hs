@@ -103,13 +103,12 @@ checkMaxGrey grey = Parser $ \ s ->
 parseP5 :: Parser Greymap
 parseP5 =
   parseHeader >> skipSpaces >> parseNat >>= \ width ->
-    skipSpaces >>
-      parseNat >>= \ height ->
-        skipSpaces >> parseNat >>= \ grey ->
-          checkMaxGrey grey >>= \ maxGrey ->
-            parseNumBytes 1 >>
-              parseNumBytes (width * height) >>= \ bitmap ->
-                return (Greymap (PgmInfo width height maxGrey) bitmap)
+    skipSpaces >> parseNat >>= \ height ->
+      skipSpaces >> parseNat >>= \ grey ->
+        checkMaxGrey grey >>= \ maxGrey ->
+          parseNumBytes 1 >>
+            parseNumBytes (width * height) >>= \ bitmap ->
+              return (Greymap (PgmInfo width height maxGrey) bitmap)
 
 headerErrMsg = "Invalid header. Must be \"P5\"."
 
