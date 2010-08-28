@@ -1,5 +1,4 @@
 --
---
 -- PGM parser. See RWH Ch10.
 --
 module Main where
@@ -40,7 +39,6 @@ data Greymap = Greymap {
 instance Show Greymap where
   show (Greymap info _) = show info
 
--- TODO: Position/ParseInfo as yet unused
 type Position = Integer
 type ParseStream = L.ByteString
 data ParseInfo = ParseInfo { parseStream :: ParseStream, parsePosition :: Position } deriving (Eq, Show)
@@ -64,6 +62,12 @@ instance Monad Parser where
   (>>=) = parserBind
   return a = Parser (\ s -> parseOk a s)
 
+parseError :: String -> ParseResult a
+parseError errMsg = Left errMsg
+
+parseOk :: a -> ParseFunction a
+parseOk a = \ s -> Right (a, s)
+
 -- Adapted from RWH p243 (there called getState).
 getInfo :: Parser ParseInfo
 getInfo = Parser $ \ s -> parseOk s s
@@ -71,33 +75,9 @@ getInfo = Parser $ \ s -> parseOk s s
 putInfo :: ParserIgnored
 putInfo = Parser $ \ s -> parseOkIgnored s
 
-parseError :: String -> ParseResult a
-parseError errMsg = Left errMsg
-
-parseOk :: a -> ParseFunction a
-parseOk a = \ s -> Right (a, s)
-
 -- Parse ok but result will be ignored or not relevant.
 parseOkIgnored :: ParseFunction ()
 parseOkIgnored = parseOk ()
-
-fromMaybe :: ErrorMessage -> (ParseStream -> Maybe (a, ParseStream)) -> Parser a
-fromMaybe errMsg f = Parser $ \s -> case f (parseStream s) of
-  Nothing -> parseError errMsg
-  Just (a, rest) -> parseOk a (ParseInfo rest 0) -- FIXME: 0 position
-
-maybeToMaybeUnit :: Maybe L.ByteString -> Maybe ((), L.ByteString)
-maybeToMaybeUnit Nothing  = Nothing
-maybeToMaybeUnit (Just a) = Just ((), a)
-
-fromMaybeUnit :: ErrorMessage -> (ParseStream -> Maybe L.ByteString) -> ParserIgnored
-fromMaybeUnit errMsg f = fromMaybe errMsg (maybeToMaybeUnit . f)
-
-checkMaxGrey :: Int -> Parser Int
-checkMaxGrey grey = Parser $ \ s ->
-  if grey > 0 && grey <= 255
-  then parseOk grey s
-  else parseError ("Illegal maxGrey value: " ++ show grey)
 
 -- Parse: <P5> <width> <height> <maxGrey> <binaryImageData>
 parseP5 :: Parser Greymap
@@ -118,6 +98,12 @@ parseHeader = Parser $ \ s ->
   then parseOkIgnored s {parseStream = L.drop 2 (parseStream s), parsePosition = 2 + parsePosition s}
   else parseError headerErrMsg
 
+checkMaxGrey :: Int -> Parser Int
+checkMaxGrey grey = Parser $ \ s ->
+  if grey > 0 && grey <= 255
+  then parseOk grey s
+  else parseError ("Illegal maxGrey value: " ++ show grey)
+
 parseNat :: Parser Int
 parseNat =
   (fromMaybe "Cannot parse int" L8.readInt) >>= \ n ->
@@ -135,6 +121,18 @@ parseNumBytes count = Parser $ \ s ->
 
 skipSpaces :: ParserIgnored
 skipSpaces = fromMaybeUnit "Cannot skip spaces" skipSpacesOld
+
+fromMaybe :: ErrorMessage -> (ParseStream -> Maybe (a, ParseStream)) -> Parser a
+fromMaybe errMsg f = Parser $ \s -> case f (parseStream s) of
+  Nothing -> parseError errMsg
+  Just (a, rest) -> parseOk a (ParseInfo rest 0) -- FIXME: 0 position
+
+maybeToMaybeUnit :: Maybe L.ByteString -> Maybe ((), L.ByteString)
+maybeToMaybeUnit Nothing  = Nothing
+maybeToMaybeUnit (Just a) = Just ((), a)
+
+fromMaybeUnit :: ErrorMessage -> (ParseStream -> Maybe L.ByteString) -> ParserIgnored
+fromMaybeUnit errMsg f = fromMaybe errMsg (maybeToMaybeUnit . f)
 
 skipSpacesOld :: L.ByteString -> Maybe L.ByteString
 skipSpacesOld s =
