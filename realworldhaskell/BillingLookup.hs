@@ -31,13 +31,46 @@ lookupBillingAddress2 person phoneMap carrierMap addressMap =
     M.lookup phoneNumber carrierMap >>= \ carrier ->
       M.lookup carrier addressMap
 
+lookupBillingAddress3 :: FindCarrierBillingAddress
+lookupBillingAddress3 person phoneMap carrierMap addressMap = do
+  phoneNumber <- M.lookup person phoneMap
+  carrier <- M.lookup phoneNumber carrierMap
+  address <- M.lookup carrier addressMap
+  return address
+
+lookupBillingAddress4 :: FindCarrierBillingAddress
+lookupBillingAddress4 person phoneMap carrierMap addressMap = do
+  phoneNumber <- M.lookup person phoneMap
+  carrier <- M.lookup phoneNumber carrierMap
+  M.lookup carrier addressMap
+
+lookupBillingAddress5 :: FindCarrierBillingAddress
+lookupBillingAddress5 = lookupBillingAddress4
+{-
+lookupBillingAddress5 person phoneMap carrierMap addressMap = do
+  let l = flip M.lookup
+  phoneNumber <- l phoneMap person
+  carrier     <- l carrierMap phoneNumber
+  address     <- l addressMap carrier
+  return address
+-}
+
+lookupBillingAddress6 :: FindCarrierBillingAddress
+lookupBillingAddress6 = lookupBillingAddress4
+{-
+lookupBillingAddress6 person phoneMap carrierMap addressMap =
+    lookup phoneMap person >>= lookup carrierMap >>= lookup addressMap
+  where 
+    lookup = flip M.lookup
+-}
+
 phoneMap = M.fromList
   [("bill",   "04150000")
   ,("fred",   "04220000")
   ,("nobody", "04210000")
   ,("pete",   "04230000")
   ]
-carrierMap = M.fromList 
+carrierMap = M.fromList
   [("04110000", HonestBob)
   ,("04150000", HonestBob)
   ,("04220000", MorrisasMobiles)
@@ -49,7 +82,13 @@ addressMap = M.fromList
   ]
 
 lookupAddress f name = f name phoneMap carrierMap addressMap
+
 lookupAddress1 = lookupAddress lookupBillingAddress1
+lookupAddress2 = lookupAddress lookupBillingAddress2
+lookupAddress3 = lookupAddress lookupBillingAddress3
+lookupAddress4 = lookupAddress lookupBillingAddress4
+lookupAddress5 = lookupAddress lookupBillingAddress5
+lookupAddress6 = lookupAddress lookupBillingAddress6
 
 test f =
   [f "bill"
@@ -61,5 +100,12 @@ test f =
   ]
 
 test1 = test lookupAddress1
-test2 = test lookupAddress1
-testEq = test1 == test2
+test2 = test lookupAddress2
+test3 = test lookupAddress3
+test4 = test lookupAddress4
+test5 = test lookupAddress5
+test6 = test lookupAddress6
+
+tests = [test1, test2, test3, test4, test5, test6]
+
+testEq = map (== head tests) (tail tests)
