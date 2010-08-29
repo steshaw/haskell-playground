@@ -1,6 +1,5 @@
 import qualified Data.Map as M
 
-import Control.Monad (liftM)
 import Steshaw
 
 type PersonName = String
