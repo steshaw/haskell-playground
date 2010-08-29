@@ -17,11 +17,11 @@ PROGS := \
   toupper \
   UnitsCheck \
 
+all: ${PROGS}
+
 .PHONY: pgm-test
 pgm-test: pgm
 	./pgm-test
-
-all: ${PROGS}
 
 test: pgm-test
 
