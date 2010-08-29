@@ -83,29 +83,17 @@ addressMap = M.fromList
 
 lookupAddress f name = f name phoneMap carrierMap addressMap
 
-lookupAddress1 = lookupAddress lookupBillingAddress1
-lookupAddress2 = lookupAddress lookupBillingAddress2
-lookupAddress3 = lookupAddress lookupBillingAddress3
-lookupAddress4 = lookupAddress lookupBillingAddress4
-lookupAddress5 = lookupAddress lookupBillingAddress5
-lookupAddress6 = lookupAddress lookupBillingAddress6
-
-test f =
-  [f "bill"
-  ,f "fred"
-  ,f "nobody"
-  ,f ""
-  ,f "null"
-  ,f "pete"
+lookups = map lookupAddress 
+  [lookupBillingAddress1
+  ,lookupBillingAddress2
+  ,lookupBillingAddress3
+  ,lookupBillingAddress4
+  ,lookupBillingAddress5
+  ,lookupBillingAddress6
   ]
 
-test1 = test lookupAddress1
-test2 = test lookupAddress2
-test3 = test lookupAddress3
-test4 = test lookupAddress4
-test5 = test lookupAddress5
-test6 = test lookupAddress6
+test f = map f ["bill" , "fred" , "nobody" , "" , "null", "pete"]
 
-tests = [test1, test2, test3, test4, test5, test6]
+tests = map test lookups
 
-testEq = map (== head tests) (tail tests)
+testAll = (,) (head tests) (map (== head tests) (tail tests))
