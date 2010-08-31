@@ -153,36 +153,36 @@ solve ts = map (\(e, (a,_,_)) -> pprint e) good
     results = map eval exprs
     good = filter (\(e, (_,_,b)) -> b) (zip exprs results)
 
-solveString s = stringParse s >>= \(tokens, "") -> Just $ solve tokens
+solveString s = grab (stringParse s >>= \(tokens, "") -> Just $ solve tokens)
 
 equation1 = [Num 3, Num 27, Equals, Num 24, Op Add]
 equationString1 = "3 27 = 24 +"
 prob1a = solve equation1
-prob1b = grab $ solveString equationString1
+prob1b = solveString equationString1
 -- 24 + 3 = 27, 3 + 24 = 27, 27 = 3 + 24, 27 = 24 + 3
 
 equation2 = [Num 13, Op Sub, Num 15, Num 28, Equals]
 equationString2 = "13 - 15 28 ="
 prob2a = solve equation2
-prob2b = grab $ solveString equationString2
+prob2b = solveString equationString2
 -- 28 - 15 = 13, 28 - 13 = 15, 13 = 28 - 15, ...
 
 equation3 = [Num 3, Op Sub, Num 7, Equals, Op Mul, Num 5, Num 4]
 equationString3 = "3 - 7 = * 5 4"
 prob3a = solve equation3
-prob3b = grab $ solveString equationString3
+prob3b = solveString equationString3
 -- 3 x 4 - 7 = 5, 4 x 3 - 7 = 5, 4 x 3 - 5 = 7, 3 x 4 - 5 = 7
 
 equation4 = [Equals, Num 5, Op Sub, Num 9, Num 31, Op Mul, Num 4]
 equationString4 = "= 5 - 9 31 * 4"
 prob4a = solve equation4
-prob4b = grab $ solveString equationString4
+prob4b = solveString equationString4
 -- 4 x 9 - 5 = 31, 4 x 9 - 31 = 5, 9 x 4 - 5 = 31, 9 x 4 - 31 = 5
 
 equation5 = [Op Mul, Op Add, Equals, Num 25, Num 11, Num 3, Num 2]
 equationString5 = "* + = 25 11 3 2"
 prob5a = solve equation5
-prob5b = grab $ solveString equationString5
+prob5b = solveString equationString5
 -- 11 x 2 + 3 = 25, 11 x 3 + 2 = 25, 2 x 11 + 3 = 25, 25 = ..., ...
 
 probs = [(prob1a, prob1b), (prob2a, prob2b), (prob3a, prob3b), (prob4a, prob4b), (prob5a, prob5b)]
