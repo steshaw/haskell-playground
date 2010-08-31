@@ -12,6 +12,41 @@ data Token
   | Equals
   deriving (Eq, Show)
 
+type Parse s a = s -> Maybe (a, s)
+
+(|||) :: Parse s a -> Parse s a -> Parse s a
+p1 ||| p2 = \ts -> case p1 ts of
+  Nothing -> p2 ts
+  x -> x
+
+stringParse :: Parse String [Token]
+stringParse [] = Just ([], [])
+stringParse s = stringParseToken s >>= \(a,s) -> 
+  stringParse s >>= \(a2, s2) -> Just (a:a2, s2)
+
+stringParseToken s =
+  stringParseOp ||| stringParseNum $ skipws s
+
+skipws :: String -> String
+skipws = dropWhile (== ' ')
+
+stringParseNum :: Parse String Token
+stringParseNum s = 
+  case reads s of
+    [(n, s)] -> Just (Num n, skipws s)
+    otherwise -> Nothing
+
+stringParseOp :: Parse String Token
+stringParseOp (c:s) =
+  case c of
+    '+' -> Just (Op Add, skipws s)
+    '-' -> Just (Op Sub, skipws s)
+    '*' -> Just (Op Mul, skipws s)
+    '/' -> Just (Op Div, skipws s)
+    '=' -> Just (Equals, skipws s)
+    otherwise -> Nothing
+stringParseOp _ = Nothing
+
 type Equation = [Token]
 
 data Expr
@@ -43,16 +78,7 @@ evalExpr (EOp Sub e1 e2) = (evalExpr e1) - (evalExpr e2)
 evalExpr (EOp Mul e1 e2) = (evalExpr e1) * (evalExpr e2)
 evalExpr (EOp Div e1 e2) = (evalExpr e1) `div` (evalExpr e2)
 
-type ParseExpr a = [Token] -> Maybe (a, [Token])
-
-permutations [] = [[]]
-permutations [x] = [[x]]
-permutations xs = concat (map (\x -> map (x:) (permutations (delete x xs))) xs)
-
-(|||) :: ParseExpr a -> ParseExpr a -> ParseExpr a
-p1 ||| p2 = \ts -> case p1 ts of
-  Nothing -> p2 ts
-  x -> x
+type ParseExpr a = Parse [Token] a
 
 -- expr1 = expr2
 parse :: ParseExpr Expr
@@ -107,6 +133,10 @@ equationToExpr ts = parse ts >>= \r ->
     (e, [])   -> Just e
     otherwise -> Nothing
 
+permutations [] = [[]]
+permutations [x] = [[x]]
+permutations xs = concat (map (\x -> map (x:) (permutations (delete x xs))) xs)
+
 -- TODO: Avoid brute force.
 goodCombinations :: Equation -> [Maybe Expr]
 goodCombinations e = map equationToExpr (permutations e)
@@ -123,28 +153,68 @@ solve ts = map (\(e, (a,_,_)) -> pprint e) good
     results = map eval exprs
     good = filter (\(e, (_,_,b)) -> b) (zip exprs results)
 
+solveString s = stringParse s >>= \(tokens, "") -> Just $ solve tokens
+
 equation1 = [Num 3, Num 27, Equals, Num 24, Op Add]
-prob1 = solve equation1
+equationString1 = "3 27 = 24 +"
+prob1a = solve equation1
+prob1b = grab $ solveString equationString1
 -- 24 + 3 = 27, 3 + 24 = 27, 27 = 3 + 24, 27 = 24 + 3
 
 equation2 = [Num 13, Op Sub, Num 15, Num 28, Equals]
-prob2 = solve equation2
+equationString2 = "13 - 15 28 ="
+prob2a = solve equation2
+prob2b = grab $ solveString equationString2
 -- 28 - 15 = 13, 28 - 13 = 15, 13 = 28 - 15, ...
 
 equation3 = [Num 3, Op Sub, Num 7, Equals, Op Mul, Num 5, Num 4]
-find3 = filter p $ permutations equation3
-  where
-    p a@(Num 3:_:_:_:_:Equals:Num 5:[]) = True
-    p otherwise = False
-prob3 = solve equation3
+equationString3 = "3 - 7 = * 5 4"
+prob3a = solve equation3
+prob3b = grab $ solveString equationString3
 -- 3 x 4 - 7 = 5, 4 x 3 - 7 = 5, 4 x 3 - 5 = 7, 3 x 4 - 5 = 7
 
 equation4 = [Equals, Num 5, Op Sub, Num 9, Num 31, Op Mul, Num 4]
-prob4 = solve equation4
+equationString4 = "= 5 - 9 31 * 4"
+prob4a = solve equation4
+prob4b = grab $ solveString equationString4
 -- 4 x 9 - 5 = 31, 4 x 9 - 31 = 5, 9 x 4 - 5 = 31, 9 x 4 - 31 = 5
 
 equation5 = [Op Mul, Op Add, Equals, Num 25, Num 11, Num 3, Num 2]
-prob5 = solve equation5
+equationString5 = "* + = 25 11 3 2"
+prob5a = solve equation5
+prob5b = grab $ solveString equationString5
 -- 11 x 2 + 3 = 25, 11 x 3 + 2 = 25, 2 x 11 + 3 = 25, 25 = ..., ...
 
-probs = [prob1, prob2, prob3, prob4, prob5]
+probs = [(prob1a, prob1b), (prob2a, prob2b), (prob3a, prob3b), (prob4a, prob4b), (prob5a, prob5b)]
+
+printProbs = mapM_ (\(a,b) -> do putStrLn $ show a; putStrLn $ show b; putStrLn "") $ probs
+
+-- Expression evaluation tests.
+
+test actual expect = 
+  if expect /= actual 
+  then Left $ "FAIL:- expect: " ++ show expect ++ " actual: " ++ show actual 
+  else Right True
+
+e s = stringParse s >>= \(a, _) -> parseExpr a >>= \(a, _) -> Just . evalExpr $ a
+
+a eqStr eq = stringParse eqStr >>= \(ts, "") -> Just (ts == eq)
+
+testProbs = map (\(actual, expect) -> test actual expect) probs
+
+tests =
+  [test (a equationString1 equation1) (Just True)
+  ,test (a equationString2 equation2) (Just True)
+  ,test (a equationString3 equation3) (Just True)
+  ,test (a equationString4 equation4) (Just True)
+  ,test (a equationString5 equation5) (Just True)
+  ,test (e "1") (Just 1)
+  ,test (e "") Nothing
+  ,test (e "+") Nothing
+  ,test (e "=") Nothing
+  ,test (e "1+1") (Just 2)
+  ,test (e "1 + 1 ") (Just 2)
+  ,test (e "1 + 2") (Just 3)
+  ,test (e "2 + 2 / 2") (Just 3)
+  ,test (e "2 / 2 + 2") (Just 3)
+  ] ++ testProbs
