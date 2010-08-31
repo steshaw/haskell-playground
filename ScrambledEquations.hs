@@ -63,21 +63,21 @@ parse ts =
         Just (EEquals e1 e2, ts)
 
 parseExpr :: ParseExpr Expr
-parseExpr = parseExprOp1 ||| parseExprOp2 ||| parseNum
+parseExpr = parseExprOp2 ||| parseExprOp1 ||| parseNum
 
 parseExprOp1 :: ParseExpr Expr
 parseExprOp1 ts =
-  parseNum ts >>= \(n1, ts) ->
+  parseNum ts >>= \(e1, ts) ->
     parseOp1 ts >>= \(op1, ts) ->
-      parseNum ts >>= \(n2, ts) ->
-        Just (EOp op1 n1 n2, ts)
+      parseExpr ts >>= \(e2, ts) ->
+        Just (EOp op1 e1 e2, ts)
 
 parseExprOp2 :: ParseExpr Expr
 parseExprOp2 ts =
-  parseNum ts >>= \(n1, ts) ->
+  parseNum ts >>= \(e1, ts) ->
     parseOp2 ts >>= \(op2, ts) ->
-      parseNum ts >>= \(n2, ts) ->
-        Just (EOp op2 n1 n2, ts)
+      parseExpr ts >>= \(e2, ts) ->
+        Just (EOp op2 e1 e2, ts)
 
 parseEquals :: ParseExpr Token
 parseEquals (Equals:ts) = Just (Equals, ts)
@@ -86,13 +86,13 @@ parseEquals _ = Nothing
 -- Operators with precedence 1
 parseOp1 :: ParseExpr Op
 parseOp1 (Op Add:ts) = Just (Add, ts)
-parseOp1 (Op Sub:ts) = Just (Add, ts)
+parseOp1 (Op Sub:ts) = Just (Sub, ts)
 parseOp1 _ = Nothing
 
 -- Operators with precedence 2
 parseOp2 :: ParseExpr Op
-parseOp2 (Op Mul:ts) = Just (Add, ts)
-parseOp2 (Op Div:ts) = Just (Add, ts)
+parseOp2 (Op Mul:ts) = Just (Mul, ts)
+parseOp2 (Op Div:ts) = Just (Div, ts)
 parseOp2 _ = Nothing
 
 parseNum :: ParseExpr Expr
@@ -130,6 +130,10 @@ prob2 = solve equation2
 -- 28 - 15 = 13, 28 - 13 = 15, 13 = 28 - 15, ...
 
 equation3 = [Num 3, Op Sub, Num 7, Equals, Op Mul, Num 5, Num 4]
+find3 = filter p $ permutations equation3
+  where
+    p a@(Num 3:_:_:_:_:Equals:Num 5:[]) = True
+    p otherwise = False
 prob3 = solve equation3
 -- 3 x 4 - 7 = 5, 4 x 3 - 7 = 5, 4 x 3 - 5 = 7, 3 x 4 - 5 = 7
 
