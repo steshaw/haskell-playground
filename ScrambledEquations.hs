@@ -23,7 +23,7 @@ data Expr
 pprint :: Expr -> String
 pprint (ENum n) = show n
 pprint (EEquals e1 e2) = pprint e1 ++ " = " ++ pprint e2
-pprint (EOp op e1 e2) = pprint e1 ++ " " ++ op2str op ++ " "++ pprint e2
+pprint (EOp op e1 e2) = pprint e1 ++ " " ++ op2str op ++ " " ++ pprint e2
 
 op2str Add = "+"
 op2str Sub = "-"
@@ -54,7 +54,7 @@ p1 ||| p2 = \ts -> case p1 ts of
   Nothing -> p2 ts
   x -> x
 
--- Either expr1 = expr2
+-- expr1 = expr2
 parse :: ParseExpr Expr
 parse ts =
   parseExpr ts >>= \(e1, ts) ->
@@ -63,20 +63,22 @@ parse ts =
         Just (EEquals e1 e2, ts)
 
 parseExpr :: ParseExpr Expr
-parseExpr = parseExprOp2 ||| parseExprOp1 ||| parseNum
+parseExpr = parseExprOp1 ||| parseExprL2
 
 parseExprOp1 :: ParseExpr Expr
 parseExprOp1 ts =
-  parseNum ts >>= \(e1, ts) ->
+  parseExprL2 ts >>= \(e1, ts) ->
     parseOp1 ts >>= \(op1, ts) ->
       parseExpr ts >>= \(e2, ts) ->
         Just (EOp op1 e1 e2, ts)
+
+parseExprL2 = parseExprOp2 ||| parseNum
 
 parseExprOp2 :: ParseExpr Expr
 parseExprOp2 ts =
   parseNum ts >>= \(e1, ts) ->
     parseOp2 ts >>= \(op2, ts) ->
-      parseExpr ts >>= \(e2, ts) ->
+      parseExprL2 ts >>= \(e2, ts) ->
         Just (EOp op2 e1 e2, ts)
 
 parseEquals :: ParseExpr Token
@@ -114,8 +116,8 @@ goodExprs e = map grab $ filter (not . (== Nothing)) (goodCombinations e)
 
 grab (Just j) = j
 
---solve :: Equation -> [(Expr, (Integer, Integer, Bool))]
-solve ts = map (\(e, _) -> pprint e) good
+solve :: Equation -> [String]
+solve ts = map (\(e, (a,_,_)) -> pprint e) good
   where
     exprs = goodExprs ts
     results = map eval exprs
@@ -141,7 +143,7 @@ equation4 = [Equals, Num 5, Op Sub, Num 9, Num 31, Op Mul, Num 4]
 prob4 = solve equation4
 -- 4 x 9 - 5 = 31, 4 x 9 - 31 = 5, 9 x 4 - 5 = 31, 9 x 4 - 31 = 5
 
-equation5 = [Op Mul, Op Add, Num 25, Num 11, Num 3, Num 2]
+equation5 = [Op Mul, Op Add, Equals, Num 25, Num 11, Num 3, Num 2]
 prob5 = solve equation5
 -- 11 x 2 + 3 = 25, 11 x 3 + 2 = 25, 2 x 11 + 3 = 25, 25 = ..., ...
 
