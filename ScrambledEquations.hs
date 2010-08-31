@@ -88,6 +88,10 @@ parse ts =
       parseExpr ts >>= \(e2, ts) ->
         Just (EEquals e1 e2, ts)
 
+-- FIXME: Expressions right associate. They need to left associate :(.
+-- FIXME: e.g. (10 / 20) / 5 != 10 / (20 / 5)
+-- FIXME: Similarly for subtraction.
+
 parseExpr :: ParseExpr Expr
 parseExpr = parseExprOp1 ||| parseExprL2
 
@@ -142,9 +146,9 @@ goodCombinations :: Equation -> [Maybe Expr]
 goodCombinations e = map equationToExpr (permutations e)
 
 goodExprs :: Equation -> [Expr]
-goodExprs e = map grab $ filter (not . (== Nothing)) (goodCombinations e)
-
-grab (Just j) = j
+goodExprs e = map grabExpr $ filter (not . (== Nothing)) (goodCombinations e)
+  where
+    grabExpr (Just e) = e
 
 solve :: Equation -> [String]
 solve ts = map (\(e, (a,_,_)) -> pprint e) good
@@ -153,7 +157,10 @@ solve ts = map (\(e, (a,_,_)) -> pprint e) good
     results = map eval exprs
     good = filter (\(e, (_,_,b)) -> b) (zip exprs results)
 
-solveString s = grab (stringParse s >>= \(tokens, "") -> Just $ solve tokens)
+solveString s = grabMaybe (stringParse s >>= \(tokens, "") -> Just $ solve tokens)
+  where
+    grabMaybe (Just a) = a
+    grabMaybe Nothing = []
 
 equation1 = [Num 3, Num 27, Equals, Num 24, Op Add]
 equationString1 = "3 27 = 24 +"
@@ -198,16 +205,22 @@ test actual expect =
 
 e s = stringParse s >>= \(a, _) -> parseExpr a >>= \(a, _) -> Just . evalExpr $ a
 
-a eqStr eq = stringParse eqStr >>= \(ts, "") -> Just (ts == eq)
+stringEval eqStr = grab (stringParse eqStr >>= \(ts, "") -> parseExpr ts >>= \(e, []) -> Just (evalExpr e))
+  where
+    grab (Just a) = a
+
+stringEvalEq eqStr eq = grab (stringParse eqStr >>= \(ts, "") -> Just (ts == eq))
+  where 
+    grab (Just b) = b
 
 testProbs = map (\(actual, expect) -> test actual expect) probs
 
 tests =
-  [test (a equationString1 equation1) (Just True)
-  ,test (a equationString2 equation2) (Just True)
-  ,test (a equationString3 equation3) (Just True)
-  ,test (a equationString4 equation4) (Just True)
-  ,test (a equationString5 equation5) (Just True)
+  [test (stringEvalEq equationString1 equation1) True
+  ,test (stringEvalEq equationString2 equation2) True
+  ,test (stringEvalEq equationString3 equation3) True
+  ,test (stringEvalEq equationString4 equation4) True
+  ,test (stringEvalEq equationString5 equation5) True
   ,test (e "1") (Just 1)
   ,test (e "") Nothing
   ,test (e "+") Nothing
@@ -217,4 +230,11 @@ tests =
   ,test (e "1 + 2") (Just 3)
   ,test (e "2 + 2 / 2") (Just 3)
   ,test (e "2 / 2 + 2") (Just 3)
+  ,test (stringEval "1-2-3") (-4)
+  ,test (stringEval "6/3/2") 1
   ] ++ testProbs
+
+executeTests = mapM_ (putStrLn . show) $ filter failed tests
+  where
+    failed (Left _) = True
+    failed (Right _) = False
