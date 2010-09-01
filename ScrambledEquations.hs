@@ -22,6 +22,8 @@ module ScrambledEquations where
 import Data.List (delete, nub, permutations)
 import Control.Monad
 
+(|>) = flip ($)
+
 data Op = Add | Sub | Div | Mul
   deriving (Eq, Show)
 
@@ -55,28 +57,27 @@ p1 ||| p2 =
 
 -- like {} in EBNF
 -- e.g. num {mulOp num}
+-- XXX: Seems a lot like a fold. Can this be generalised?
 repeatParser :: a -> (a -> Parser s a) -> Parser s a
-repeatParser left aToParser = (aToParser left) ||| (return left)
+repeatParser left aToParser = 
+  ((aToParser left) >>= \e -> repeatParser e aToParser) ||| (return left)
 
 identityParser :: a -> Parser s a
 identityParser left = Parser $ \ts -> return (left, ts)
 
 lexer :: Parser String [Token]
-lexer = Parser $ \s -> case s of
-  [] -> Just ([], [])
-  s  -> (getParser (lexWhiteSpace >>
-          lexSingleToken >>= \a ->
-            lexWhiteSpace >>
-              lexer >>= \a2 -> return (a:a2))) s
+lexer = repeatParser [] lexerTail
+
+lexerTail :: [Token] -> Parser String [Token]
+lexerTail left =
+  skipSpaces >> lexSingleToken >>= \t ->
+    skipSpaces >> return (left ++ [t])
 
 lexSingleToken :: Parser String Token
 lexSingleToken = lexOp ||| lexNum
 
-lexWhiteSpace :: Parser String ()
-lexWhiteSpace = Parser $ \s -> Just ((), skipws s)
-
-skipws :: String -> String
-skipws = dropWhile (== ' ')
+skipSpaces :: Parser String ()
+skipSpaces = Parser $ \s -> Just ((), dropWhile (== ' ') s)
 
 lexNum :: Parser String Token
 lexNum = Parser $ \s ->
@@ -267,13 +268,13 @@ test actual expect =
 
 grab (Just a) = a
 
-stringToExpr s = grab $ (getParser lexer) s >>= \(ts, "") -> Just ts
-
 evalString s = (getParser lexer) s >>= \(a, _) -> (getParser parseExpr) a >>= \(a, _) -> Just . evalExpr $ a
 
 grabEvalString s = grab $ evalString s
 
-stringEvalEq s eq = stringToExpr s == eq
+stringEvalEq s eq = stringToTokens s == eq
+  where
+    stringToTokens s = grab $ (getParser lexer) s >>= \(ts, "") -> Just ts
 
 testProbs = map (\(actual, expect) -> test actual expect) probs
 
