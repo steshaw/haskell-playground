@@ -131,11 +131,15 @@ eval (EEquals e1 e2) =
     r2 = evalExpr e2
   in (r1, r2, r1 == r2)
 
+evalOp :: Op -> (Integer -> Integer -> Integer)
+evalOp Add = (+)
+evalOp Sub = (-)
+evalOp Mul = (*)
+evalOp Div = div
+
+evalExpr :: Expr -> Integer
 evalExpr (ENum n) = n
-evalExpr (EOp Add e1 e2) = (evalExpr e1) + (evalExpr e2)
-evalExpr (EOp Sub e1 e2) = (evalExpr e1) - (evalExpr e2)
-evalExpr (EOp Mul e1 e2) = (evalExpr e1) * (evalExpr e2)
-evalExpr (EOp Div e1 e2) = (evalExpr e1) `div` (evalExpr e2)
+evalExpr (EOp op e1 e2) = (evalOp op) (evalExpr e1) (evalExpr e2)
 
 type ParseExpr a = Parser [Token] a
 
@@ -192,7 +196,7 @@ parseOp2 = parseWhen (Op Mul) Mul |||
 parseNum :: ParseExpr Expr
 parseNum = Parser $ \ts -> case ts of
   (Num n:ts) -> Just (ENum n, ts)
-  otherwise   -> Nothing
+  otherwise  -> Nothing
 
 equationToExpr :: [Token] -> Maybe Expr
 equationToExpr ts = (getParser parse) ts >>= \r ->
@@ -208,8 +212,9 @@ goodPermutations :: Equation -> [Equation]
 goodPermutations equation = uniquePermutations equation
 
 goodExprs :: Equation -> [Expr]
-goodExprs equation = map grabExpr $ filter (not . (== Nothing)) (map equationToExpr (goodPermutations equation))
+goodExprs equation = map grabExpr $ filter (not . (== Nothing)) exprs
   where
+    exprs = map equationToExpr (goodPermutations equation)
     grabExpr (Just e) = e
 
 solveTokens :: Equation -> [String]
