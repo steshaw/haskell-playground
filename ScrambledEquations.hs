@@ -77,7 +77,9 @@ lexSingleToken :: Parser String Token
 lexSingleToken = lexOp ||| lexNum
 
 skipSpaces :: Parser String ()
-skipSpaces = Parser $ \s -> Just ((), dropWhile (== ' ') s)
+skipSpaces = repeatParser () (\_ -> parseWhen ' ' ())
+
+skipSpacesAlternative = Parser $ \s -> Just ((), dropWhile (== ' ') s)
 
 lexNum :: Parser String Token
 lexNum = Parser $ \s ->
@@ -85,8 +87,20 @@ lexNum = Parser $ \s ->
     [(n, s)] -> Just (Num n, s)
     otherwise -> Nothing
 
+parseWhen :: Eq c => c -> a -> Parser [c] a
+parseWhen a b = Parser $ \s -> case s of
+  [] -> Nothing
+  (x:xs) -> if (x == a) then return (b, xs) else Nothing
+
 lexOp :: Parser String Token
-lexOp = Parser $ \s -> case s of
+lexOp = parseWhen '+' (Op Add) |||
+        parseWhen '-' (Op Sub) |||
+        parseWhen '*' (Op Mul) |||
+        parseWhen '/' (Op Div) |||
+        parseWhen '=' Equals
+
+lexOpAlternative :: Parser String Token
+lexOpAlternative = Parser $ \s -> case s of
   (c:s) -> case c of
     '+' -> Just (Op Add, s)
     '-' -> Just (Op Sub, s)
@@ -178,17 +192,13 @@ parseEquals = Parser $ \ts -> case ts of
 
 -- Operators with precedence 1
 parseOp1 :: ParseExpr Op
-parseOp1 = Parser $ \ts -> case ts of
-  (Op Add:ts) -> Just (Add, ts)
-  (Op Sub:ts) -> Just (Sub, ts)
-  otherwise   -> Nothing
+parseOp1 = parseWhen (Op Add) Add |||
+           parseWhen (Op Sub) Sub
 
 -- Operators with precedence 2
 parseOp2 :: ParseExpr Op
-parseOp2 = Parser $ \ts -> case ts of
-  (Op Mul:ts) -> Just (Mul, ts)
-  (Op Div:ts) -> Just (Div, ts)
-  otherwise   -> Nothing
+parseOp2 = parseWhen (Op Mul) Mul |||
+           parseWhen (Op Div) Div
 
 parseNum :: ParseExpr Expr
 parseNum = Parser $ \ts -> case ts of
