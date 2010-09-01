@@ -1,5 +1,7 @@
 module Steshaw where
 
+(|>) = flip ($)
+
 infixl 0 >$>
 (>$>) = flip ($)
 

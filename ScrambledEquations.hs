@@ -22,8 +22,6 @@ module ScrambledEquations where
 import Data.List (delete, nub, permutations)
 import Control.Monad
 
-(|>) = flip ($)
-
 data Op = Add | Sub | Div | Mul
   deriving (Eq, Show)
 
