@@ -11,10 +11,10 @@
 --
 -- The solver can be invoked to solve this problem using either:
 --
---   ScrambedEquations> solveString "+ 1 3 = 2"
+--   ScrambedEquations> solve "+ 1 3 = 2"
 --     => ["1 + 2 = 3","3 = 1 + 2","3 = 2 + 1","2 + 1 = 3"]
 --
---   ScrambedEquations> solve [Op Add, Num 1, Num 3, Equals, Num 2]
+--   ScrambedEquations> solveTokens [Op Add, Num 1, Num 3, Equals, Num 2]
 --     => ["1 + 2 = 3","3 = 1 + 2","3 = 2 + 1","2 + 1 = 3"]
 --
 module ScrambledEquations where
@@ -174,46 +174,46 @@ goodExprs e = map grabExpr $ filter (not . (== Nothing)) (goodPermutions e)
   where
     grabExpr (Just e) = e
 
-solve :: Equation -> [String]
-solve ts = map (\(e, (a,_,_)) -> pprint e) good
+solveTokens :: Equation -> [String]
+solveTokens ts = map (\(e, (a,_,_)) -> pprint e) good
   where
     exprs = goodExprs ts
     results = map eval exprs
     good = filter (\(e, (_,_,b)) -> b) (zip exprs results)
 
-solveString s = grabMaybe (stringParse s >>= \(tokens, "") -> Just $ solve tokens)
+solve s = grabMaybe (stringParse s >>= \(tokens, "") -> Just $ solveTokens tokens)
   where
     grabMaybe (Just a) = a
     grabMaybe Nothing = []
 
 equation1 = [Num 3, Num 27, Equals, Num 24, Op Add]
 equationString1 = "3 27 = 24 +"
-prob1a = solve equation1
-prob1b = solveString equationString1
+prob1a = solveTokens equation1
+prob1b = solve equationString1
 -- 24 + 3 = 27, 3 + 24 = 27, 27 = 3 + 24, 27 = 24 + 3
 
 equation2 = [Num 13, Op Sub, Num 15, Num 28, Equals]
 equationString2 = "13 - 15 28 ="
-prob2a = solve equation2
-prob2b = solveString equationString2
+prob2a = solveTokens equation2
+prob2b = solve equationString2
 -- 28 - 15 = 13, 28 - 13 = 15, 13 = 28 - 15, ...
 
 equation3 = [Num 3, Op Sub, Num 7, Equals, Op Mul, Num 5, Num 4]
 equationString3 = "3 - 7 = * 5 4"
-prob3a = solve equation3
-prob3b = solveString equationString3
+prob3a = solveTokens equation3
+prob3b = solve equationString3
 -- 3 x 4 - 7 = 5, 4 x 3 - 7 = 5, 4 x 3 - 5 = 7, 3 x 4 - 5 = 7
 
 equation4 = [Equals, Num 5, Op Sub, Num 9, Num 31, Op Mul, Num 4]
 equationString4 = "= 5 - 9 31 * 4"
-prob4a = solve equation4
-prob4b = solveString equationString4
+prob4a = solveTokens equation4
+prob4b = solve equationString4
 -- 4 x 9 - 5 = 31, 4 x 9 - 31 = 5, 9 x 4 - 5 = 31, 9 x 4 - 31 = 5
 
 equation5 = [Op Mul, Op Add, Equals, Num 25, Num 11, Num 3, Num 2]
 equationString5 = "* + = 25 11 3 2"
-prob5a = solve equation5
-prob5b = solveString equationString5
+prob5a = solveTokens equation5
+prob5b = solve equationString5
 -- 11 x 2 + 3 = 25, 11 x 3 + 2 = 25, 2 x 11 + 3 = 25, 25 = ..., ...
 
 probs = [(prob1a, prob1b), (prob2a, prob2b), (prob3a, prob3b), (prob4a, prob4b), (prob5a, prob5b)]
@@ -256,6 +256,8 @@ tests =
   ,test (e "2 / 2 + 2") (Just 3)
   ,test (stringEval "1-2-3") (-4)
   ,test (stringEval "6/3/2") 1
+  ,test (length (solve "1=1+2")) 2
+  ,test (length (solve "1 1 1 = *")) 2
   ] ++ testProbs
 
 executeTests = mapM_ (putStrLn . show) $ filter failed tests
