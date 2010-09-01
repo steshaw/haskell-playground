@@ -157,15 +157,20 @@ equationToExpr ts = parse ts >>= \r ->
     otherwise -> Nothing
 
 --
--- FIXME: ugly
+-- FIXME: Ugly!
+-- TODO: Find more efficient method.
 --
+permutations :: Eq a => [a] -> [[a]]
 permutations [] = [[]]
 permutations [x] = [[x]]
-permutations xs = nub $ concat $ map (\x -> map (x:) (permutations (delete x xs))) xs
+permutations xs = concat $ map (\x -> map (x:) (permutations (delete x xs))) xs
+
+uniquePermutations :: Eq a => [a] -> [[a]]
+uniquePermutations = nub . permutations
 
 -- TODO: Avoid brute force.
 goodPermutions :: Equation -> [Maybe Expr]
-goodPermutions e = map equationToExpr (permutations e)
+goodPermutions e = map equationToExpr (uniquePermutations e)
 
 goodExprs :: Equation -> [Expr]
 goodExprs e = map grabExpr $ filter (not . (== Nothing)) (goodPermutions e)
