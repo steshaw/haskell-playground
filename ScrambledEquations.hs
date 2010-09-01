@@ -40,9 +40,7 @@ newtype Parser s a = Parser {
 bindParser :: Parser s a -> (a -> Parser s b) -> Parser s b
 p1 `bindParser` aToP2 = 
   Parser $ \ts ->
-    case (getParser p1) ts of
-      Nothing -> Nothing
-      Just (a, ts) -> (getParser (aToP2 a)) ts
+    (getParser p1) ts >>= \(a, ts) -> (getParser (aToP2 a)) ts
 
 instance Monad (Parser s) where
   return = identityParser
@@ -60,7 +58,7 @@ p1 ||| p2 =
 -- XXX: Seems a lot like a fold. Can this be generalised?
 repeatParser :: a -> (a -> Parser s a) -> Parser s a
 repeatParser left aToParser = 
-  ((aToParser left) >>= \e -> repeatParser e aToParser) ||| (return left)
+  ((aToParser left) >>= \e -> repeatParser e aToParser) ||| return left
 
 identityParser :: a -> Parser s a
 identityParser left = Parser $ \ts -> return (left, ts)
@@ -147,17 +145,14 @@ type ParseExpr a = Parser [Token] a
 parse :: ParseExpr Expr
 parse =
   parseExpr >>= \e1 ->
-    parseEquals >>
-      parseExpr >>= \e2 ->
-        return (EEquals e1 e2)
+    parseEquals >> parseExpr >>= \e2 ->
+      return (EEquals e1 e2)
 
 parseExpr :: ParseExpr Expr
 parseExpr = parseExprL1
 
 parseExprL1 :: ParseExpr Expr
-parseExprL1 =
-  parseExprL2 >>= \e1 ->
-    parseExprL1Tail e1
+parseExprL1 = parseExprL2 >>= parseExprL1Tail
 
 parseExprL1Tail :: Expr -> ParseExpr Expr
 parseExprL1Tail left = repeatParser left l1Tail
@@ -169,9 +164,7 @@ l1Tail left =
       parseExprL1Tail (EOp op1 left e2)
 
 parseExprL2 :: ParseExpr Expr
-parseExprL2 =
-  parseExprL3 >>= \e1 ->
-    parseExprL2Tail e1
+parseExprL2 = parseExprL3 >>= parseExprL2Tail
 
 -- 2 * 3 * 4 => (2 * 3) * 4
 parseExprL2Tail :: Expr -> ParseExpr Expr
@@ -186,9 +179,7 @@ l2Tail left =
 parseExprL3 = parseNum
 
 parseEquals :: ParseExpr Token
-parseEquals = Parser $ \ts -> case ts of
-  (Equals:ts) -> Just (Equals, ts)
-  otherwise   -> Nothing
+parseEquals = parseWhen Equals Equals
 
 -- Operators with precedence 1
 parseOp1 :: ParseExpr Op
