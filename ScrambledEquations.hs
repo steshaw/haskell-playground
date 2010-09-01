@@ -38,6 +38,14 @@ p1 ||| p2 = \ts -> case p1 ts of
   Nothing -> p2 ts
   x -> x
 
+-- like {} in EBNF
+-- e.g. num {mulOp num}
+repeatParser :: a -> (a -> Parse s a) -> Parse s a
+repeatParser left aToParser = (aToParser left) ||| (identity left)
+
+identity :: a -> Parse s a
+identity left ts = return (left, ts)
+
 lexer :: Parse String [Token]
 lexer [] = Just ([], [])
 lexer s = lexSingleToken s >>= \(a,s) -> 
@@ -115,10 +123,6 @@ parseExprOp1 ts =
   parseExprL2 ts >>= \(e1, ts) ->
     parseExprOp1Tail e1 ts
 
--- like {} in EBNF
--- e.g. num {mulOp num}
-repeatParser :: Expr -> (Expr -> ParseExpr Expr) -> ParseExpr Expr
-repeatParser left exprToParser = (exprToParser left) ||| (identifyParser left)
 
 parseExprOp1Tail :: Expr -> ParseExpr Expr
 parseExprOp1Tail left = repeatParser left op1Tail
@@ -146,9 +150,6 @@ op2Tail left ts =
   parseOp2 ts >>= \(op2, ts) ->
     parseExprL3 ts >>= \(e2, ts) ->
       parseExprOp2Tail (EOp op2 left e2) ts
-
-identifyParser :: Expr -> ParseExpr Expr
-identifyParser left ts = return (left, ts)
 
 parseExprL3 = parseNum
 
