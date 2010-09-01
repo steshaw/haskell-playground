@@ -19,7 +19,7 @@
 --
 module ScrambledEquations where
 
-import Data.List (delete, nub)
+import Data.List (delete, nub, permutations)
 import Control.Monad
 
 data Op = Add | Sub | Div | Mul
@@ -155,15 +155,6 @@ equationToExpr ts = parse ts >>= \r ->
   case r of
     (e, [])   -> Just e
     otherwise -> Nothing
-
---
--- FIXME: Ugly!
--- TODO: Find more efficient method.
---
-permutations :: Eq a => [a] -> [[a]]
-permutations [] = [[]]
-permutations [x] = [[x]]
-permutations xs = concat $ map (\x -> map (x:) (permutations (delete x xs))) xs
 
 uniquePermutations :: Eq a => [a] -> [[a]]
 uniquePermutations = nub . permutations
