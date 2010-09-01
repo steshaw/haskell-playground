@@ -107,10 +107,6 @@ parse ts =
       parseExpr ts >>= \(e2, ts) ->
         Just (EEquals e1 e2, ts)
 
--- FIXME: Expressions right associate. They need to left associate :(.
--- FIXME: e.g. (10 / 20) / 5 != 10 / (20 / 5)
--- FIXME: Similarly for subtraction.
-
 parseExpr :: ParseExpr Expr
 parseExpr = parseExprOp1 ||| parseExprL2
 
