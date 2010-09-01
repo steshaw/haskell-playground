@@ -31,12 +31,24 @@ data Token
   | Equals
   deriving (Eq, Show)
 
-type Parse s a = s -> Maybe (a, s)
+--type Parse s a = s -> Maybe (a, s)
+newtype Parse s a = Parser {
+  getParser :: s -> Maybe (a, s)
+}
+
+(==>) :: Parse s a -> (a -> Parse s b) -> Parse s b
+p1 ==> aToP2 = 
+  Parser $ \ts ->
+    case (getParser p1) ts of
+      Nothing -> Nothing
+      Just (a, ts) -> (getParser (aToP2 a)) ts
 
 (|||) :: Parse s a -> Parse s a -> Parse s a
-p1 ||| p2 = \ts -> case p1 ts of
-  Nothing -> p2 ts
-  x -> x
+p1 ||| p2 =
+  Parser $ \ts ->
+    case (getParser p1) ts of
+      Nothing -> (getParser p2) ts
+      x -> x
 
 -- like {} in EBNF
 -- e.g. num {mulOp num}
@@ -44,35 +56,41 @@ repeatParser :: a -> (a -> Parse s a) -> Parse s a
 repeatParser left aToParser = (aToParser left) ||| (identity left)
 
 identity :: a -> Parse s a
-identity left ts = return (left, ts)
+identity left = Parser $ \ts -> return (left, ts)
 
 lexer :: Parse String [Token]
-lexer [] = Just ([], [])
-lexer s = lexSingleToken s >>= \(a,s) ->
-  lexer s >>= \(a2, s2) -> Just (a:a2, s2)
+lexer = Parser $ \s -> case s of
+  [] -> Just ([], [])
+  s  -> (getParser (lexWhiteSpace ==> \_ -> 
+          lexSingleToken ==> \a ->
+            lexWhiteSpace ==> \_ ->
+              lexer ==> \a2 -> identity (a:a2))) s
 
 lexSingleToken :: Parse String Token
-lexSingleToken s = lexOp ||| lexNum $ skipws s
+lexSingleToken = lexOp ||| lexNum
+
+lexWhiteSpace :: Parse String ()
+lexWhiteSpace = Parser $ \s -> Just ((), skipws s)
 
 skipws :: String -> String
 skipws = dropWhile (== ' ')
 
 lexNum :: Parse String Token
-lexNum s =
+lexNum = Parser $ \s ->
   case reads s of
-    [(n, s)] -> Just (Num n, skipws s)
+    [(n, s)] -> Just (Num n, s)
     otherwise -> Nothing
 
 lexOp :: Parse String Token
-lexOp (c:s) =
-  case c of
-    '+' -> Just (Op Add, skipws s)
-    '-' -> Just (Op Sub, skipws s)
-    '*' -> Just (Op Mul, skipws s)
-    '/' -> Just (Op Div, skipws s)
-    '=' -> Just (Equals, skipws s)
+lexOp = Parser $ \s -> case s of
+  (c:s) -> case c of
+    '+' -> Just (Op Add, s)
+    '-' -> Just (Op Sub, s)
+    '*' -> Just (Op Mul, s)
+    '/' -> Just (Op Div, s)
+    '=' -> Just (Equals, s)
     otherwise -> Nothing
-lexOp _ = Nothing
+  _ -> Nothing
 
 type Equation = [Token]
 
@@ -109,68 +127,72 @@ type ParseExpr a = Parse [Token] a
 
 -- expr1 = expr2
 parse :: ParseExpr Expr
-parse ts =
-  parseExpr ts >>= \(e1, ts) ->
-    parseEquals ts >>= \(_, ts) ->
-      parseExpr ts >>= \(e2, ts) ->
-        Just (EEquals e1 e2, ts)
+parse =
+  parseExpr ==> \e1 ->
+    parseEquals ==> \_ ->
+      parseExpr ==> \e2 ->
+        identity (EEquals e1 e2)
 
 parseExpr :: ParseExpr Expr
 parseExpr = parseExprL1
 
 parseExprL1 :: ParseExpr Expr
-parseExprL1 ts =
-  parseExprL2 ts >>= \(e1, ts) ->
-    parseExprL1Tail e1 ts
+parseExprL1 =
+  parseExprL2 ==> \e1 ->
+    parseExprL1Tail e1
 
 parseExprL1Tail :: Expr -> ParseExpr Expr
 parseExprL1Tail left = repeatParser left l1Tail
 
 l1Tail :: Expr -> ParseExpr Expr
-l1Tail left ts =
-  parseOp1 ts >>= \(op1, ts) ->
-    parseExprL2 ts >>= \(e2, ts) ->
-      parseExprL1Tail (EOp op1 left e2) ts
+l1Tail left =
+  parseOp1 ==> \op1 ->
+    parseExprL2 ==> \e2 ->
+      parseExprL1Tail (EOp op1 left e2)
 
 parseExprL2 :: ParseExpr Expr
-parseExprL2 ts =
-  parseExprL3 ts >>= \(e1, ts) ->
-    parseExprL2Tail e1 ts
+parseExprL2 =
+  parseExprL3 ==> \e1 ->
+    parseExprL2Tail e1
 
 -- 2 * 3 * 4 => (2 * 3) * 4
 parseExprL2Tail :: Expr -> ParseExpr Expr
 parseExprL2Tail left = repeatParser left l2Tail
 
 l2Tail :: Expr -> ParseExpr Expr
-l2Tail left ts =
-  parseOp2 ts >>= \(op2, ts) ->
-    parseExprL3 ts >>= \(e2, ts) ->
-      parseExprL2Tail (EOp op2 left e2) ts
+l2Tail left =
+  parseOp2 ==> \op2 ->
+    parseExprL3 ==> \e2 ->
+      parseExprL2Tail (EOp op2 left e2)
 
 parseExprL3 = parseNum
 
 parseEquals :: ParseExpr Token
-parseEquals (Equals:ts) = Just (Equals, ts)
-parseEquals _ = Nothing
+parseEquals = Parser $ \ts -> case ts of
+  (Equals:ts) -> Just (Equals, ts)
+  otherwise   -> Nothing
 
 -- Operators with precedence 1
 parseOp1 :: ParseExpr Op
-parseOp1 (Op Add:ts) = Just (Add, ts)
-parseOp1 (Op Sub:ts) = Just (Sub, ts)
-parseOp1 _ = Nothing
+parseOp1 = Parser $ \ts -> case ts of
+  (Op Add:ts) -> Just (Add, ts)
+  (Op Sub:ts) -> Just (Sub, ts)
+  otherwise   -> Nothing
 
 -- Operators with precedence 2
 parseOp2 :: ParseExpr Op
-parseOp2 (Op Mul:ts) = Just (Mul, ts)
-parseOp2 (Op Div:ts) = Just (Div, ts)
-parseOp2 _ = Nothing
+parseOp2 = Parser $ \ts -> case ts of
+  (Op Mul:ts) -> Just (Mul, ts)
+  (Op Div:ts) -> Just (Div, ts)
+  otherwise   -> Nothing
 
 parseNum :: ParseExpr Expr
-parseNum (Num n:ts) = Just (ENum n, ts)
-parseNum otherwise = Nothing
+parseNum = Parser $ \ts -> case ts of
+  (Num n:ts) -> Just (ENum n, ts)
+  otherwise   -> Nothing
 
 equationToExpr :: [Token] -> Maybe Expr
-equationToExpr ts = parse ts >>= \r ->
+equationToExpr ts = (getParser parse) ts >>= \r ->
   case r of
     (e, [])   -> Just e
     otherwise -> Nothing
@@ -194,7 +216,7 @@ solveTokens ts = map (\(e, (a,_,_)) -> pprint e) good
     results = map eval exprs
     good = filter (\(e, (_,_,b)) -> b) (zip exprs results)
 
-solve s = grabMaybe (lexer s >>= \(tokens, "") -> Just $ solveTokens tokens)
+solve s = grabMaybe ((getParser lexer) s >>= \(tokens, "") -> Just $ solveTokens tokens)
   where
     grabMaybe (Just a) = a
     grabMaybe Nothing = []
@@ -242,9 +264,9 @@ test actual expect =
 
 grab (Just a) = a
 
-stringToExpr s = grab $ lexer s >>= \(ts, "") -> Just ts
+stringToExpr s = grab $ (getParser lexer) s >>= \(ts, "") -> Just ts
 
-evalString s = lexer s >>= \(a, _) -> parseExpr a >>= \(a, _) -> Just . evalExpr $ a
+evalString s = (getParser lexer) s >>= \(a, _) -> (getParser parseExpr) a >>= \(a, _) -> Just . evalExpr $ a
 
 grabEvalString s = grab $ evalString s
 
