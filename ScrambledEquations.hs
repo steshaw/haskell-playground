@@ -1,3 +1,22 @@
+--
+-- A automated solver for "scrambled equations" - a homework assignment for my 6th grade nephew.
+--
+-- For example, given the scrambed equation:
+--   + 1 3 = 2
+-- the possible unscrambled equations are:
+--   1 + 2 = 3
+--   3 = 1 + 2
+--   3 = 2 + 1
+--   2 + 1 = 3
+--
+-- The solver can be invoked to solve this problem using either:
+--
+--   ScrambedEquations> solveString "+ 1 3 = 2"
+--     => ["1 + 2 = 3","3 = 1 + 2","3 = 2 + 1","2 + 1 = 3"]
+--
+--   ScrambedEquations> solve [Op Add, Num 1, Num 3, Equals, Num 2]
+--     => ["1 + 2 = 3","3 = 1 + 2","3 = 2 + 1","2 + 1 = 3"]
+--
 module ScrambledEquations where
 
 import Data.List (delete)
@@ -137,6 +156,8 @@ equationToExpr ts = parse ts >>= \r ->
     (e, [])   -> Just e
     otherwise -> Nothing
 
+-- TODO: Filter out combinations that are duplicated because of more than 1 of the same input token.
+-- TODO: e.g. 1 + 1 = 2
 permutations [] = [[]]
 permutations [x] = [[x]]
 permutations xs = concat (map (\x -> map (x:) (permutations (delete x xs))) xs)
