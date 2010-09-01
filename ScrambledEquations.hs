@@ -19,7 +19,7 @@
 --
 module ScrambledEquations where
 
-import Data.List (delete)
+import Data.List (delete, nub)
 import Control.Monad
 
 data Op = Add | Sub | Div | Mul
@@ -157,13 +157,11 @@ equationToExpr ts = parse ts >>= \r ->
     otherwise -> Nothing
 
 --
--- TODO: Filter out combinations that are duplicated because of more than 1 of the same input token.
--- TODO: e.g. 1 + 1 = 2
 -- FIXME: ugly
 --
 permutations [] = [[]]
 permutations [x] = [[x]]
-permutations xs = concat (map (\x -> map (x:) (permutations (delete x xs))) xs)
+permutations xs = nub $ concat $ map (\x -> map (x:) (permutations (delete x xs))) xs
 
 -- TODO: Avoid brute force.
 goodPermutions :: Equation -> [Maybe Expr]
