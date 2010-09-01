@@ -120,7 +120,7 @@ parseExprOp1 ts =
     parseExprOp1Tail e1 ts
 
 parseExprOp1Tail :: Expr -> ParseExpr Expr
-parseExprOp1Tail left = (op1Tail left) ||| (fooEmpty left)
+parseExprOp1Tail left = (op1Tail left) ||| (identifyParser left)
 
 op1Tail :: Expr -> ParseExpr Expr
 op1Tail left ts =
@@ -139,16 +139,16 @@ parseExprOp2 ts =
 -- 2 * 3 * 4 => (2 * 3) * 4
 parseExprOp2Tail :: Expr -> ParseExpr Expr
 parseExprOp2Tail left =
-  (fooTail left) ||| (fooEmpty left)
+  (op2Tail left) ||| (identifyParser left)
 
-fooTail :: Expr -> ParseExpr Expr
-fooTail left ts =
+op2Tail :: Expr -> ParseExpr Expr
+op2Tail left ts =
   parseOp2 ts >>= \(op2, ts) ->
     parseExprL3 ts >>= \(e2, ts) ->
       parseExprOp2Tail (EOp op2 left e2) ts
 
-fooEmpty :: Expr -> ParseExpr Expr
-fooEmpty left ts = Just (left, ts)
+identifyParser :: Expr -> ParseExpr Expr
+identifyParser left ts = Just (left, ts)
 
 parseExprL3 = parseNum
 
