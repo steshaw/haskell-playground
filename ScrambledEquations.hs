@@ -121,14 +121,29 @@ parseExprOp1 ts =
       parseExpr ts >>= \(e2, ts) ->
         Just (EOp op1 e1 e2, ts)
 
-parseExprL2 = parseExprOp2 ||| parseNum
+parseExprL2 = parseExprOp2
 
+-- expr mulOp tail
 parseExprOp2 :: ParseExpr Expr
 parseExprOp2 ts =
-  parseNum ts >>= \(e1, ts) ->
-    parseOp2 ts >>= \(op2, ts) ->
-      parseExprL2 ts >>= \(e2, ts) ->
-        Just (EOp op2 e1 e2, ts)
+  parseExprL3 ts >>= \(e1, ts) ->
+    parseExprOp2Tail e1 ts
+
+-- 2 * 3 * 4 => (2 * 3) * 4
+parseExprOp2Tail :: Expr -> ParseExpr Expr
+parseExprOp2Tail left =
+  (fooTail left) ||| (fooEmpty left)
+
+fooTail :: Expr -> ParseExpr Expr
+fooTail left ts =
+  parseOp2 ts >>= \(op2, ts) ->
+    parseExprL3 ts >>= \(e2, ts) ->
+      parseExprOp2Tail (EOp op2 left e2) ts
+
+fooEmpty :: Expr -> ParseExpr Expr
+fooEmpty left ts = Just (left, ts)
+
+parseExprL3 = parseNum
 
 parseEquals :: ParseExpr Token
 parseEquals (Equals:ts) = Just (Equals, ts)
