@@ -115,8 +115,13 @@ parseExprOp1 ts =
   parseExprL2 ts >>= \(e1, ts) ->
     parseExprOp1Tail e1 ts
 
+-- like {} in EBNF
+-- e.g. num {mulOp num}
+repeatParser :: Expr -> (Expr -> ParseExpr Expr) -> ParseExpr Expr
+repeatParser left exprToParser = (exprToParser left) ||| (identifyParser left)
+
 parseExprOp1Tail :: Expr -> ParseExpr Expr
-parseExprOp1Tail left = (op1Tail left) ||| (identifyParser left)
+parseExprOp1Tail left = repeatParser left op1Tail
 
 op1Tail :: Expr -> ParseExpr Expr
 op1Tail left ts =
@@ -126,7 +131,7 @@ op1Tail left ts =
 
 parseExprL2 = parseExprOp2
 
--- expr mulOp tail
+-- expr op2 tail
 parseExprOp2 :: ParseExpr Expr
 parseExprOp2 ts =
   parseExprL3 ts >>= \(e1, ts) ->
@@ -134,8 +139,7 @@ parseExprOp2 ts =
 
 -- 2 * 3 * 4 => (2 * 3) * 4
 parseExprOp2Tail :: Expr -> ParseExpr Expr
-parseExprOp2Tail left =
-  (op2Tail left) ||| (identifyParser left)
+parseExprOp2Tail left = repeatParser left op2Tail
 
 op2Tail :: Expr -> ParseExpr Expr
 op2Tail left ts =
@@ -144,7 +148,7 @@ op2Tail left ts =
       parseExprOp2Tail (EOp op2 left e2) ts
 
 identifyParser :: Expr -> ParseExpr Expr
-identifyParser left ts = Just (left, ts)
+identifyParser left ts = return (left, ts)
 
 parseExprL3 = parseNum
 
@@ -178,11 +182,11 @@ uniquePermutations :: Eq a => [a] -> [[a]]
 uniquePermutations = nub . permutations
 
 -- TODO: Avoid brute force.
-goodPermutions :: Equation -> [Maybe Expr]
-goodPermutions e = map equationToExpr (uniquePermutations e)
+goodPermutations :: Equation -> [Equation]
+goodPermutations equation = uniquePermutations equation
 
 goodExprs :: Equation -> [Expr]
-goodExprs e = map grabExpr $ filter (not . (== Nothing)) (goodPermutions e)
+goodExprs equation = map grabExpr $ filter (not . (== Nothing)) (map equationToExpr (goodPermutations equation))
   where
     grabExpr (Just e) = e
 
