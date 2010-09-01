@@ -248,8 +248,8 @@ tests =
   ,test (e "1 + 2") (Just 3)
   ,test (e "2 + 2 / 2") (Just 3)
   ,test (e "2 / 2 + 2") (Just 3)
-  ,test (stringEval "1-2-3") (-4)
-  ,test (stringEval "6/3/2") 1
+  ,test (stringEval "1-2-3") (-4) -- fails
+  ,test (stringEval "6/3/2") 1 -- fails
   ,test (length (solve "1=1+2")) 2
   ,test (length (solve "1 1 1 = *")) 2
   ] ++ testProbs
