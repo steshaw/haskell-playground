@@ -156,18 +156,21 @@ equationToExpr ts = parse ts >>= \r ->
     (e, [])   -> Just e
     otherwise -> Nothing
 
+--
 -- TODO: Filter out combinations that are duplicated because of more than 1 of the same input token.
 -- TODO: e.g. 1 + 1 = 2
+-- FIXME: ugly
+--
 permutations [] = [[]]
 permutations [x] = [[x]]
 permutations xs = concat (map (\x -> map (x:) (permutations (delete x xs))) xs)
 
 -- TODO: Avoid brute force.
-goodCombinations :: Equation -> [Maybe Expr]
-goodCombinations e = map equationToExpr (permutations e)
+goodPermutions :: Equation -> [Maybe Expr]
+goodPermutions e = map equationToExpr (permutations e)
 
 goodExprs :: Equation -> [Expr]
-goodExprs e = map grabExpr $ filter (not . (== Nothing)) (goodCombinations e)
+goodExprs e = map grabExpr $ filter (not . (== Nothing)) (goodPermutions e)
   where
     grabExpr (Just e) = e
 
