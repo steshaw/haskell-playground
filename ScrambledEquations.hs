@@ -117,9 +117,16 @@ parseExpr = parseExprOp1 ||| parseExprL2
 parseExprOp1 :: ParseExpr Expr
 parseExprOp1 ts =
   parseExprL2 ts >>= \(e1, ts) ->
-    parseOp1 ts >>= \(op1, ts) ->
-      parseExpr ts >>= \(e2, ts) ->
-        Just (EOp op1 e1 e2, ts)
+    parseExprOp1Tail e1 ts
+
+parseExprOp1Tail :: Expr -> ParseExpr Expr
+parseExprOp1Tail left = (op1Tail left) ||| (fooEmpty left)
+
+op1Tail :: Expr -> ParseExpr Expr
+op1Tail left ts =
+  parseOp1 ts >>= \(op1, ts) ->
+    parseExprL2 ts >>= \(e2, ts) ->
+      parseExprOp1Tail (EOp op1 left e2) ts
 
 parseExprL2 = parseExprOp2
 
