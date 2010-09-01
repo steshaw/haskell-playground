@@ -116,40 +116,36 @@ parse ts =
         Just (EEquals e1 e2, ts)
 
 parseExpr :: ParseExpr Expr
-parseExpr = parseExprOp1 ||| parseExprL2
+parseExpr = parseExprL1
 
-parseExprOp1 :: ParseExpr Expr
-parseExprOp1 ts =
+parseExprL1 :: ParseExpr Expr
+parseExprL1 ts =
   parseExprL2 ts >>= \(e1, ts) ->
-    parseExprOp1Tail e1 ts
+    parseExprL1Tail e1 ts
 
+parseExprL1Tail :: Expr -> ParseExpr Expr
+parseExprL1Tail left = repeatParser left l1Tail
 
-parseExprOp1Tail :: Expr -> ParseExpr Expr
-parseExprOp1Tail left = repeatParser left op1Tail
-
-op1Tail :: Expr -> ParseExpr Expr
-op1Tail left ts =
+l1Tail :: Expr -> ParseExpr Expr
+l1Tail left ts =
   parseOp1 ts >>= \(op1, ts) ->
     parseExprL2 ts >>= \(e2, ts) ->
-      parseExprOp1Tail (EOp op1 left e2) ts
+      parseExprL1Tail (EOp op1 left e2) ts
 
-parseExprL2 = parseExprOp2
-
--- expr op2 tail
-parseExprOp2 :: ParseExpr Expr
-parseExprOp2 ts =
+parseExprL2 :: ParseExpr Expr
+parseExprL2 ts =
   parseExprL3 ts >>= \(e1, ts) ->
-    parseExprOp2Tail e1 ts
+    parseExprL2Tail e1 ts
 
 -- 2 * 3 * 4 => (2 * 3) * 4
-parseExprOp2Tail :: Expr -> ParseExpr Expr
-parseExprOp2Tail left = repeatParser left op2Tail
+parseExprL2Tail :: Expr -> ParseExpr Expr
+parseExprL2Tail left = repeatParser left l2Tail
 
-op2Tail :: Expr -> ParseExpr Expr
-op2Tail left ts =
+l2Tail :: Expr -> ParseExpr Expr
+l2Tail left ts =
   parseOp2 ts >>= \(op2, ts) ->
     parseExprL3 ts >>= \(e2, ts) ->
-      parseExprOp2Tail (EOp op2 left e2) ts
+      parseExprL2Tail (EOp op2 left e2) ts
 
 parseExprL3 = parseNum
 
