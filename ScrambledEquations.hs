@@ -40,23 +40,23 @@ p1 ||| p2 = \ts -> case p1 ts of
 
 lexer :: Parse String [Token]
 lexer [] = Just ([], [])
-lexer s = stringParseToken s >>= \(a,s) -> 
+lexer s = lexSingleToken s >>= \(a,s) -> 
   lexer s >>= \(a2, s2) -> Just (a:a2, s2)
 
-stringParseToken s =
-  stringParseOp ||| stringParseNum $ skipws s
+lexSingleToken :: Parse String Token
+lexSingleToken s = lexOp ||| lexNum $ skipws s
 
 skipws :: String -> String
 skipws = dropWhile (== ' ')
 
-stringParseNum :: Parse String Token
-stringParseNum s = 
+lexNum :: Parse String Token
+lexNum s = 
   case reads s of
     [(n, s)] -> Just (Num n, skipws s)
     otherwise -> Nothing
 
-stringParseOp :: Parse String Token
-stringParseOp (c:s) =
+lexOp :: Parse String Token
+lexOp (c:s) =
   case c of
     '+' -> Just (Op Add, skipws s)
     '-' -> Just (Op Sub, skipws s)
@@ -64,7 +64,7 @@ stringParseOp (c:s) =
     '/' -> Just (Op Div, skipws s)
     '=' -> Just (Equals, skipws s)
     otherwise -> Nothing
-stringParseOp _ = Nothing
+lexOp _ = Nothing
 
 type Equation = [Token]
 
