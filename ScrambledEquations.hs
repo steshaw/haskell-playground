@@ -48,7 +48,7 @@ identity left ts = return (left, ts)
 
 lexer :: Parse String [Token]
 lexer [] = Just ([], [])
-lexer s = lexSingleToken s >>= \(a,s) -> 
+lexer s = lexSingleToken s >>= \(a,s) ->
   lexer s >>= \(a2, s2) -> Just (a:a2, s2)
 
 lexSingleToken :: Parse String Token
@@ -58,7 +58,7 @@ skipws :: String -> String
 skipws = dropWhile (== ' ')
 
 lexNum :: Parse String Token
-lexNum s = 
+lexNum s =
   case reads s of
     [(n, s)] -> Just (Num n, skipws s)
     otherwise -> Nothing
@@ -93,10 +93,10 @@ op2str Div = "/"
 op2str Mul = "*"
 
 eval :: Expr -> (Integer, Integer, Bool)
-eval (EEquals e1 e2) = 
-  let 
+eval (EEquals e1 e2) =
+  let
     r1 = evalExpr e1
-    r2 = evalExpr e2 
+    r2 = evalExpr e2
   in (r1, r2, r1 == r2)
 
 evalExpr (ENum n) = n
@@ -239,9 +239,9 @@ printProbs = mapM_ (\(a,b) -> do putStrLn $ show a; putStrLn $ show b; putStrLn 
 
 -- Expression evaluation tests.
 
-test actual expect = 
-  if expect /= actual 
-  then Left $ "FAIL:- expect: " ++ show expect ++ " actual: " ++ show actual 
+test actual expect =
+  if expect /= actual
+  then Left $ "FAIL:- expect: " ++ show expect ++ " actual: " ++ show actual
   else Right True
 
 grab (Just a) = a
