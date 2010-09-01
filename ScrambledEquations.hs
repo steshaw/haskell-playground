@@ -38,10 +38,10 @@ p1 ||| p2 = \ts -> case p1 ts of
   Nothing -> p2 ts
   x -> x
 
-stringParse :: Parse String [Token]
-stringParse [] = Just ([], [])
-stringParse s = stringParseToken s >>= \(a,s) -> 
-  stringParse s >>= \(a2, s2) -> Just (a:a2, s2)
+lexer :: Parse String [Token]
+lexer [] = Just ([], [])
+lexer s = stringParseToken s >>= \(a,s) -> 
+  lexer s >>= \(a2, s2) -> Just (a:a2, s2)
 
 stringParseToken s =
   stringParseOp ||| stringParseNum $ skipws s
@@ -197,7 +197,7 @@ solveTokens ts = map (\(e, (a,_,_)) -> pprint e) good
     results = map eval exprs
     good = filter (\(e, (_,_,b)) -> b) (zip exprs results)
 
-solve s = grabMaybe (stringParse s >>= \(tokens, "") -> Just $ solveTokens tokens)
+solve s = grabMaybe (lexer s >>= \(tokens, "") -> Just $ solveTokens tokens)
   where
     grabMaybe (Just a) = a
     grabMaybe Nothing = []
@@ -243,15 +243,15 @@ test actual expect =
   then Left $ "FAIL:- expect: " ++ show expect ++ " actual: " ++ show actual 
   else Right True
 
-e s = stringParse s >>= \(a, _) -> parseExpr a >>= \(a, _) -> Just . evalExpr $ a
+grab (Just a) = a
 
-stringEval eqStr = grab (stringParse eqStr >>= \(ts, "") -> parseExpr ts >>= \(e, []) -> Just (evalExpr e))
-  where
-    grab (Just a) = a
+stringToExpr s = grab $ lexer s >>= \(ts, "") -> Just ts
 
-stringEvalEq eqStr eq = grab (stringParse eqStr >>= \(ts, "") -> Just (ts == eq))
-  where 
-    grab (Just b) = b
+evalString s = lexer s >>= \(a, _) -> parseExpr a >>= \(a, _) -> Just . evalExpr $ a
+
+grabEvalString s = grab $ evalString s
+
+stringEvalEq s eq = stringToExpr s == eq
 
 testProbs = map (\(actual, expect) -> test actual expect) probs
 
@@ -261,17 +261,17 @@ tests =
   ,test (stringEvalEq equationString3 equation3) True
   ,test (stringEvalEq equationString4 equation4) True
   ,test (stringEvalEq equationString5 equation5) True
-  ,test (e "1") (Just 1)
-  ,test (e "") Nothing
-  ,test (e "+") Nothing
-  ,test (e "=") Nothing
-  ,test (e "1+1") (Just 2)
-  ,test (e "1 + 1 ") (Just 2)
-  ,test (e "1 + 2") (Just 3)
-  ,test (e "2 + 2 / 2") (Just 3)
-  ,test (e "2 / 2 + 2") (Just 3)
-  ,test (stringEval "1-2-3") (-4) -- fails
-  ,test (stringEval "6/3/2") 1 -- fails
+  ,test (evalString "1") (Just 1)
+  ,test (evalString "") Nothing
+  ,test (evalString "+") Nothing
+  ,test (evalString "=") Nothing
+  ,test (evalString "1+1") (Just 2)
+  ,test (evalString "1 + 1 ") (Just 2)
+  ,test (evalString "1 + 2") (Just 3)
+  ,test (evalString "2 + 2 / 2") (Just 3)
+  ,test (evalString "2 / 2 + 2") (Just 3)
+  ,test (grabEvalString "1-2-3") (-4)
+  ,test (grabEvalString "6/3/2") 1
   ,test (length (solve "1=1+2")) 2
   ,test (length (solve "1 1 1 = *")) 2
   ] ++ testProbs
