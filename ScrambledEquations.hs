@@ -31,19 +31,18 @@ data Token
   | Equals
   deriving (Eq, Show)
 
---type Parse s a = s -> Maybe (a, s)
-newtype Parse s a = Parser {
+newtype Parser s a = Parser {
   getParser :: s -> Maybe (a, s)
 }
 
-(==>) :: Parse s a -> (a -> Parse s b) -> Parse s b
+(==>) :: Parser s a -> (a -> Parser s b) -> Parser s b
 p1 ==> aToP2 = 
   Parser $ \ts ->
     case (getParser p1) ts of
       Nothing -> Nothing
       Just (a, ts) -> (getParser (aToP2 a)) ts
 
-(|||) :: Parse s a -> Parse s a -> Parse s a
+(|||) :: Parser s a -> Parser s a -> Parser s a
 p1 ||| p2 =
   Parser $ \ts ->
     case (getParser p1) ts of
@@ -52,13 +51,13 @@ p1 ||| p2 =
 
 -- like {} in EBNF
 -- e.g. num {mulOp num}
-repeatParser :: a -> (a -> Parse s a) -> Parse s a
+repeatParser :: a -> (a -> Parser s a) -> Parser s a
 repeatParser left aToParser = (aToParser left) ||| (identity left)
 
-identity :: a -> Parse s a
+identity :: a -> Parser s a
 identity left = Parser $ \ts -> return (left, ts)
 
-lexer :: Parse String [Token]
+lexer :: Parser String [Token]
 lexer = Parser $ \s -> case s of
   [] -> Just ([], [])
   s  -> (getParser (lexWhiteSpace ==> \_ -> 
@@ -66,22 +65,22 @@ lexer = Parser $ \s -> case s of
             lexWhiteSpace ==> \_ ->
               lexer ==> \a2 -> identity (a:a2))) s
 
-lexSingleToken :: Parse String Token
+lexSingleToken :: Parser String Token
 lexSingleToken = lexOp ||| lexNum
 
-lexWhiteSpace :: Parse String ()
+lexWhiteSpace :: Parser String ()
 lexWhiteSpace = Parser $ \s -> Just ((), skipws s)
 
 skipws :: String -> String
 skipws = dropWhile (== ' ')
 
-lexNum :: Parse String Token
+lexNum :: Parser String Token
 lexNum = Parser $ \s ->
   case reads s of
     [(n, s)] -> Just (Num n, s)
     otherwise -> Nothing
 
-lexOp :: Parse String Token
+lexOp :: Parser String Token
 lexOp = Parser $ \s -> case s of
   (c:s) -> case c of
     '+' -> Just (Op Add, s)
@@ -123,7 +122,7 @@ evalExpr (EOp Sub e1 e2) = (evalExpr e1) - (evalExpr e2)
 evalExpr (EOp Mul e1 e2) = (evalExpr e1) * (evalExpr e2)
 evalExpr (EOp Div e1 e2) = (evalExpr e1) `div` (evalExpr e2)
 
-type ParseExpr a = Parse [Token] a
+type ParseExpr a = Parser [Token] a
 
 -- expr1 = expr2
 parse :: ParseExpr Expr
