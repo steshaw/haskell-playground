@@ -35,12 +35,16 @@ newtype Parser s a = Parser {
   getParser :: s -> Maybe (a, s)
 }
 
-(==>) :: Parser s a -> (a -> Parser s b) -> Parser s b
-p1 ==> aToP2 = 
+bindParser :: Parser s a -> (a -> Parser s b) -> Parser s b
+p1 `bindParser` aToP2 = 
   Parser $ \ts ->
     case (getParser p1) ts of
       Nothing -> Nothing
       Just (a, ts) -> (getParser (aToP2 a)) ts
+
+instance Monad (Parser s) where
+  return = identityParser
+  (>>=) = bindParser
 
 (|||) :: Parser s a -> Parser s a -> Parser s a
 p1 ||| p2 =
@@ -52,18 +56,18 @@ p1 ||| p2 =
 -- like {} in EBNF
 -- e.g. num {mulOp num}
 repeatParser :: a -> (a -> Parser s a) -> Parser s a
-repeatParser left aToParser = (aToParser left) ||| (identity left)
+repeatParser left aToParser = (aToParser left) ||| (return left)
 
-identity :: a -> Parser s a
-identity left = Parser $ \ts -> return (left, ts)
+identityParser :: a -> Parser s a
+identityParser left = Parser $ \ts -> return (left, ts)
 
 lexer :: Parser String [Token]
 lexer = Parser $ \s -> case s of
   [] -> Just ([], [])
-  s  -> (getParser (lexWhiteSpace ==> \_ -> 
-          lexSingleToken ==> \a ->
-            lexWhiteSpace ==> \_ ->
-              lexer ==> \a2 -> identity (a:a2))) s
+  s  -> (getParser (lexWhiteSpace >>
+          lexSingleToken >>= \a ->
+            lexWhiteSpace >>
+              lexer >>= \a2 -> return (a:a2))) s
 
 lexSingleToken :: Parser String Token
 lexSingleToken = lexOp ||| lexNum
@@ -127,17 +131,17 @@ type ParseExpr a = Parser [Token] a
 -- expr1 = expr2
 parse :: ParseExpr Expr
 parse =
-  parseExpr ==> \e1 ->
-    parseEquals ==> \_ ->
-      parseExpr ==> \e2 ->
-        identity (EEquals e1 e2)
+  parseExpr >>= \e1 ->
+    parseEquals >>
+      parseExpr >>= \e2 ->
+        return (EEquals e1 e2)
 
 parseExpr :: ParseExpr Expr
 parseExpr = parseExprL1
 
 parseExprL1 :: ParseExpr Expr
 parseExprL1 =
-  parseExprL2 ==> \e1 ->
+  parseExprL2 >>= \e1 ->
     parseExprL1Tail e1
 
 parseExprL1Tail :: Expr -> ParseExpr Expr
@@ -145,13 +149,13 @@ parseExprL1Tail left = repeatParser left l1Tail
 
 l1Tail :: Expr -> ParseExpr Expr
 l1Tail left =
-  parseOp1 ==> \op1 ->
-    parseExprL2 ==> \e2 ->
+  parseOp1 >>= \op1 ->
+    parseExprL2 >>= \e2 ->
       parseExprL1Tail (EOp op1 left e2)
 
 parseExprL2 :: ParseExpr Expr
 parseExprL2 =
-  parseExprL3 ==> \e1 ->
+  parseExprL3 >>= \e1 ->
     parseExprL2Tail e1
 
 -- 2 * 3 * 4 => (2 * 3) * 4
@@ -160,8 +164,8 @@ parseExprL2Tail left = repeatParser left l2Tail
 
 l2Tail :: Expr -> ParseExpr Expr
 l2Tail left =
-  parseOp2 ==> \op2 ->
-    parseExprL3 ==> \e2 ->
+  parseOp2 >>= \op2 ->
+    parseExprL3 >>= \e2 ->
       parseExprL2Tail (EOp op2 left e2)
 
 parseExprL3 = parseNum
