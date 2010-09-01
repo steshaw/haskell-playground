@@ -75,8 +75,6 @@ lexSingleToken = lexOp ||| lexNum
 skipSpaces :: Parser String ()
 skipSpaces = repeatParser () (\_ -> parseWhen ' ' ())
 
-skipSpacesAlternative = Parser $ \s -> Just ((), dropWhile (== ' ') s)
-
 lexNum :: Parser String Token
 lexNum = Parser $ \s ->
   case reads s of
@@ -94,17 +92,6 @@ lexOp = parseWhen '+' (Op Add) |||
         parseWhen '*' (Op Mul) |||
         parseWhen '/' (Op Div) |||
         parseWhen '=' Equals
-
-lexOpAlternative :: Parser String Token
-lexOpAlternative = Parser $ \s -> case s of
-  (c:s) -> case c of
-    '+' -> Just (Op Add, s)
-    '-' -> Just (Op Sub, s)
-    '*' -> Just (Op Mul, s)
-    '/' -> Just (Op Div, s)
-    '=' -> Just (Equals, s)
-    otherwise -> Nothing
-  _ -> Nothing
 
 type Equation = [Token]
 
