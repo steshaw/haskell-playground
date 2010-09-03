@@ -18,7 +18,11 @@ regularCell :: GenParser Char st String
 regularCell = many (noneOf [',', '\n', '\r'])
 
 quotedCell :: GenParser Char st String
-quotedCell = char '"' >> many quotedChar >>= \r -> (char '"' <?> "end-double-quote") >> return r
+quotedCell =
+  char '"' >>
+    many quotedChar >>= \r ->
+      (char '"' <?> "end-double-quote") >>
+        return r
 
 quotedChar :: GenParser Char st Char
 quotedChar = noneOf ['"'] <|> quotedDoubleQuote
