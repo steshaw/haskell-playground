@@ -14,10 +14,11 @@ cell = quotedCell <|> regularCell
 
 regularCell = many (noneOf [',', '\n', '\r'])
 
-quotedCell = char '"' >> many (noneOf ['"']) >>= \r -> char '"' >> return r
+quotedCell = char '"' >> many quotedChar >>= \r -> char '"' >> return r
 
-quotedChar = noneOf ['"'] <|> doubleQuote
-doubleQuote = try (string (replicate 2 '"')) >> return '"'
+quotedChar = noneOf ['"'] <|> quotedDoubleQuote
+
+quotedDoubleQuote = try (string (replicate 2 '"') >> return '"')
 
 eol :: GenParser Char st ()
 eol = try (string "\r\n" >> return ())
