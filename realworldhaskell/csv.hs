@@ -1,4 +1,4 @@
-module Main () where
+module Main where
 
 import Text.ParserCombinators.Parsec
 import System.IO
