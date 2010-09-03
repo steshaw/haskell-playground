@@ -7,10 +7,10 @@ csvFile :: GenParser Char st [[String]]
 csvFile = line `endBy` eol
 
 line :: GenParser Char st [String]
-line = cellContent `sepBy` (char ',')
+line = cell `sepBy` (char ',')
 
-cellContent :: GenParser Char st String
-cellContent = many (noneOf [',', '\n', '\r'])
+cell :: GenParser Char st String
+cell = many (noneOf [',', '\n', '\r'])
 
 eol :: GenParser Char st ()
 eol = try (string "\r\n" >> return ())
