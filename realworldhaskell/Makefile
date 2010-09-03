@@ -4,6 +4,8 @@
 
 PROGS := \
   copy \
+  csv \
+  DesugarMonads \
   find \
   fixeols \
   jsonMain \
