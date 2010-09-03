@@ -12,12 +12,16 @@ line = cell `sepBy` (char ',')
 cell :: GenParser Char st String
 cell = quotedCell <|> regularCell
 
+regularCell :: GenParser Char st String
 regularCell = many (noneOf [',', '\n', '\r'])
 
+quotedCell :: GenParser Char st String
 quotedCell = char '"' >> many quotedChar >>= \r -> char '"' >> return r
 
+quotedChar :: GenParser Char st Char
 quotedChar = noneOf ['"'] <|> quotedDoubleQuote
 
+quotedDoubleQuote :: GenParser Char st Char
 quotedDoubleQuote = try (string (replicate 2 '"') >> return '"')
 
 eol :: GenParser Char st ()
