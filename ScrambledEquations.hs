@@ -40,7 +40,7 @@ newtype Parser s a = Parser {
 } deriving (Monad)
 
 runParser :: Parser s a -> s -> Maybe (a, s)
-runParser p s = let foo = runState (runMaybeT (getParser p)) s in
+runParser p s = let foo = (runState . runMaybeT . getParser) p s in
   case foo of
     (Nothing, _) -> Nothing
     (Just a, s)  -> Just (a, s) 
