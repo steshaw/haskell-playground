@@ -59,6 +59,7 @@ p1 ||| p2 =
 -- like {} in EBNF
 -- e.g. num {mulOp num}
 -- XXX: Seems a lot like a fold. Can this be generalised?
+-- TODO: Is this the same as Parsec's many?
 repeatParser :: (a -> Parser s a) -> a -> Parser s a
 repeatParser aToParser left = 
   ((aToParser left) >>= repeatParser aToParser) ||| return left
@@ -97,8 +98,6 @@ lexOp = parseWhen '+' (Op Add) |||
         parseWhen '*' (Op Mul) |||
         parseWhen '/' (Op Div) |||
         parseWhen '=' Equals
-
-type Equation = [Token]
 
 data Expr
   = ENum Integer
@@ -198,16 +197,16 @@ uniquePermutations :: Eq a => [a] -> [[a]]
 uniquePermutations = nub . permutations
 
 -- TODO: Avoid brute force.
-goodPermutations :: Equation -> [Equation]
+goodPermutations :: [Token] -> [[Token]]
 goodPermutations equation = uniquePermutations equation
 
-goodExprs :: Equation -> [Expr]
+goodExprs :: [Token] -> [Expr]
 -- FIXME: fromJust is kind of evil, yes?
 goodExprs equation = map fromJust $ filter (not . (== Nothing)) exprs
   where
     exprs = map execParse (goodPermutations equation)
 
-solveTokens :: Equation -> [String]
+solveTokens :: [Token] -> [String]
 solveTokens ts = map (\(e, (a,_,_)) -> pprint e) good
   where
     exprs = goodExprs ts
