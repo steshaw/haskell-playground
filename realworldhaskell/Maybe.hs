@@ -13,9 +13,12 @@ t `bindMT` f = MaybeT $ do
 
 bindMT2 :: (Monad m) => MaybeT m a -> (a -> MaybeT m b) -> MaybeT m b
 t `bindMT2` f = MaybeT $ runMaybeT t >>= \fred ->
+  maybe (return Nothing) (\a -> runMaybeT (f a)) fred
+{-
   case fred of
     Nothing -> return Nothing
     Just a  -> runMaybeT (f a)
+-}
 
 returnMT :: (Monad m) => a -> MaybeT m a
 returnMT a = MaybeT $ return (Just a)
@@ -25,5 +28,5 @@ failMT s = MaybeT $ return Nothing
 
 instance (Monad m) => Monad (MaybeT m) where
   return = returnMT
-  (>>=) = bindMT
+  (>>=) = bindMT2
   fail = failMT
