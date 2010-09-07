@@ -46,8 +46,8 @@ runParser = runState . runMaybeT . getParser
 execParser :: Parser [t] a -> [t] -> Maybe a
 execParser p ts =
   case runParser p ts of
-    (Just e, [])   -> Just e  -- a proper expression must be correctly parsed and be at eof (i.e. no more input)
-    otherwise      -> Nothing
+    (a, [])   -> a  -- a proper expression must be correctly parsed and be at eof (i.e. no more input)
+    otherwise -> Nothing
 
 (|||) :: Parser s a -> Parser s a -> Parser s a
 p1 ||| p2 =
