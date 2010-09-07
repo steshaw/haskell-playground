@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -irealworldhaskell/ #-} -- FIXME: This pragma does not work.
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 --
 -- A automated solver for "scrambled equations" - a homework assignment for my 6th grade nephew.
 --
@@ -21,6 +23,8 @@ module ScrambledEquations where
 
 import Data.List (delete, nub, permutations)
 import Control.Monad
+import Control.Monad.State
+import MaybeT
 
 data Op = Add | Sub | Div | Mul
   deriving (Eq, Show)
@@ -32,24 +36,21 @@ data Token
   deriving (Eq, Show)
 
 newtype Parser s a = Parser {
-  getParser :: s -> Maybe (a, s)
-}
+  getParser :: MaybeT (State s) a
+} deriving (Monad)
 
-bindParser :: Parser s a -> (a -> Parser s b) -> Parser s b
-p1 `bindParser` aToP2 = 
-  Parser $ \ts ->
-    (getParser p1) ts >>= \(a, ts) -> (getParser (aToP2 a)) ts
-
-instance Monad (Parser s) where
-  return = identityParser
-  (>>=) = bindParser
+runParser :: Parser s a -> s -> Maybe (a, s)
+runParser p s = let foo = runState (runMaybeT (getParser p)) s in
+  case foo of
+    (Nothing, _) -> Nothing
+    (Just a, s)  -> Just (a, s) 
 
 (|||) :: Parser s a -> Parser s a -> Parser s a
 p1 ||| p2 =
-  Parser $ \ts ->
-    case (getParser p1) ts of
-      Nothing -> (getParser p2) ts
-      x -> x
+  Parser $ MaybeT $ State (\s ->
+    case (runState . runMaybeT . getParser) p1 s of
+      (Nothing, _) -> (runState . runMaybeT . getParser) p2 s
+      (Just a, s) -> (Just a, s))
 
 -- like {} in EBNF
 -- e.g. num {mulOp num}
@@ -57,9 +58,6 @@ p1 ||| p2 =
 repeatParser :: a -> (a -> Parser s a) -> Parser s a
 repeatParser left aToParser = 
   ((aToParser left) >>= \e -> repeatParser e aToParser) ||| return left
-
-identityParser :: a -> Parser s a
-identityParser left = Parser $ \ts -> return (left, ts)
 
 lexer :: Parser String [Token]
 lexer = repeatParser [] lexerTail
@@ -76,15 +74,15 @@ skipSpaces :: Parser String ()
 skipSpaces = repeatParser () (\_ -> parseWhen ' ' ())
 
 lexNum :: Parser String Token
-lexNum = Parser $ \s ->
+lexNum = Parser $ MaybeT $ State (\s ->
   case reads s of
-    [(n, s)] -> Just (Num n, s)
-    otherwise -> Nothing
+    [(n, s)] -> (Just (Num n), s)
+    otherwise -> (Nothing, s)) -- XXX: Weird that I had to supply "s" here. Not in original version.
 
 parseWhen :: Eq c => c -> a -> Parser [c] a
-parseWhen a b = Parser $ \s -> case s of
-  [] -> Nothing
-  (x:xs) -> if (x == a) then return (b, xs) else Nothing
+parseWhen a b = Parser $ MaybeT $ State $ \s -> case s of
+  [] -> (Nothing, s)
+  (x:xs) -> if (x == a) then (Just b, xs) else (Nothing, s)
 
 lexOp :: Parser String Token
 lexOp = parseWhen '+' (Op Add) |||
@@ -181,12 +179,12 @@ parseOp2 = parseWhen (Op Mul) Mul |||
            parseWhen (Op Div) Div
 
 parseNum :: ParseExpr Expr
-parseNum = Parser $ \ts -> case ts of
-  (Num n:ts) -> Just (ENum n, ts)
-  otherwise  -> Nothing
+parseNum = Parser $ MaybeT $ State $ \ts -> case ts of
+  (Num n:ts) -> (Just (ENum n), ts)
+  otherwise  -> (Nothing, ts)
 
 equationToExpr :: [Token] -> Maybe Expr
-equationToExpr ts = (getParser parse) ts >>= \r ->
+equationToExpr ts = (runParser parse) ts >>= \r ->
   case r of
     (e, [])   -> Just e
     otherwise -> Nothing
@@ -211,7 +209,8 @@ solveTokens ts = map (\(e, (a,_,_)) -> pprint e) good
     results = map eval exprs
     good = filter (\(e, (_,_,b)) -> b) (zip exprs results)
 
-solve s = grabMaybe ((getParser lexer) s >>= \(tokens, "") -> Just $ solveTokens tokens)
+--solve = undefined
+solve s = grabMaybe ((runParser lexer) s >>= \(tokens, "") -> Just $ solveTokens tokens)
   where
     grabMaybe (Just a) = a
     grabMaybe Nothing = []
@@ -259,13 +258,13 @@ test actual expect =
 
 grab (Just a) = a
 
-evalString s = (getParser lexer) s >>= \(a, _) -> (getParser parseExpr) a >>= \(a, _) -> Just . evalExpr $ a
+evalString s = (runParser lexer) s >>= \(a, _) -> (runParser parseExpr) a >>= \(a, _) -> Just . evalExpr $ a
 
 grabEvalString s = grab $ evalString s
 
 stringEvalEq s eq = stringToTokens s == eq
   where
-    stringToTokens s = grab $ (getParser lexer) s >>= \(ts, "") -> Just ts
+    stringToTokens s = grab $ (runParser lexer) s >>= \(ts, "") -> Just ts
 
 testProbs = map (\(actual, expect) -> test actual expect) probs
 
