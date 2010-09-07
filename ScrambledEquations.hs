@@ -24,6 +24,7 @@ module ScrambledEquations where
 import Data.List (delete, nub, permutations)
 import Control.Monad
 import Control.Monad.State
+import Maybe (fromJust)
 import MaybeT
 
 data Op = Add | Sub | Div | Mul
@@ -65,6 +66,7 @@ repeatParser left aToParser =
 lexer :: Parser String [Token]
 lexer = repeatParser [] lexerTail
 
+execLexer :: String -> Maybe [Token]
 execLexer = execParser lexer
 
 lexerTail :: [Token] -> Parser String [Token]
@@ -200,11 +202,10 @@ goodPermutations :: Equation -> [Equation]
 goodPermutations equation = uniquePermutations equation
 
 goodExprs :: Equation -> [Expr]
-goodExprs equation = map grabExpr $ filter (not . (== Nothing)) exprs
+-- FIXME: fromJust is kind of evil, yes?
+goodExprs equation = map fromJust $ filter (not . (== Nothing)) exprs
   where
     exprs = map execParse (goodPermutations equation)
--- FIXME: Can we get rid of this Just/grab nastiness?
-    grabExpr (Just e) = e
 
 solveTokens :: Equation -> [String]
 solveTokens ts = map (\(e, (a,_,_)) -> pprint e) good
@@ -214,10 +215,8 @@ solveTokens ts = map (\(e, (a,_,_)) -> pprint e) good
     good = filter (\(e, (_,_,b)) -> b) (zip exprs results)
 
 solve :: String -> [String]
-solve s = grabMaybe (execLexer s >>= \tokens -> Just $ solveTokens tokens)
-  where
-    grabMaybe (Just a) = a
-    grabMaybe Nothing = []
+-- FIXME: fromJust is kind of evil, yes?
+solve s = fromJust $ execLexer s >>= return . solveTokens
 
 equation1 = [Num 3, Num 27, Equals, Num 24, Op Add]
 equationString1 = "3 27 = 24 +"
