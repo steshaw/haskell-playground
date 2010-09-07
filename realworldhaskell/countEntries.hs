@@ -45,13 +45,11 @@ countEntries path = do
 
 countEntries' path = execWriterT (countEntries path)
 
-{-
-eg1 :: FilePath -> IO [(String, Int)]
-eg1 path = liftM (map (first ("dir: " ++))) $ liftM (take 2) (countEntries' path)
--}
-
 countEntries'' maxDepth path = 
   runStateT (runReaderT (countEntries' path) AppConfig {cfgMaxDepth = maxDepth}) AppState {stDepth = 0, stMaxDepth = 0}
+
+eg1 :: FilePath -> IO [(String, Int)]
+eg1 path = liftM (map (first ("dir: " ++))) $ liftM (take 2 . fst) (countEntries'' 1 path)
 
 data Result a = Result {
   depth :: Integer, 
