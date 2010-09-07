@@ -4,6 +4,7 @@
 
 PROGS := \
   copy \
+  countEntries \
   csv \
   DesugarMonads \
   find \
