@@ -61,10 +61,12 @@ p1 ||| p2 =
 -- XXX: Seems a lot like a fold. Can this be generalised?
 repeatParser :: a -> (a -> Parser s a) -> Parser s a
 repeatParser left aToParser = 
-  ((aToParser left) >>= \e -> repeatParser e aToParser) ||| return left
+  ((aToParser left) >>= repeatParserFlipped aToParser) ||| return left
+
+repeatParserFlipped = flip repeatParser
 
 lexer :: Parser String [Token]
-lexer = repeatParser [] lexerTail
+lexer = repeatParserFlipped lexerTail []
 
 execLexer :: String -> Maybe [Token]
 execLexer = execParser lexer
@@ -78,7 +80,7 @@ lexSingleToken :: Parser String Token
 lexSingleToken = lexOp ||| lexNum
 
 skipSpaces :: Parser String ()
-skipSpaces = repeatParser () (\_ -> parseWhen ' ' ())
+skipSpaces = repeatParserFlipped (\_ -> parseWhen ' ' ()) ()
 
 lexNum :: Parser String Token
 lexNum = Parser $ MaybeT $ State (\s ->
@@ -153,7 +155,7 @@ parseExprL1 :: ParseExpr Expr
 parseExprL1 = parseExprL2 >>= parseExprL1Tail
 
 parseExprL1Tail :: Expr -> ParseExpr Expr
-parseExprL1Tail left = repeatParser left l1Tail
+parseExprL1Tail = repeatParserFlipped l1Tail
 
 l1Tail :: Expr -> ParseExpr Expr
 l1Tail left =
@@ -166,7 +168,7 @@ parseExprL2 = parseExprL3 >>= parseExprL2Tail
 
 -- 2 * 3 * 4 => (2 * 3) * 4
 parseExprL2Tail :: Expr -> ParseExpr Expr
-parseExprL2Tail left = repeatParser left l2Tail
+parseExprL2Tail = repeatParserFlipped l2Tail
 
 l2Tail :: Expr -> ParseExpr Expr
 l2Tail left =
