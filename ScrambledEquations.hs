@@ -59,14 +59,12 @@ p1 ||| p2 =
 -- like {} in EBNF
 -- e.g. num {mulOp num}
 -- XXX: Seems a lot like a fold. Can this be generalised?
-repeatParser :: a -> (a -> Parser s a) -> Parser s a
-repeatParser left aToParser = 
-  ((aToParser left) >>= repeatParserFlipped aToParser) ||| return left
-
-repeatParserFlipped = flip repeatParser
+repeatParser :: (a -> Parser s a) -> a -> Parser s a
+repeatParser aToParser left = 
+  ((aToParser left) >>= repeatParser aToParser) ||| return left
 
 lexer :: Parser String [Token]
-lexer = repeatParserFlipped lexerTail []
+lexer = repeatParser lexerTail []
 
 execLexer :: String -> Maybe [Token]
 execLexer = execParser lexer
@@ -80,7 +78,7 @@ lexSingleToken :: Parser String Token
 lexSingleToken = lexOp ||| lexNum
 
 skipSpaces :: Parser String ()
-skipSpaces = repeatParserFlipped (\_ -> parseWhen ' ' ()) ()
+skipSpaces = repeatParser (\_ -> parseWhen ' ' ()) ()
 
 lexNum :: Parser String Token
 lexNum = Parser $ MaybeT $ State (\s ->
@@ -155,7 +153,7 @@ parseExprL1 :: ParseExpr Expr
 parseExprL1 = parseExprL2 >>= parseExprL1Tail
 
 parseExprL1Tail :: Expr -> ParseExpr Expr
-parseExprL1Tail = repeatParserFlipped l1Tail
+parseExprL1Tail = repeatParser l1Tail
 
 l1Tail :: Expr -> ParseExpr Expr
 l1Tail left =
@@ -168,7 +166,7 @@ parseExprL2 = parseExprL3 >>= parseExprL2Tail
 
 -- 2 * 3 * 4 => (2 * 3) * 4
 parseExprL2Tail :: Expr -> ParseExpr Expr
-parseExprL2Tail = repeatParserFlipped l2Tail
+parseExprL2Tail = repeatParser l2Tail
 
 l2Tail :: Expr -> ParseExpr Expr
 l2Tail left =
