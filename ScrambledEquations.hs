@@ -260,8 +260,6 @@ test actual expect =
   then Left $ "FAIL:- expect: " ++ show expect ++ " actual: " ++ show actual
   else Right True
 
-grab (Just a) = a
-
 evalString :: String -> Maybe Integer
 evalString s = execLexer s >>= execParseExpr >>= return . evalExpr
 
