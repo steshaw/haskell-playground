@@ -263,14 +263,12 @@ test actual expect =
 grab (Just a) = a
 
 evalString :: String -> Maybe Integer
-evalString s = execLexer s >>= \ts -> execParseExpr ts >>= \expr -> Just . evalExpr $ expr
--- FIXME: Can we get rid of this Just/grab nastiness?
+evalString s = execLexer s >>= execParseExpr >>= return . evalExpr
 
-grabEvalString s = grab $ evalString s
-
-
+testProbs :: [Either String Bool]
 testProbs = map (\(actual, expect) -> test actual expect) probs
 
+tests :: [Either String Bool]
 tests =
   [test (execLexer equationString1) (Just equation1)
   ,test (execLexer equationString2) (Just equation2)
@@ -286,8 +284,8 @@ tests =
   ,test (evalString "1 + 2") (Just 3)
   ,test (evalString "2 + 2 / 2") (Just 3)
   ,test (evalString "2 / 2 + 2") (Just 3)
-  ,test (grabEvalString "1-2-3") (-4)
-  ,test (grabEvalString "6/3/2") 1
+  ,test (evalString "1-2-3") (Just (-4))
+  ,test (evalString "6/3/2") (Just 1)
   ,test (length (solve "1=1+2")) 2
   ,test (length (solve "1 1 1 = *")) 2
   ] ++ testProbs
