@@ -48,12 +48,6 @@ execParser p ts =
     (Just e, [])   -> Just e  -- a proper expression must be correctly parsed and be at eof (i.e. no more input)
     otherwise      -> Nothing
 
-runParserAdapt :: Parser s a -> s -> Maybe (a, s)
-runParserAdapt p s = 
-  case runParser p s of
-    (Nothing, _) -> Nothing
-    (Just a, s)  -> Just (a, s)
-
 (|||) :: Parser s a -> Parser s a -> Parser s a
 p1 ||| p2 =
   Parser $ MaybeT $ State (\s ->
@@ -70,6 +64,8 @@ repeatParser left aToParser =
 
 lexer :: Parser String [Token]
 lexer = repeatParser [] lexerTail
+
+execLexer = execParser lexer
 
 lexerTail :: [Token] -> Parser String [Token]
 lexerTail left =
@@ -144,8 +140,12 @@ parse =
     parseEquals >> parseExpr >>= \e2 ->
       return (EEquals e1 e2)
 
+execParseExpr = execParser parseExpr
+
 parseExpr :: ParseExpr Expr
 parseExpr = parseExprL1
+
+execParse = execParser parse
 
 parseExprL1 :: ParseExpr Expr
 parseExprL1 = parseExprL2 >>= parseExprL1Tail
@@ -202,7 +202,8 @@ goodPermutations equation = uniquePermutations equation
 goodExprs :: Equation -> [Expr]
 goodExprs equation = map grabExpr $ filter (not . (== Nothing)) exprs
   where
-    exprs = map (execParser parse) (goodPermutations equation)
+    exprs = map execParse (goodPermutations equation)
+-- FIXME: Can we get rid of this Just/grab nastiness?
     grabExpr (Just e) = e
 
 solveTokens :: Equation -> [String]
@@ -213,7 +214,7 @@ solveTokens ts = map (\(e, (a,_,_)) -> pprint e) good
     good = filter (\(e, (_,_,b)) -> b) (zip exprs results)
 
 solve :: String -> [String]
-solve s = grabMaybe (execParser lexer s >>= \tokens -> Just $ solveTokens tokens)
+solve s = grabMaybe (execLexer s >>= \tokens -> Just $ solveTokens tokens)
   where
     grabMaybe (Just a) = a
     grabMaybe Nothing = []
@@ -262,22 +263,20 @@ test actual expect =
 grab (Just a) = a
 
 evalString :: String -> Maybe Integer
-evalString s = runParserAdapt lexer s >>= \(a, _) -> runParserAdapt parseExpr a >>= \(a, _) -> Just . evalExpr $ a
+evalString s = execLexer s >>= \ts -> execParseExpr ts >>= \expr -> Just . evalExpr $ expr
+-- FIXME: Can we get rid of this Just/grab nastiness?
 
 grabEvalString s = grab $ evalString s
 
-stringEvalEq s eq = stringToTokens s == eq
-  where
-    stringToTokens s = grab $ runParserAdapt lexer s >>= \(ts, "") -> Just ts
 
 testProbs = map (\(actual, expect) -> test actual expect) probs
 
 tests =
-  [test (stringEvalEq equationString1 equation1) True
-  ,test (stringEvalEq equationString2 equation2) True
-  ,test (stringEvalEq equationString3 equation3) True
-  ,test (stringEvalEq equationString4 equation4) True
-  ,test (stringEvalEq equationString5 equation5) True
+  [test (execLexer equationString1) (Just equation1)
+  ,test (execLexer equationString2) (Just equation2)
+  ,test (execLexer equationString3) (Just equation3)
+  ,test (execLexer equationString4) (Just equation4)
+  ,test (execLexer equationString5) (Just equation5)
   ,test (evalString "1") (Just 1)
   ,test (evalString "") Nothing
   ,test (evalString "+") Nothing
