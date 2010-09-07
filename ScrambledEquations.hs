@@ -51,10 +51,10 @@ execParser p ts =
 
 (|||) :: Parser s a -> Parser s a -> Parser s a
 p1 ||| p2 =
-  Parser $ MaybeT $ State (\s ->
+  Parser $ MaybeT $ State $ \s ->
     case runParser p1 s of
       (Nothing, _) -> runParser p2 s
-      (Just a, s) -> (Just a, s))
+      a            -> a
 
 -- like {} in EBNF
 -- e.g. num {mulOp num}
