@@ -39,17 +39,26 @@ newtype Parser s a = Parser {
   getParser :: MaybeT (State s) a
 } deriving (Monad)
 
-runParser :: Parser s a -> s -> Maybe (a, s)
-runParser p s = let foo = (runState . runMaybeT . getParser) p s in
-  case foo of
+runParser :: Parser s a -> s -> (Maybe a, s)
+runParser = runState . runMaybeT . getParser
+
+execParser :: Parser [t] a -> [t] -> Maybe a
+execParser p ts =
+  case runParser p ts of
+    (Just e, [])   -> Just e  -- a proper expression must be correctly parsed and be at eof (i.e. no more input)
+    otherwise      -> Nothing
+
+runParserAdapt :: Parser s a -> s -> Maybe (a, s)
+runParserAdapt p s = 
+  case runParser p s of
     (Nothing, _) -> Nothing
-    (Just a, s)  -> Just (a, s) 
+    (Just a, s)  -> Just (a, s)
 
 (|||) :: Parser s a -> Parser s a -> Parser s a
 p1 ||| p2 =
   Parser $ MaybeT $ State (\s ->
-    case (runState . runMaybeT . getParser) p1 s of
-      (Nothing, _) -> (runState . runMaybeT . getParser) p2 s
+    case runParser p1 s of
+      (Nothing, _) -> runParser p2 s
       (Just a, s) -> (Just a, s))
 
 -- like {} in EBNF
@@ -183,12 +192,6 @@ parseNum = Parser $ MaybeT $ State $ \ts -> case ts of
   (Num n:ts) -> (Just (ENum n), ts)
   otherwise  -> (Nothing, ts)
 
-equationToExpr :: [Token] -> Maybe Expr
-equationToExpr ts = (runParser parse) ts >>= \r ->
-  case r of
-    (e, [])   -> Just e
-    otherwise -> Nothing
-
 uniquePermutations :: Eq a => [a] -> [[a]]
 uniquePermutations = nub . permutations
 
@@ -199,7 +202,7 @@ goodPermutations equation = uniquePermutations equation
 goodExprs :: Equation -> [Expr]
 goodExprs equation = map grabExpr $ filter (not . (== Nothing)) exprs
   where
-    exprs = map equationToExpr (goodPermutations equation)
+    exprs = map (execParser parse) (goodPermutations equation)
     grabExpr (Just e) = e
 
 solveTokens :: Equation -> [String]
@@ -209,8 +212,8 @@ solveTokens ts = map (\(e, (a,_,_)) -> pprint e) good
     results = map eval exprs
     good = filter (\(e, (_,_,b)) -> b) (zip exprs results)
 
---solve = undefined
-solve s = grabMaybe ((runParser lexer) s >>= \(tokens, "") -> Just $ solveTokens tokens)
+solve :: String -> [String]
+solve s = grabMaybe (execParser lexer s >>= \tokens -> Just $ solveTokens tokens)
   where
     grabMaybe (Just a) = a
     grabMaybe Nothing = []
@@ -258,13 +261,14 @@ test actual expect =
 
 grab (Just a) = a
 
-evalString s = (runParser lexer) s >>= \(a, _) -> (runParser parseExpr) a >>= \(a, _) -> Just . evalExpr $ a
+evalString :: String -> Maybe Integer
+evalString s = (runParserAdapt lexer) s >>= \(a, _) -> (runParserAdapt parseExpr) a >>= \(a, _) -> Just . evalExpr $ a
 
 grabEvalString s = grab $ evalString s
 
 stringEvalEq s eq = stringToTokens s == eq
   where
-    stringToTokens s = grab $ (runParser lexer) s >>= \(ts, "") -> Just ts
+    stringToTokens s = grab $ (runParserAdapt lexer) s >>= \(ts, "") -> Just ts
 
 testProbs = map (\(actual, expect) -> test actual expect) probs
 
