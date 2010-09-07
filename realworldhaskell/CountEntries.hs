@@ -3,11 +3,12 @@ module CountEntries where
 import System.Directory (doesDirectoryExist, getDirectoryContents)
 import System.FilePath ((</>))
 import Control.Monad (forM, liftM)
+import Control.Applicative
 
 listDirectory :: FilePath -> IO [String]
 listDirectory = liftM (filter notDots) . getDirectoryContents
-  where notDots path = path /= "." && path /= ".."
-  --where notDots path = (&&) <$> (/= ".") <*> (/= "..")
+  --where notDots path = path /= "." && path /= ".."
+  where notDots = (&&) <$> (/= ".") <*> (/= "..") -- alternative (perhaps evil) implementation
 
 countEntries :: FilePath -> IO [(FilePath, Int)]
 countEntries path = do
