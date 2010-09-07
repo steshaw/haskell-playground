@@ -20,9 +20,8 @@ data AppState = AppState {
   stMaxDepth :: Integer
 } deriving (Show)
 
-type App = ReaderT AppConfig (StateT AppState IO)
 newtype NewApp a = NewApp {
-  getMyApp :: App a
+  getMyApp :: ReaderT AppConfig (StateT AppState IO) a
 } deriving (Monad, MonadIO, MonadReader AppConfig, MonadState AppState)
 
 listDirectory :: FilePath -> IO [String]
