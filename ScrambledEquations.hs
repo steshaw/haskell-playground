@@ -262,7 +262,7 @@ test actual expect =
 grab (Just a) = a
 
 evalString :: String -> Maybe Integer
-evalString s = (runParserAdapt lexer) s >>= \(a, _) -> (runParserAdapt parseExpr) a >>= \(a, _) -> Just . evalExpr $ a
+evalString s = runParserAdapt lexer s >>= \(a, _) -> runParserAdapt parseExpr a >>= \(a, _) -> Just . evalExpr $ a
 
 grabEvalString s = grab $ evalString s
 
