@@ -136,6 +136,7 @@ type ParseExpr a = Parser [Token] a
 
 -- expr1 = expr2
 parse :: ParseExpr Expr
+-- TODO: Can this be simplified with applicative parsing? e.g. EEquals <$> parseExpr <*> parseExpr
 parse =
   parseExpr >>= \e1 ->
     parseEquals >> parseExpr >>= \e2 ->
