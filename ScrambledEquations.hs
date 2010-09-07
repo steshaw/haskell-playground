@@ -268,7 +268,7 @@ grabEvalString s = grab $ evalString s
 
 stringEvalEq s eq = stringToTokens s == eq
   where
-    stringToTokens s = grab $ (runParserAdapt lexer) s >>= \(ts, "") -> Just ts
+    stringToTokens s = grab $ runParserAdapt lexer s >>= \(ts, "") -> Just ts
 
 testProbs = map (\(actual, expect) -> test actual expect) probs
 
