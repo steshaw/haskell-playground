@@ -29,4 +29,4 @@ test: pgm-test
 
 .PHONY: clean
 clean:
-	rm -f ${PROGS}
+	rm -f *.hi *.o ${PROGS}
