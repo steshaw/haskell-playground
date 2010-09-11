@@ -6,7 +6,7 @@ import Control.Monad.State
 import qualified Data.ByteString.Char8 as B
 import Data.Char
 
-data ParseError 
+data ParseError
   = NumericOverflow
   | EndOfInput
   | Chatty String
@@ -35,9 +35,26 @@ satisfy p = do
 optional :: Parser a -> Parser (Maybe a)
 optional p = (liftM Just p) `catchError` \_ -> return Nothing
 
+many :: Parser a -> Parser [a]
+many p = do
+  r <- optional p
+  case r of
+    Nothing -> return []
+    Just a -> do 
+      r <- many p
+      return (a:r)
+
+many1 p = do
+  r <- p
+  r2 <- many p
+  return (r:r2)
+
 letter = satisfy isLetter
 
 optionalLetter = optional letter
+
+optionalWord = many1 letter
+word = many1 letter
 
 asdf = "asdf"
 numExpr = "2.3 + 5.1"
@@ -56,3 +73,9 @@ eg1b = runParser letter (B.pack asdf)
 eg2b = runParser letter (B.pack numExpr)
 eg3b = runParser optionalLetter (B.pack asdf)
 eg4b = runParser optionalLetter (B.pack numExpr)
+
+eg5 = runParser optionalWord (B.pack "one two three")
+eg6 = runParser optionalWord (B.pack numExpr)
+
+eg7 = runParser word (B.pack "one two three")
+eg8 = runParser word (B.pack numExpr)
