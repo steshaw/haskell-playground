@@ -77,16 +77,16 @@ searchI s = do
 
 --
 
-runImplicitConnection a c = runReaderT (getImplicitConnection a) c
+runImplicitConnection c a = runReaderT (getImplicitConnection a) c
 
 runDumpAllI :: IO [[SqlValue]]
-runDumpAllI = withConnection $ \c -> runImplicitConnection dumpAllI c
+runDumpAllI = withConnection $ \c -> runImplicitConnection c dumpAllI
 
 runDumpDescI :: IO [[SqlValue]]
-runDumpDescI = withConnection $ \c -> runImplicitConnection dumpDescI c
+runDumpDescI = withConnection $ \c -> runImplicitConnection c dumpDescI
 
 runSearchI :: String -> IO [[SqlValue]]
-runSearchI s = withConnection $ \c -> runImplicitConnection (searchI (toSql s)) c
+runSearchI s = withConnection $ \c -> runImplicitConnection c (searchI (toSql s))
 
 --
 
@@ -102,13 +102,16 @@ goSearch s = runSearchI s >>= mapM_ print
 --
 
 eg1 :: IO ()
-eg1 = withConnection $ \c -> do
-  all <- runImplicitConnection dumpAllI c
-  mapM_ print all
-  putStrLn "\ndesc:"
-  descs <- runImplicitConnection dumpDescI c
-  mapM_ print descs
-  forM_ ["foo", "two", "f%"] $ \s -> do
-    putStrLn $ "\nsearch " ++ show s ++ ":"
-    searchResults <- runImplicitConnection (searchI (toSql s)) c
-    forM_ searchResults $ mapM_ print
+eg1 = withConnection $ \c ->
+  runImplicitConnection c $ do
+    all <- dumpAllI
+    liftIO $ do
+      mapM_ print all
+      putStrLn "\ndesc:"
+    descs <- dumpDescI
+    liftIO $ mapM_ print descs
+    forM_ ["foo", "two", "f%"] $ \s -> do
+      searchResults <- searchI (toSql s)
+      liftIO $ do
+        putStrLn $ "\nsearch " ++ show s ++ ":"
+        forM_ searchResults $ mapM_ print
