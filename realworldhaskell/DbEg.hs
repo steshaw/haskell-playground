@@ -103,9 +103,12 @@ goSearch s = runSearchI s >>= mapM_ print
 
 eg1 :: IO ()
 eg1 = withConnection $ \c -> do
-  runImplicitConnection dumpAllI c >>= mapM_ print
+  all <- runImplicitConnection dumpAllI c
+  mapM_ print all
   putStrLn "\ndesc:"
-  runImplicitConnection dumpDescI c >>= mapM_ print
+  descs <- runImplicitConnection dumpDescI c 
+  mapM_ print descs
   forM_ ["foo", "two", "f%"] $ \s -> do
     putStrLn $ "\nsearch " ++ show s ++ ":"
-    runImplicitConnection (searchI (toSql s)) c >>= mapM_ print
+    searchResults <- runImplicitConnection (searchI (toSql s)) c 
+    forM_ searchResults $ mapM_ print
