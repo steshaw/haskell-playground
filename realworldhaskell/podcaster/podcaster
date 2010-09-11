@@ -6,6 +6,7 @@ which=$1
 myDir="$HOME/.podcaster"
 downloadDir=$myDir/Downloads
 enclosuresFile=$myDir/enclosures.txt
+enclosureLimit=15
 
 if [[ $which == 'update' ]]; then
   $program check && $program download
@@ -14,7 +15,7 @@ elif [[ $which == "check" ]]; then
     echo "Checking feed ${feedUrl}"
     feedFile=$(tempfile)
     wget -qc "$feedUrl" -O ${feedFile}
-    Xtract -n "//rss/channel/item/enclosure/@url" ${feedFile} >>${enclosuresFile}
+    Xtract -n "//rss/channel/item/enclosure/@url" ${feedFile} | head -${enclosureLimit} >>${enclosuresFile}
     rm -f ${feedFile}
     sort -uo ${enclosuresFile} ${enclosuresFile}
     echo
