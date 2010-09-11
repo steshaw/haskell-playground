@@ -22,9 +22,7 @@ withConnection f = do
   disconnect c
   return result
 
-populate :: IO ()
-populate =
-  withConnection $ \c -> do
+doPopulate c = do
     tables <- getTables c
     when (notElem "descs" tables) $ do
       run c "create table descs (id integer not null, desc varchar(200) not null)" []
@@ -38,6 +36,10 @@ populate =
         , [toSql (6::Integer), toSql "six"]
         ]
       commit c
+
+populate :: IO ()
+populate =
+  withConnection $ \c -> doPopulate c
 
 --
 
@@ -102,7 +104,8 @@ goSearch s = runSearchI s >>= mapM_ print
 --
 
 eg1 :: IO ()
-eg1 = withConnection $ \c ->
+eg1 = withConnection $ \c -> do
+  doPopulate c
   runImplicitConnection c $ do
     all <- dumpAllI
     liftIO $ do
