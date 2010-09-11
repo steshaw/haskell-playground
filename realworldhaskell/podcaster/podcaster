@@ -1,0 +1,18 @@
+#!/bin/bash
+
+cat podcaster.cfg | while read feedUrl; do 
+  echo feedUrl = $feedUrl
+  feedFile=$(tempfile)
+  wget -c "$feedUrl" -O ${feedFile}
+  Xtract -n "//rss/channel/item/enclosure/@url" ${feedFile} >>enclosures.txt
+  rm -f ${feedFile}
+  sort -uo enclosures.txt enclosures.txt
+  echo -- 
+  echo enclosures.txt:
+  echo --
+  cat enclosures.txt
+  echo --
+done
+
+cd Downloads
+wget -ci ../enclosures.txt
