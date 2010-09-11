@@ -12,14 +12,17 @@ newtype ImplicitConnection a = ImplicitConnection {
   getImplicitConnection :: Reader Connection a
 } deriving (Monad, MonadReader Connection)
 
+connect :: IO Connection
 connect = connectSqlite3 "test1.db"
 
+withConnection :: (Connection -> IO a) -> IO a
 withConnection f = do
   c <- connect
   result <- f c
   disconnect c
   return result
 
+populate :: IO ()
 populate =
   withConnection $ \c -> do
     tables <- getTables c
@@ -76,22 +79,29 @@ searchI s = do
 
 runImplicitConnection a c = runReader (getImplicitConnection a) c
 
+runDumpAllI :: IO [[SqlValue]]
 runDumpAllI = withConnection $ \c -> runImplicitConnection dumpAllI c
 
+runDumpDescI :: IO [[SqlValue]]
 runDumpDescI = withConnection $ \c -> runImplicitConnection dumpDescI c
 
+runSearchI :: String -> IO [[SqlValue]]
 runSearchI s = withConnection $ \c -> runImplicitConnection (searchI (toSql s)) c
 
 --
 
-goDumpAll  = runDumpAllI  >>= mapM_ print
+goDumpAll :: IO ()
+goDumpAll = runDumpAllI >>= mapM_ print
 
+goDumpDesc :: IO ()
 goDumpDesc = runDumpDescI >>= mapM_ print
 
+goSearch :: String -> IO ()
 goSearch s = runSearchI s >>= mapM_ print
 
 --
 
+eg1 :: IO ()
 eg1 = withConnection $ \c -> do
   runImplicitConnection dumpAllI c >>= mapM_ print
   putStrLn "\ndesc:"
