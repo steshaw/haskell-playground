@@ -1,4 +1,4 @@
--- {-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module DbEg where
 
 import Steshaw ((|>))
@@ -7,7 +7,9 @@ import Database.HDBC.Sqlite3
 import Control.Monad (when)
 import Control.Monad.Reader
 
-type ImplicitConnection = Reader (Connection)
+newtype ImplicitConnection a = ImplicitConnection {
+  getImplicitConnection :: Reader Connection a
+} deriving (Monad, MonadReader Connection)
 
 connect = connectSqlite3 "test1.db"
 
@@ -71,11 +73,13 @@ searchI s = do
 
 --
 
-runDumpAllI = withConnection $ \c -> runReader dumpAllI c
+runImplicitConnection a c = runReader (getImplicitConnection a) c
 
-runDumpDescI = withConnection $ \c -> runReader dumpDescI c
+runDumpAllI = withConnection $ \c -> runImplicitConnection dumpAllI c
 
-runSearchI s = withConnection $ \c -> runReader (searchI (toSql s)) c
+runDumpDescI = withConnection $ \c -> runImplicitConnection dumpDescI c
+
+runSearchI s = withConnection $ \c -> runImplicitConnection (searchI (toSql s)) c
 
 --
 
@@ -87,11 +91,16 @@ goSearch s = runSearchI s >>= mapM_ print
 
 --
 
-eg1 = withConnection $ \c -> do
+fudge = dumpAllI
+{-
+  do
   putStrLn "all:"
-  runReader dumpAllI c >>= mapM_ print
+  dumpAllI >>= mapM_ print
   putStrLn "\ndesc:"
-  runReader dumpDescI c >>= mapM_ print
+  dumpDescI >>= mapM_ print
   forM_ ["foo", "two", "f%"] $ \s -> do
     putStrLn $ "\nsearch " ++ show s ++ ":"
-    runReader (searchI (toSql s)) c >>= mapM_ print
+    searchI (toSql s) >>= mapM_ print
+-}
+
+eg1 = withConnection $ \c -> runImplicitConnection fudge c
