@@ -39,7 +39,20 @@ letter = satisfy isLetter
 
 optionalLetter = optional letter
 
-eg1 = runState (runErrorT (getParser $ letter)) (B.pack "asdf")
-eg2 = runState (runErrorT (getParser $ letter)) (B.pack "2.3 + 5.1")
-eg3 = runState (runErrorT (getParser $ optionalLetter)) (B.pack "asdf")
-eg4 = runState (runErrorT (getParser $ optionalLetter)) (B.pack "2.3 + 5.1")
+asdf = "asdf"
+numExpr = "2.3 + 5.1"
+
+eg1a = runState (runErrorT (getParser $ letter)) (B.pack asdf)
+eg2a = runState (runErrorT (getParser $ letter)) (B.pack numExpr)
+eg3a = runState (runErrorT (getParser $ optionalLetter)) (B.pack asdf)
+eg4a = runState (runErrorT (getParser $ optionalLetter)) (B.pack numExpr)
+
+runParser :: Parser a -> B.ByteString -> Either ParseError (a, B.ByteString)
+runParser p bs = case (runState . runErrorT . getParser) p bs of
+  (Left err, _) -> Left err
+  (Right r, bs) -> Right (r, bs)
+
+eg1b = runParser letter (B.pack asdf)
+eg2b = runParser letter (B.pack numExpr)
+eg3b = runParser optionalLetter (B.pack asdf)
+eg4b = runParser optionalLetter (B.pack numExpr)
