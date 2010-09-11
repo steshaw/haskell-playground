@@ -64,8 +64,7 @@ int = do
   i <- integer
   if i >= fromIntegral (minBound::Int) && i <= fromIntegral (maxBound::Int)
     then return $ fromIntegral i
-    else return (-1)
---    else throwError $ "Int out of bounds: " ++ (show i)
+    else throwError (Chatty ("Int out of bounds: " ++ (show i)))
 
 asdf = "asdf"
 numExpr = "2.3 + 5.1"
@@ -75,10 +74,14 @@ eg2a = runState (runErrorT (getParser $ letter)) (B.pack numExpr)
 eg3a = runState (runErrorT (getParser $ optionalLetter)) (B.pack asdf)
 eg4a = runState (runErrorT (getParser $ optionalLetter)) (B.pack numExpr)
 
+execParser :: Parser a -> B.ByteString -> (Either ParseError a, B.ByteString)
+execParser = runState . runErrorT . getParser
+
 runParser :: Parser a -> B.ByteString -> Either ParseError (a, B.ByteString)
-runParser p bs = case (runState . runErrorT . getParser) p bs of
+runParser p bs = case execParser p bs of
   (Left err, _) -> Left err
   (Right r, bs) -> Right (r, bs)
+
 
 eg1b = runParser letter (B.pack asdf)
 eg2b = runParser letter (B.pack numExpr)
@@ -93,3 +96,12 @@ eg8 = runParser word (B.pack numExpr)
 
 eg9 = runParser integer (B.pack "fooey")
 eg10 = runParser integer (B.pack "1234")
+
+eg11 = execParser int (B.pack "1234")
+eg12 = execParser int (B.pack "12341324")
+eg13 = execParser int (B.pack "123413241234")
+eg14 = execParser int (B.pack (show (fromIntegral (maxBound :: Int))))
+eg15 = execParser int (B.pack (show (fromIntegral (maxBound :: Int) + 1)))
+eg16 = execParser int (B.pack (show (fromIntegral (minBound :: Int))))
+eg17 = execParser int (B.pack (show (fromIntegral (minBound :: Int))))
+eg18 = execParser int (B.pack (show (fromIntegral (minBound :: Int) - 1)))
