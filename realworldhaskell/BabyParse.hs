@@ -57,7 +57,13 @@ optionalWord = many1 letter
 word = many1 letter
 
 integer :: Parser Integer
-integer = many1 digit >>= return . read
+integer = 
+  optional minus >>= \r -> case r of
+    Nothing -> digits
+    Just '-' -> digits >>= return . negate
+  where
+    minus = satisfy (== '-')
+    digits = many1 digit >>= return . read
 
 int :: Parser Int
 int = do
@@ -82,7 +88,6 @@ runParser p bs = case execParser p bs of
   (Left err, _) -> Left err
   (Right r, bs) -> Right (r, bs)
 
-
 eg1b = runParser letter (B.pack asdf)
 eg2b = runParser letter (B.pack numExpr)
 eg3b = runParser optionalLetter (B.pack asdf)
@@ -94,14 +99,20 @@ eg6 = runParser optionalWord (B.pack numExpr)
 eg7 = runParser word (B.pack "one two three")
 eg8 = runParser word (B.pack numExpr)
 
-eg9 = runParser integer (B.pack "fooey")
-eg10 = runParser integer (B.pack "1234")
+eg9 = execParser integer (B.pack "fooey")
+eg10 = execParser integer (B.pack "1234")
+eg10a = execParser integer (B.pack "-1234")
+eg10b = execParser integer (B.pack "-")
+eg10c = execParser integer (B.pack "-1")
 
 eg11 = execParser int (B.pack "1234")
+eg11a = execParser int (B.pack "-1234")
+eg11b = execParser int (B.pack "-")
+eg11c = execParser int (B.pack "-1")
 eg12 = execParser int (B.pack "12341324")
 eg13 = execParser int (B.pack "123413241234")
-eg14 = execParser int (B.pack (show (fromIntegral (maxBound :: Int))))
-eg15 = execParser int (B.pack (show (fromIntegral (maxBound :: Int) + 1)))
-eg16 = execParser int (B.pack (show (fromIntegral (minBound :: Int))))
-eg17 = execParser int (B.pack (show (fromIntegral (minBound :: Int))))
-eg18 = execParser int (B.pack (show (fromIntegral (minBound :: Int) - 1)))
+eg14 = execParser int (B.pack (show (maxBound :: Int)))
+eg15 = execParser int (B.pack (show (fromIntegral (maxBound :: Int) + 1))) -- An Integer (+1) beyond (maxBound::Int).
+eg16 = execParser int (B.pack (show ((maxBound :: Int) + 1))) -- Incidentally, (+1) here wraps to most (minBound::Int).
+eg17 = execParser int (B.pack (show (minBound :: Int)))
+eg18 = execParser int (B.pack (show (fromIntegral (minBound :: Int) - 1))) -- An Integer (-1) before (minBound::Int).
