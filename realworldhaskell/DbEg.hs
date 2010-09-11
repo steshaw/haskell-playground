@@ -106,9 +106,9 @@ eg1 = withConnection $ \c -> do
   all <- runImplicitConnection dumpAllI c
   mapM_ print all
   putStrLn "\ndesc:"
-  descs <- runImplicitConnection dumpDescI c 
+  descs <- runImplicitConnection dumpDescI c
   mapM_ print descs
   forM_ ["foo", "two", "f%"] $ \s -> do
     putStrLn $ "\nsearch " ++ show s ++ ":"
-    searchResults <- runImplicitConnection (searchI (toSql s)) c 
+    searchResults <- runImplicitConnection (searchI (toSql s)) c
     forM_ searchResults $ mapM_ print
