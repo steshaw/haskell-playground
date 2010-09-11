@@ -4,7 +4,8 @@ module DbEg where
 import Steshaw ((|>))
 import Database.HDBC
 import Database.HDBC.Sqlite3
-import Control.Monad (when)
+import Control.Monad
+import Control.Monad.Trans
 import Control.Monad.Reader
 
 newtype ImplicitConnection a = ImplicitConnection {
@@ -57,7 +58,7 @@ search s = withConnection $ \c ->
 --
 
 dumpAllI :: ImplicitConnection (IO [[SqlValue]])
-dumpAllI = do 
+dumpAllI = do
   c <- ask
   return $ quickQuery' c `uncurry` allSql
 
@@ -91,16 +92,10 @@ goSearch s = runSearchI s >>= mapM_ print
 
 --
 
-fudge = dumpAllI
-{-
-  do
-  putStrLn "all:"
-  dumpAllI >>= mapM_ print
+eg1 = withConnection $ \c -> do
+  runImplicitConnection dumpAllI c >>= mapM_ print
   putStrLn "\ndesc:"
-  dumpDescI >>= mapM_ print
+  runImplicitConnection dumpDescI c >>= mapM_ print
   forM_ ["foo", "two", "f%"] $ \s -> do
     putStrLn $ "\nsearch " ++ show s ++ ":"
-    searchI (toSql s) >>= mapM_ print
--}
-
-eg1 = withConnection $ \c -> runImplicitConnection fudge c
+    runImplicitConnection (searchI (toSql s)) c >>= mapM_ print
