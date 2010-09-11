@@ -1,8 +1,13 @@
+-- {-# LANGUAGE NoMonomorphismRestriction #-}
 module DbEg where
 
+import Steshaw ((|>))
 import Database.HDBC
 import Database.HDBC.Sqlite3
 import Control.Monad (when)
+import Control.Monad.Reader
+
+type ImplicitConnection = Reader (Connection)
 
 connect = connectSqlite3 "test1.db"
 
@@ -28,8 +33,65 @@ populate =
         ]
       commit c
 
-search s = withConnection $ \c ->
-  quickQuery' c "select desc from descs where desc like ?" [s]
+--
 
-allDesc = withConnection $ \c ->
-  quickQuery' c "select desc from descs" []
+allSql = ("select * from descs", [])
+
+descSql = ("select desc from descs", [])
+
+searchSql s = ("select desc from descs where desc like ?", [s])
+
+--
+
+dumpAll = withConnection $ \c ->
+  quickQuery' c `uncurry` allSql
+
+dumpDesc = withConnection $ \c ->
+  quickQuery' c `uncurry` descSql
+
+search s = withConnection $ \c ->
+  quickQuery' c `uncurry` (searchSql s)
+
+--
+
+dumpAllI :: ImplicitConnection (IO [[SqlValue]])
+dumpAllI = do 
+  c <- ask
+  return $ quickQuery' c `uncurry` allSql
+
+dumpDescI :: ImplicitConnection (IO [[SqlValue]])
+dumpDescI = do
+  c <- ask
+  return $ quickQuery' c `uncurry` descSql
+
+searchI :: SqlValue -> ImplicitConnection (IO [[SqlValue]])
+searchI s = do 
+  c <- ask
+  return $ quickQuery' c `uncurry` (searchSql s)
+
+--
+
+runDumpAllI = withConnection $ \c -> runReader dumpAllI c
+
+runDumpDescI = withConnection $ \c -> runReader dumpDescI c
+
+runSearchI s = withConnection $ \c -> runReader (searchI (toSql s)) c
+
+--
+
+goDumpAll  = runDumpAllI  >>= mapM_ print
+
+goDumpDesc = runDumpDescI >>= mapM_ print
+
+goSearch s = runSearchI s >>= mapM_ print
+
+--
+
+eg1 = withConnection $ \c -> do
+  putStrLn "all:"
+  runReader dumpAllI c >>= mapM_ print
+  putStrLn "\ndesc:"
+  runReader dumpDescI c >>= mapM_ print
+  forM_ ["foo", "two", "f%"] $ \s -> do
+    putStrLn $ "\nsearch " ++ show s ++ ":"
+    runReader (searchI (toSql s)) c >>= mapM_ print
