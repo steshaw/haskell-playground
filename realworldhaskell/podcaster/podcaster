@@ -1,18 +1,35 @@
 #!/bin/bash
 
-cat podcaster.cfg | while read feedUrl; do 
-  echo feedUrl = $feedUrl
-  feedFile=$(tempfile)
-  wget -c "$feedUrl" -O ${feedFile}
-  Xtract -n "//rss/channel/item/enclosure/@url" ${feedFile} >>enclosures.txt
-  rm -f ${feedFile}
-  sort -uo enclosures.txt enclosures.txt
-  echo -- 
-  echo enclosures.txt:
-  echo --
-  cat enclosures.txt
-  echo --
-done
+program=$0
+baseProgram=$(basename $0)
+which=$1
+myDir="$HOME/.podcaster"
+downloadDir=$myDir/Downloads
+enclosuresFile=$myDir/enclosures.txt
 
-cd Downloads
-wget -ci ../enclosures.txt
+if [[ $which == 'update' ]]; then
+  $program check && $program download
+elif [[ $which == "check" ]]; then
+  cat $myDir/podcaster.cfg | while read feedUrl; do
+    echo "Checking feed ${feedUrl}"
+    feedFile=$(tempfile)
+    wget -qc "$feedUrl" -O ${feedFile}
+    Xtract -n "//rss/channel/item/enclosure/@url" ${feedFile} >>${enclosuresFile}
+    rm -f ${feedFile}
+    sort -uo ${enclosuresFile} ${enclosuresFile}
+    echo
+  done
+elif [[ $which == "download" ]]; then
+  mkdir -p $downloadDir
+  cd $downloadDir
+  wget --no-verbose -ci $myDir/enclosures.txt
+else
+  cat <<! >&2
+Usage: ${baseProgram} update|check|download
+
+  update   - check feeds and download
+  check    - check feeds only
+  download - download only
+!
+  exit 2
+fi
