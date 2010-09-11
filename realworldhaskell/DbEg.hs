@@ -9,8 +9,8 @@ import Control.Monad.Trans
 import Control.Monad.Reader
 
 newtype ImplicitConnection a = ImplicitConnection {
-  getImplicitConnection :: Reader Connection a
-} deriving (Monad, MonadReader Connection)
+  getImplicitConnection :: ReaderT Connection IO a
+} deriving (Monad, MonadIO, MonadReader Connection)
 
 connect :: IO Connection
 connect = connectSqlite3 "test1.db"
@@ -60,24 +60,24 @@ search s = withConnection $ \c ->
 
 --
 
-dumpAllI :: ImplicitConnection (IO [[SqlValue]])
+dumpAllI :: ImplicitConnection [[SqlValue]]
 dumpAllI = do
   c <- ask
-  return $ quickQuery' c `uncurry` allSql
+  liftIO $ quickQuery' c `uncurry` allSql
 
-dumpDescI :: ImplicitConnection (IO [[SqlValue]])
+dumpDescI :: ImplicitConnection [[SqlValue]]
 dumpDescI = do
   c <- ask
-  return $ quickQuery' c `uncurry` descSql
+  liftIO $ quickQuery' c `uncurry` descSql
 
-searchI :: SqlValue -> ImplicitConnection (IO [[SqlValue]])
+searchI :: SqlValue -> ImplicitConnection [[SqlValue]]
 searchI s = do 
   c <- ask
-  return $ quickQuery' c `uncurry` (searchSql s)
+  liftIO $ quickQuery' c `uncurry` (searchSql s)
 
 --
 
-runImplicitConnection a c = runReader (getImplicitConnection a) c
+runImplicitConnection a c = runReaderT (getImplicitConnection a) c
 
 runDumpAllI :: IO [[SqlValue]]
 runDumpAllI = withConnection $ \c -> runImplicitConnection dumpAllI c
