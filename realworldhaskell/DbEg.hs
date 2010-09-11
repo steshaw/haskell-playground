@@ -105,7 +105,10 @@ goSearch s = runSearchI s >>= mapM_ print
 eg1 :: IO ()
 eg1 = withConnection $ \c -> do
   doPopulate c
-  runImplicitConnection c $ do
+  runImplicitConnection c implicitAction
+
+implicitAction :: ImplicitConnection ()
+implicitAction = do
     all <- dumpAllI
     liftIO $ do
       mapM_ print all
