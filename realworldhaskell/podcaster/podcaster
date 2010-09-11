@@ -22,7 +22,7 @@ elif [[ $which == "check" ]]; then
 elif [[ $which == "download" ]]; then
   mkdir -p $downloadDir
   cd $downloadDir
-  wget --no-verbose -ci $myDir/enclosures.txt
+  exec wget -ci $myDir/enclosures.txt
 else
   cat <<! >&2
 Usage: ${baseProgram} update|check|download
