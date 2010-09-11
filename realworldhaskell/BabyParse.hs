@@ -50,11 +50,22 @@ many1 p = do
   return (r:r2)
 
 letter = satisfy isLetter
-
+digit = satisfy isDigit
 optionalLetter = optional letter
 
 optionalWord = many1 letter
 word = many1 letter
+
+integer :: Parser Integer
+integer = many1 digit >>= return . read
+
+int :: Parser Int
+int = do
+  i <- integer
+  if i >= fromIntegral (minBound::Int) && i <= fromIntegral (maxBound::Int)
+    then return $ fromIntegral i
+    else return (-1)
+--    else throwError $ "Int out of bounds: " ++ (show i)
 
 asdf = "asdf"
 numExpr = "2.3 + 5.1"
@@ -79,3 +90,6 @@ eg6 = runParser optionalWord (B.pack numExpr)
 
 eg7 = runParser word (B.pack "one two three")
 eg8 = runParser word (B.pack numExpr)
+
+eg9 = runParser integer (B.pack "fooey")
+eg10 = runParser integer (B.pack "1234")
