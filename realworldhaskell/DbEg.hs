@@ -38,8 +38,7 @@ doPopulate c = do
       commit c
 
 populate :: IO ()
-populate =
-  withConnection $ \c -> doPopulate c
+populate = withConnection doPopulate
 
 --
 
