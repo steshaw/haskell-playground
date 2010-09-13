@@ -18,7 +18,6 @@ elif [[ $which == "check" ]]; then
     Xtract -n "//rss/channel/item/enclosure/@url" ${feedFile} | head -${enclosureLimit} >>${enclosuresFile}
     rm -f ${feedFile}
     sort -uo ${enclosuresFile} ${enclosuresFile}
-    echo
   done
 elif [[ $which == "download" ]]; then
   mkdir -p $downloadDir
