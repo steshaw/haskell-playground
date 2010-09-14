@@ -9,7 +9,7 @@ data SyslogHandle = SyslogHandle
   {slhSocket :: Socket
   ,slhProgram :: String
   ,slhAddress :: SockAddr
-  }
+  } deriving (Show)
 
 openlog :: HostName
         -> String
@@ -22,6 +22,9 @@ openlog hostName port progName = do
   sock <- socket (addrFamily serverAddr) Datagram defaultProtocol
 
   return $ SyslogHandle sock progName (addrAddress serverAddr)
+
+closelog :: SyslogHandle -> IO ()
+closelog syslogH = sClose (slhSocket syslogH)
 
 syslog :: SyslogHandle -> Facility -> Priority -> String -> IO ()
 syslog syslogH fac pri msg = sendStr sendMsg
