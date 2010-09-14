@@ -57,7 +57,7 @@ facToCode =
   ,(LOCAL7, 23)
   ]
 
-codeToFac = map (\(x,y) -> (y,x)) facToCode
+codeToFac = map (uncurry $ flip (,)) facToCode
 
 codeOfFac :: Facility -> Int
 codeOfFac fac = case lookup fac facToCode of
