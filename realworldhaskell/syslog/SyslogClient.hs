@@ -4,6 +4,7 @@ import Syslog
 import Network.Socket
 import Data.List (genericDrop)
 import Data.Bits
+import Control.Monad (forM_)
 
 data SyslogHandle = SyslogHandle 
   {slhSocket :: Socket
@@ -43,3 +44,8 @@ makeCode fac pri = facCode `shiftL` 3 .|. priCode
   where
     facCode = codeOfFac fac
     priCode = fromEnum pri
+
+trySimpleServer ms = do
+  log <- openlog "localhost" "2514" "trySimpleServer"
+  forM_ ms $ \(pri, msg) -> syslog log USER pri msg
+  closelog log
