@@ -1,0 +1,10 @@
+#!/bin/bash
+
+n=1
+
+while [[ $n -le 10000 ]]; do
+  echo "Starting ./tcpEg1 #$n"
+  ./tcpEg1 $n > ramp.$n.out &
+  sleep 1s
+  n=$(($n + 1))
+done

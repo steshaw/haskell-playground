@@ -2,12 +2,12 @@ module SyslogTcpServer where
 
 import Network.Socket
 import Control.Concurrent
+import System.IO (IOMode(..), hGetContents, hClose)
+import Steshaw (forever)
 
 host = 0 -- seems to be loopback/localhost
 listenPort = 2514 -- syslog port (514) + 2000 for non-root
 recvSize = 4096
-
-forever f = f >> forever f
 
 mkServerSocket = do
   let protocolNumber = defaultProtocol
@@ -25,6 +25,10 @@ serve = do
     forkIO $ do
       putStrLn $ "clientSocket: " ++ (show clientSocket)
       putStrLn $ "sockAddr: " ++ (show sockAddr)
+      handle <- socketToHandle clientSocket ReadMode
+      hGetContents handle >>= putStrLn
+      hClose handle
+{-
       loop clientSocket ""
         where
           loop clientSocket buf = do
@@ -36,3 +40,4 @@ serve = do
                 sClose clientSocket
               else 
                 loop clientSocket (buf ++ bytes)
+-}

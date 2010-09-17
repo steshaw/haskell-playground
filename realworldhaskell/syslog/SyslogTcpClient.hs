@@ -7,6 +7,8 @@ import Data.Bits
 import Control.Monad (forM_)
 import Control.Concurrent
 import Control.OldException
+import Steshaw (forever)
+import System.IO (hFlush, stdout)
 
 data SyslogHandle = SyslogHandle
   {slhSocket :: Socket
@@ -57,13 +59,15 @@ egMessages =
   ,(EMERGENCY, "emergency")
   ]
 
-trySimpleServer = do
-  log <- openlog "localhost" "2514" "trySimpleServer"
+eg1 = do
+  log <- openlog "localhost" "2514" "eg1"
   forM_ egMessages $ \(pri, msg) -> syslog log USER pri msg
   closelog log
 
-loopTry = do
-  putStr "."
-  handle (\e -> putStrLn $ "error: " ++ (show e)) trySimpleServer
-  threadDelay (1000 * 1000)
-  loopTry
+delayMilliSeconds n = threadDelay (n * 1000)
+
+loopEg1 name = forever $ do
+  putStrLn $ name ++ ": ."
+  hFlush stdout
+  handle (\e -> putStrLn $ "error: " ++ (show e)) eg1
+  delayMilliSeconds 100
