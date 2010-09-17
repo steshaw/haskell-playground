@@ -5,6 +5,8 @@ import Network.Socket
 import Data.List (genericDrop)
 import Data.Bits
 import Control.Monad (forM_)
+import Control.Concurrent
+import Control.OldException
 
 data SyslogHandle = SyslogHandle
   {slhSocket :: Socket
@@ -59,3 +61,9 @@ trySimpleServer = do
   log <- openlog "localhost" "2514" "trySimpleServer"
   forM_ egMessages $ \(pri, msg) -> syslog log USER pri msg
   closelog log
+
+loopTry = do
+  putStr "."
+  handle (\e -> putStrLn $ "error: " ++ (show e)) trySimpleServer
+  threadDelay (1000 * 1000)
+  loopTry

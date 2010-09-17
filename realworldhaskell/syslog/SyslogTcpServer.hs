@@ -1,6 +1,7 @@
 module SyslogTcpServer where
 
 import Network.Socket
+import Control.Concurrent
 
 host = 0 -- seems to be loopback/localhost
 listenPort = 2514 -- syslog port (514) + 2000 for non-root
@@ -14,13 +15,24 @@ mkServerSocket = do
   let socketType = Stream
   socket family socketType protocolNumber
 
--- Basic non-forking TCP server. Hangs up after first recv.
+-- Basic forking TCP server. Hangs up after first recv.
 serve = do
   serverSocket <- mkServerSocket
   bindSocket serverSocket (SockAddrInet listenPort host)
   listen serverSocket 1
   forever $ do
     (clientSocket, sockAddr) <- accept serverSocket
-    putStrLn $ "clientSocket: " ++ (show clientSocket)
-    putStrLn $ "sockAddr: " ++ (show sockAddr)
-    do recv clientSocket recvSize >>= putStrLn >> sClose clientSocket
+    forkIO $ do
+      putStrLn $ "clientSocket: " ++ (show clientSocket)
+      putStrLn $ "sockAddr: " ++ (show sockAddr)
+      loop clientSocket ""
+        where
+          loop clientSocket buf = do
+            all@(bytes, len) <- recvLen clientSocket recvSize
+            print all
+            if len == 0
+              then do
+                putStrLn $ buf ++ bytes
+                sClose clientSocket
+              else 
+                loop clientSocket (buf ++ bytes)
