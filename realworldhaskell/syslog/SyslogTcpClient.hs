@@ -59,15 +59,19 @@ egMessages =
   ,(EMERGENCY, "emergency")
   ]
 
-eg1 = do
-  log <- openlog "localhost" "2514" "eg1"
+eg1 name = do
+  log <- openlog "localhost" "2514" name
   forM_ egMessages $ \(pri, msg) -> syslog log USER pri msg
   closelog log
 
 delayMilliSeconds n = threadDelay (n * 1000)
 
+printExceptions action = handle (\e -> putStrLn $ "error: " ++ (show e)) action
+
+dontHandleExceptions action = action
+
 loopEg1 name = forever $ do
   putStrLn $ name ++ ": ."
   hFlush stdout
-  handle (\e -> putStrLn $ "error: " ++ (show e)) eg1
+  dontHandleExceptions $ eg1 name
   delayMilliSeconds 100

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+n=1
+to=50
+
+while [[ $n -le $to ]]; do
+  echo "Starting ./tcpEg1 #$n"
+  ./tcpEg1 ramper-$n >ramper.$n.out &
+  sleep 0.1s
+  n=$(($n + 1))
+done

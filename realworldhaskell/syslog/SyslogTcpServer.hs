@@ -19,7 +19,7 @@ mkServerSocket = do
 serve = do
   serverSocket <- mkServerSocket
   bindSocket serverSocket (SockAddrInet listenPort host)
-  listen serverSocket 1
+  listen serverSocket 100
   forever $ do
     (clientSocket, sockAddr) <- accept serverSocket
     forkIO $ do
@@ -28,16 +28,3 @@ serve = do
       handle <- socketToHandle clientSocket ReadMode
       hGetContents handle >>= putStrLn
       hClose handle
-{-
-      loop clientSocket ""
-        where
-          loop clientSocket buf = do
-            all@(bytes, len) <- recvLen clientSocket recvSize
-            print all
-            if len == 0
-              then do
-                putStrLn $ buf ++ bytes
-                sClose clientSocket
-              else 
-                loop clientSocket (buf ++ bytes)
--}
