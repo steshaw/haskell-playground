@@ -16,24 +16,23 @@ min_years = 1
 max_years = 250
 step = 1
 
-weekly_rent = 400.00
-
 usage = do
   progName <- getProgName
-  putStrLn ("usage: " ++ progName ++ " <min-interest-rate> <max-interest-rate>\n\n" ++
+  putStrLn ("usage: " ++ progName ++ " weekly-rent <min-interest-rate> <max-interest-rate>\n\n" ++
+    "  weekly-rent         weekly rent in dollars                                          \n" ++
     "  min-interest-rate   low end of the range of the prevailing risk-free interest rate\n" ++
     "  max-interest-rate   top end of the range of the prevailing risk-free interest rate\n\n" ++
     " e.g. DiscountedCashFlow 3.0 8.0")
 
-print_dcf_at_8 = printDCF (8.0 %) $> last $> snd $> print
+print_dcf_at_8 = printDCF 500.00 (8.0 %) $> last $> snd $> print
 
 main =
   do
   args <- getArgs
   case args of
-    [min_rate, max_rate] ->
-      case (reads (args !! 0), reads (args !! 1)) :: ([(Double, String)], [(Double, String)]) of
-        ([(min_rate, "")], [(max_rate, "")]) -> printTable min_rate max_rate
+    [weekly_rent, min_rate, max_rate] ->
+      case (reads weekly_rent, reads min_rate, reads max_rate) :: ([(Double, String)], [(Double, String)], [(Double, String)]) of
+        ([(weekly_rent, "")], [(min_rate, "")], [(max_rate, "")]) -> printTable weekly_rent min_rate max_rate
         otherwise -> usage
     otherwise -> usage
 
@@ -49,23 +48,23 @@ floats min max =
 showResult :: (Double, Integer, Double) -> String
 showResult (a, _, c) = (show (dot2 (a*100))) ++ "%: " ++ (double2dollar c)
 
-genTable min_rate max_rate =
-  floats min_rate max_rate $> map (%) $> map (\rate -> computeStream rate $> last)
+genTable weekly_rent min_rate max_rate =
+  floats min_rate max_rate $> map (%) $> map (\rate -> computeStream weekly_rent rate $> last)
 
-printTable min_rate max_rate =
-  genTable min_rate max_rate $> map showResult $> mapM_ putStrLn
+printTable weekly_rent min_rate max_rate =
+  genTable weekly_rent min_rate max_rate $> map showResult $> mapM_ putStrLn
 
-printDCF risk_free_interest_rate =
+printDCF weekly_rent risk_free_interest_rate =
   ([min_years,min_years+step..max_years] // \years -> [1..years]
     // (\year -> weekly_rent * 52 / (1 + risk_free_interest_rate) ^ year)
     $> \ns -> (years, sum ns $> (/ 1000) $> round $> show $> (++ "k")))
 
-computeStream risk_free_interest_rate =
+computeStream weekly_rent risk_free_interest_rate =
   ([min_years,min_years+step..max_years] // \years -> [1..years]
     // (\year -> weekly_rent * 52 / (1 + risk_free_interest_rate) ^ year)
     $> \ns -> (risk_free_interest_rate, years, sum ns))
 
-computeDCF risk_free_interest_rate = computeStream risk_free_interest_rate $> last $> third
+computeDCF weekly_rent risk_free_interest_rate = computeStream weekly_rent risk_free_interest_rate $> last $> third
 
 separate1000s' :: Integer -> [Integer]-> [Integer]
 separate1000s' n ns =
