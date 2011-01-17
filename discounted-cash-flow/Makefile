@@ -5,7 +5,7 @@ all: $(PROGRAM)
 
 .PHONY:
 run: all
-	./DiscountedCashFlow 500 0.0 9.9 | tee dcf-house-price-value-using-500-per-week-rent.txt
+	./gen-reports
 
 $(PROGRAM): $(PROGRAM).hs
 	ghc --make $<

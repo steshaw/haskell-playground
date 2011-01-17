@@ -16,6 +16,8 @@ min_years = 1
 max_years = 250
 step = 1
 
+weeks_per_year = 52
+
 usage = do
   progName <- getProgName
   putStrLn ("usage: " ++ progName ++ " weekly-rent <min-interest-rate> <max-interest-rate>\n\n" ++
@@ -45,11 +47,17 @@ floats min max =
   if min < (max+0.1) then (dot2 min):(floats (min + 0.1) max)
   else []
 
-showResult :: (Double, Integer, Double) -> String
-showResult (a, _, c) = (show (dot2 (a*100))) ++ "%: " ++ (fill 10 (double2dollar c))
+show_multiple n = (show (truncate n)) ++ "x"
+
+showResult :: (Double, Integer, Double, Double, Double) -> String
+showResult (interestRate, _, price, xweekly, xannual) = 
+  (fill 4 (show (dot2 (interestRate*100)))) ++ "%  " ++ (fill 10 (double2dollar price)) ++ " " ++ (fill 7 (show_multiple xweekly)) ++ " " ++ (fill 7 (show_multiple xannual))
+
+calculateMultiples weekly_rent (interestRate, years, price) = 
+  (interestRate, years, price, price / weekly_rent, price / (weekly_rent * weeks_per_year))
 
 genTable weekly_rent min_rate max_rate =
-  floats min_rate max_rate $> map (%) $> map (\rate -> computeStream weekly_rent rate $> last)
+  floats min_rate max_rate $> map (%) $> map (\rate -> computeStream weekly_rent rate $> last $> calculateMultiples weekly_rent)
 
 printTable weekly_rent min_rate max_rate =
   genTable weekly_rent min_rate max_rate $> map showResult $> mapM_ putStrLn
