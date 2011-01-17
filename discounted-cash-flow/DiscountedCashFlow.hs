@@ -5,8 +5,9 @@ module Main where
 import Steshaw
 import System (getArgs, getProgName)
 import Prelude hiding (catch)
+import Data.List (intersperse)
 import Control.Exception (try, catch, tryJust)
-import Control.Monad (mapM_)
+import Control.Monad (mapM_, join)
 import Control.Monad.Fix (fix)
 
 (%) n = n / 100.0
@@ -24,8 +25,9 @@ usage = do
     "  max-interest-rate   top end of the range of the prevailing risk-free interest rate\n\n" ++
     " e.g. DiscountedCashFlow 3.0 8.0")
 
+print_dcf_at_8 = printDCF (8.0 %) $> last $> snd $> print
+
 main =
---  printDCF (8.0 %) $> last $> snd $> print
   do
   args <- getArgs
   case args of
@@ -45,7 +47,7 @@ floats min max =
   else []
 
 showResult :: (Double, Integer, Double) -> String
-showResult (a, _, c) = (show (dot2 (a*100))) ++ "%: " ++ (float2dollar c)
+showResult (a, _, c) = (show (dot2 (a*100))) ++ "%: " ++ (double2dollar c)
 
 genTable min_rate max_rate =
   floats min_rate max_rate $> map (%) $> map (\rate -> computeStream rate $> last)
@@ -65,8 +67,29 @@ computeStream risk_free_interest_rate =
 
 computeDCF risk_free_interest_rate = computeStream risk_free_interest_rate $> last $> third
 
-float2dollar :: Double -> String
-float2dollar n = n $> round $> \n -> "$" ++ show n ++ "k"
+separate1000s' :: Integer -> [Integer]-> [Integer]
+separate1000s' n ns =
+  if (n `div` 1000) > 0 then separate1000s' (n `div` 1000) ((n `mod` 1000):ns)
+  else n:ns
+
+separate1000s :: Integer -> [Integer]
+separate1000s n = separate1000s' n []
+
+separate1000s_on_double :: Double -> [Integer]
+separate1000s_on_double n = let r = round n in separate1000s r
+
+fillto3 s = if length s < 3 then fillto3 ('0':s) else s
+
+asdf xs = (xs !! 0) : (map fillto3 (tail xs))
+
+-- Don't fillto3 the first number!
+double2dollar :: Double -> String
+double2dollar n =
+  let ns = separate1000s_on_double n 
+  in "$" ++ ns $> map show $> asdf $> intersperse "," $> join
+
+double2k :: Double -> String
+double2k n = n $> round $> \n -> "$" ++ show n ++ "k"
 
 {-
   $> \ns -> (years, sum ns $> (/ 1000) $> round $> \n -> "$" ++ show n ++ "k"))
