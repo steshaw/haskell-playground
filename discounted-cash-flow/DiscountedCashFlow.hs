@@ -80,29 +80,12 @@ separate1000s_on_double n = let r = round n in separate1000s r
 
 fillto3 s = if length s < 3 then fillto3 ('0':s) else s
 
-asdf xs = (xs !! 0) : (map fillto3 (tail xs))
+fillNotFirst xs = (xs !! 0) : (map fillto3 (tail xs))
 
--- Don't fillto3 the first number!
 double2dollar :: Double -> String
 double2dollar n =
   let ns = separate1000s_on_double n 
-  in "$" ++ ns $> map show $> asdf $> intersperse "," $> join
+  in "$" ++ ns $> map show $> fillNotFirst $> intersperse "," $> join
 
 double2k :: Double -> String
 double2k n = n $> round $> \n -> "$" ++ show n ++ "k"
-
-{-
-  $> \ns -> (years, sum ns $> (/ 1000) $> round $> \n -> "$" ++ show n ++ "k"))
-  $> mapM_ (\(num, value) -> putStrLn ((show num) ++ ": " ++ value))
--}
-
-{-
-(10, 200,000.00)
-(20, 350,000.00)
-(30, 510,000.00)
-(40, 519,000.00)
-(50, 519,000.00)
--}
-
---calc :: Float -> Float
---calc years = ([1..years] // (\year -> weekly_rent * 52 / ((1.0 + risk_free_interest_rate) ^ year)) ) $> sum
