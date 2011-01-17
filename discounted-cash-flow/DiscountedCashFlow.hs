@@ -20,11 +20,12 @@ weeks_per_year = 52
 
 usage = do
   progName <- getProgName
-  putStrLn ("usage: " ++ progName ++ " weekly-rent <min-interest-rate> <max-interest-rate>\n\n" ++
+  putStrLn (
+    "usage: " ++ progName ++ " <weekly-rent> <min-interest-rate> <max-interest-rate>\n\n" ++
     "  weekly-rent         weekly rent in dollars                                          \n" ++
     "  min-interest-rate   low end of the range of the prevailing risk-free interest rate\n" ++
     "  max-interest-rate   top end of the range of the prevailing risk-free interest rate\n\n" ++
-    " e.g. DiscountedCashFlow 3.0 8.0")
+    " e.g. DiscountedCashFlow 450.00 3.5 8.5")
 
 print_dcf_at_8 = printDCF 500.00 (8.0 %) $> last $> snd $> print
 
@@ -59,7 +60,13 @@ calculateMultiples weekly_rent (interestRate, years, price) =
 genTable weekly_rent min_rate max_rate =
   floats min_rate max_rate $> map (%) $> map (\rate -> computeStream weekly_rent rate $> last $> calculateMultiples weekly_rent)
 
-printTable weekly_rent min_rate max_rate =
+printHeadings = do
+     putStrLn "Rate   Price       Weekly x  Annual x"
+     putStrLn "~~~~   ~~~~~       ~~~~~~~~  ~~~~~~~~"
+     putStrLn ""
+
+printTable weekly_rent min_rate max_rate = do
+  printHeadings
   genTable weekly_rent min_rate max_rate $> map showResult $> mapM_ putStrLn
 
 printDCF weekly_rent risk_free_interest_rate =
