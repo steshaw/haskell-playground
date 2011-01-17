@@ -4,7 +4,7 @@ module Main where
 
 import Steshaw
 import System (getArgs, getProgName)
-import Prelude hiding (catch)
+import Prelude hiding (catch, length)
 import Data.List (intersperse)
 import Control.Exception (try, catch, tryJust)
 import Control.Monad (mapM_, join)
@@ -46,7 +46,7 @@ floats min max =
   else []
 
 showResult :: (Double, Integer, Double) -> String
-showResult (a, _, c) = (show (dot2 (a*100))) ++ "%: " ++ (double2dollar c)
+showResult (a, _, c) = (show (dot2 (a*100))) ++ "%: " ++ (fill 10 (double2dollar c))
 
 genTable weekly_rent min_rate max_rate =
   floats min_rate max_rate $> map (%) $> map (\rate -> computeStream weekly_rent rate $> last)
@@ -77,9 +77,17 @@ separate1000s n = separate1000s' n []
 separate1000s_on_double :: Double -> [Integer]
 separate1000s_on_double n = let r = round n in separate1000s r
 
-fillto3 s = if length s < 3 then fillto3 ('0':s) else s
+fillToWith :: Integer -> Char -> String -> String
+fillToWith n char s = if (length s) < n then fillToWith n char (char:s) else s
 
-fillNotFirst xs = (xs !! 0) : (map fillto3 (tail xs))
+fillTo3 :: String -> String
+--fillTo3 s = if length s < 3 then fillTo3 ('0':s) else s
+fillTo3 = fillToWith 3 '0'
+
+fill :: Integer -> String -> String
+fill n s = fillToWith n ' ' s
+
+fillNotFirst xs = (xs !! 0) : (map fillTo3 (tail xs))
 
 double2dollar :: Double -> String
 double2dollar n =

@@ -1,4 +1,20 @@
-module Steshaw where
+module Steshaw
+  (length
+  ,(|>)
+  ,($>)
+  ,(//)
+  ,($$)
+  ,(>.>)
+  ,unit
+  ,d
+  ,todo
+  ,epsilon
+) where
+
+import Prelude hiding (length)
+import Data.List (genericLength)
+
+length = genericLength
 
 (|>) = flip ($)
 
@@ -13,6 +29,7 @@ infixl 0 >$>
 infixr 1 $$
 ($$) = ($)
 
+-- TODO: investigate Control.Arrow's (>>>) as an alternative.
 infixl 9 >.>
 (>.>) = flip (.)
 
