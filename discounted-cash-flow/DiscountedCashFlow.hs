@@ -10,8 +10,6 @@ import Control.Exception (try, catch, tryJust)
 import Control.Monad (mapM_, join)
 import Control.Monad.Fix (fix)
 
-(%) n = n / 100.0
-
 min_years = 1
 max_years = 250
 step = 1
