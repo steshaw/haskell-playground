@@ -27,7 +27,7 @@ usage = do
     "  max-interest-rate   top end of the range of the prevailing risk-free interest rate\n\n" ++
     " e.g. DiscountedCashFlow 450.00 3.5 8.5")
 
-print_dcf_at_8 = printDCF 500.00 (8.0 %) $> last $> snd $> print
+--print_dcf_at_8 = printDCF 500.00 (8.0 %) $> last $> snd $> print
 
 main =
   do
@@ -70,9 +70,14 @@ printTable weekly_rent min_rate max_rate = do
   genTable weekly_rent min_rate max_rate $> map showResult $> mapM_ putStrLn
 
 printDCF weekly_rent risk_free_interest_rate =
-  ([min_years,min_years+step..max_years] // \years -> [1..years]
+  [min_years,min_years+step..max_years] // \years -> [1..years]
     // (\year -> weekly_rent * 52 / (1 + risk_free_interest_rate) ^ year)
-    $> \ns -> (years, sum ns $> (/ 1000) $> round $> show $> (++ "k")))
+
+{-
+prettyPrintDCF weekly_rent risk_free_interest_rate =
+  printDCF weekly_rent risk_free_interest_rate
+    $> \ns -> (years, sum ns $> (/ 1000) $> round $> show $> (++ "k"))
+-}
 
 computeStream weekly_rent risk_free_interest_rate =
   ([min_years,min_years+step..max_years] // \years -> [1..years]
