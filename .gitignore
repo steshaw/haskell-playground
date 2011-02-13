@@ -1,7 +1,6 @@
 #*[^.]*
 *.hi
 *.o
-factorial
 listToString
 repeatN
 sieve_of_eratothenes
