@@ -1,6 +1,7 @@
 #*[^.]*
 *.hi
 *.o
+mean
 listToString
 repeatN
 sieve_of_eratothenes
