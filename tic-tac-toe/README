@@ -1,0 +1,101 @@
+
+This directory (will) contain(s) a solution to a problem posed by 
+Tony Morris on the scala-debate mailing list.
+
+https://groups.google.com/d/msg/scala-debate/pBspzRuMyeU/GtwCzpKbwkwJ
+
+========================================================================
+Where I work, I use Haskell mostly. I use Scala second-mostly and
+other languages such as Java, Javascript and others rarely. Regardless
+of language, I use high-level techniques for implementing our business
+solutions.
+
+I also do teaching at work. I use Haskell for teaching almost
+exclusively. Occasionally Scala, Java or C# when a point may be better
+understood in that context. I also do teaching voluntarily. Every
+Tuesday, about 5 of use meet in a room to learn. The structure of the
+learning material is similar in both cases. I used to do "teaching" at
+university, but it is nothing like what I do now -- today I set the
+curriculum geared specifically toward learning with no other agenda
+and alter it according to new things I learn about teaching.
+
+Having done this for years, I tend to see the same questions and
+misunderstandings. This means I can start making predictions about a
+student's progress. This confidence in prediction was recently broken
+a little. Let me tell you why.
+
+I gave the students a problem. Since giving it to them, I have altered
+the problem slightly, but I do not expect this alteration to change
+the outcome (of course, surprises at every turn). I will give you the
+altered version.
+
+Write an API for tic-tac-toe. Do not use variables -- they are not
+permitted -- this includes libraries that expose in-line updates. No
+exceptions (or non-termination) in exposed functions -- all functions
+return a consistent value for every element of their domain. The
+follow API methods should exist:
+
+* move: takes a tic-tac-toe board and position and moves to that
+position (if not occupied) returning a new board. This function can
+only be called on a board that is in-play. Calling move on a game
+board that is finished is a *compile-time type error*.
+
+* whoWon: takes a tic-tac-toe board and returns the player that won
+the game (or a draw if neither). This function can only be called on a
+board that is finished. Calling move on a game board that is in-play
+is a *compile-time type error*.
+
+* takeBack: takes either a finished board or a board in-play that has
+had at least one move and returns a board in-play. It is a
+compile-time type error to call this function on an empty board.
+
+* playerAt: takes a tic-tac-toe board and position and returns the
+(possible) player at a given position. This function works on any type
+of board.
+
+* Other API functions that you may see fit. These can be determined by
+also writing a console application that uses the API -- other useful
+functions are likely to arise.
+
+You should write automated tests for your API. For example, the
+following universally quantified property holds true:
+
+forall Board b. forall Position p. such that (not (positionIsOccupied
+p b)). takeBack(move(p, b)) == b
+
+You should encode this property in a test. For Scala, use ScalaCheck.
+For Haskell, QuickCheck.
+
+When I gave this problem to students, I predicted an outcome of how
+difficult this would be for students to achieve. It has turned out on
+all occasions (both at work and teaching voluntarily) that this has
+proven far more difficult than I predicted. I am forced to consider
+that either my selection sample is skewed or my understanding of
+learning programming needs revision. I would love for more data on
+this or even better, rigorous scientific studies on learning in a
+programming context in general. I digress.
+
+Regardless of my slight loss of confidence, I still quite certain that
+this exercise is excellent for understanding some of the practical
+implications of software correctness verification and may even serve
+as a reasonable means by which to introduce students to more advanced
+topics such as dependent types and general type theory. The practical
+implications are especially appealing to my colleagues who work in L3
+support and receive phone calls about an API that was called by a
+client, which broke everything. Consider the fact that this is *simply
+impossible* with a well designed, machine-verification-checked API.
+
+You are invited to attempt this exercise for yourself, even if for
+your own personal challenge. I cannot guarantee that you will learn
+something about static typing today, but I would have guaranteed that
+to you a few weeks ago. I am now on the fence, so to speak. I have
+solved this problem with both Scala and Haskell. It would be difficult
+to do in Java without library support such as Functional Java (you'd
+end up spending a lot of time rewriting it) and even then. Functional
+Java also includes automated testing support.
+
+I hope this helps.
+
+PS: This is not really a debate invitation, but I figure [scala-user]
+is a bit overloaded at the moment. Enjoy!
+========================================================================
