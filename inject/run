@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ghc --make ./runMadLibs.hs && exec ./runMadLibs
