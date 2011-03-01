@@ -12,7 +12,7 @@ data AppConfig = AppConfig {
 
 appConfig = AppConfig "Steve" "flew" "Statue of Liberty"
 
--- apply joke longhand.
+-- Apply joke longhand.
 myJoke1 :: Reader AppConfig String
 myJoke1 = do
   name <- asks name
@@ -20,13 +20,13 @@ myJoke1 = do
   noun <- asks noun
   return $ joke name verb noun
 
--- alternative method to apply joke by longhand.
+-- Alternative method to apply joke by longhand.
 myJoke2 :: Reader AppConfig String
 myJoke2 = do
   appConfig <- ask
   return $ joke (name appConfig) (verb appConfig) (noun appConfig)
 
--- liftM3 joke longhand.
+-- Lifed joke longhand.
 liftJoke1 :: Reader AppConfig String -> Reader AppConfig String -> Reader AppConfig String -> Reader AppConfig String
 liftJoke1 a b c = do
   a' <- a
@@ -34,11 +34,11 @@ liftJoke1 a b c = do
   c' <- c
   return $ joke a' b' c'
 
--- liftM3 joke.
+-- Lift joke.
 liftJoke2 :: Reader AppConfig String -> Reader AppConfig String -> Reader AppConfig String -> Reader AppConfig String
 liftJoke2 = liftM3 joke
 
--- apply lifted jokes.
+-- Apply lifted jokes.
 -- XXX: Doesn't seem that magical. What am I missing?
 
 applyJoke1 :: Reader AppConfig String
