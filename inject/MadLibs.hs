@@ -1,11 +1,15 @@
-module MadLibs where
+-- 
+-- Port of MadLibs.java from http://code.google.com/p/guice-examples/.
+--
+-- http://code.google.com/p/guice-examples/source/browse/trunk/GuiceProject/src/propertyfile/impl/MadLibs.java
+--
 
-data Name = Name String deriving (Show)
-data Verb = Verb String deriving (Show)
-data Noun = Noun String deriving (Show)
+module MadLibs (
+  joke
+) where
 
-joke :: Name -> Verb -> Noun -> String
-joke (Name name) (Verb verb) (Noun noun) = "One day, " ++ name ++ " " ++ verb ++ " to New York to see the " ++ noun ++ "."
+joke :: String -> String -> String -> String
+joke name verb noun = "One day, " ++ name ++ " " ++ verb ++ " to New York to see the " ++ noun ++ "."
 
 {-
 import com.google.inject.Inject;

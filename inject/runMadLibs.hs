@@ -1,75 +1,60 @@
-module Main where
+module Main (main) where
 
 import MadLibs
 import Control.Monad
 import Control.Monad.Reader
 
 data AppConfig = AppConfig {
-  name :: Name
- ,verb :: Verb
- ,noun :: Noun
+  name :: String
+ ,verb :: String
+ ,noun :: String
 } deriving (Show)
 
-appConfig = AppConfig (Name "Steve") (Verb "flew") (Noun "Statue of Liberty")
+appConfig = AppConfig "Steve" "flew" "Statue of Liberty"
 
-joke' :: Reader AppConfig String
-joke' = do
+-- apply joke longhand.
+myJoke1 :: Reader AppConfig String
+myJoke1 = do
+  name <- asks name
+  verb <- asks verb
+  noun <- asks noun
+  return $ joke name verb noun
+
+-- alternative method to apply joke by longhand.
+myJoke2 :: Reader AppConfig String
+myJoke2 = do
   appConfig <- ask
   return $ joke (name appConfig) (verb appConfig) (noun appConfig)
 
--- Long hand way of doing liftM3.
-joke'' :: Reader AppConfig Name -> Reader AppConfig Verb -> Reader AppConfig Noun -> Reader AppConfig String
-joke'' a b c = do
+-- liftM3 joke longhand.
+liftJoke1 :: Reader AppConfig String -> Reader AppConfig String -> Reader AppConfig String -> Reader AppConfig String
+liftJoke1 a b c = do
   a' <- a
   b' <- b
   c' <- c
   return $ joke a' b' c'
 
-joke''' :: Reader AppConfig Name -> Reader AppConfig Verb -> Reader AppConfig Noun -> Reader AppConfig String
-joke''' = liftM3 joke
+-- liftM3 joke.
+liftJoke2 :: Reader AppConfig String -> Reader AppConfig String -> Reader AppConfig String -> Reader AppConfig String
+liftJoke2 = liftM3 joke
 
---x = joke''' (liftM name) (liftM verb) (liftM noun)
+-- apply lifted jokes.
+-- XXX: Doesn't seem that magical. What am I missing?
 
-grabName = do
-  appConfig <- ask
-  return name appConfig
+applyJoke1 :: Reader AppConfig String
+applyJoke1 = liftJoke1 (asks name) (asks verb) (asks noun)
 
-grabVerb = do
-  appConfig <- ask
-  return verb appConfig
+applyJoke2 :: Reader AppConfig String
+applyJoke2 = liftJoke2 (asks name) (asks verb) (asks noun)
 
-grabNoun = do
-  appConfig <- ask
-  return noun appConfig
-
---ajoke = joke (runReader (liftM name) appConfig) (runReader (liftM verb) appConfig) (runReader (liftM noun) appConfig)
-
-{-
-foo = do
-  name <- ask
-  verb <- ask
-  noun <- ask
-  return joke name verb noun
--}
+applyJoke3 :: Reader AppConfig String
+applyJoke3 = (liftM3 joke) (asks name) (asks verb) (asks noun)
 
 main = do
     print appConfig
-    putStrLn $ joke (Name "Fred") (Verb "swam") (Noun "Wall Street")
-    putStrLn $ runReader joke' appConfig
---    aJoke <- joke''
---    putStrLn aJoke
-
-{-
-myName step = do
-  name <- ask
-  return $ step ++ "). I am " ++ name
-
-eg1 :: Reader String [String]
-eg1 = do
-  a <- myName "1"
-  b <- local (const "Fred") (myName "2")
-  c <- myName "3"
-  return [a,b,c]
-
-eg2 = mapM_ print $ runReader eg1 "Steve"
--}
+    putStrLn $ joke "Marco Polo" "flew" "clock"
+    putStrLn $ runReader myJoke1 appConfig
+    putStrLn $ runReader myJoke2 appConfig
+    putStrLn $ runReader applyJoke1 appConfig
+    putStrLn $ runReader applyJoke2 appConfig
+    putStrLn $ runReader applyJoke3 appConfig
