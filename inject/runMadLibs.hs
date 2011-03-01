@@ -13,16 +13,16 @@ data AppConfig = AppConfig {
 appConfig = AppConfig "Steve" "flew" "Statue of Liberty"
 
 -- Apply joke longhand.
-myJoke1 :: Reader AppConfig String
-myJoke1 = do
+longApplyJoke1 :: Reader AppConfig String
+longApplyJoke1 = do
   name <- asks name
   verb <- asks verb
   noun <- asks noun
   return $ joke name verb noun
 
 -- Alternative method to apply joke by longhand.
-myJoke2 :: Reader AppConfig String
-myJoke2 = do
+longApplyJoke2 :: Reader AppConfig String
+longApplyJoke2 = do
   appConfig <- ask
   return $ joke (name appConfig) (verb appConfig) (noun appConfig)
 
@@ -53,8 +53,8 @@ applyJoke3 = (liftM3 joke) (asks name) (asks verb) (asks noun)
 main = do
     print appConfig
     putStrLn $ joke "Marco Polo" "flew" "clock"
-    putStrLn $ runReader myJoke1 appConfig
-    putStrLn $ runReader myJoke2 appConfig
+    putStrLn $ runReader longApplyJoke1 appConfig
+    putStrLn $ runReader longApplyJoke2 appConfig
     putStrLn $ runReader applyJoke1 appConfig
     putStrLn $ runReader applyJoke2 appConfig
     putStrLn $ runReader applyJoke3 appConfig
