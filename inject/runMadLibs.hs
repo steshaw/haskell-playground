@@ -39,7 +39,8 @@ liftJoke2 :: Reader AppConfig String -> Reader AppConfig String -> Reader AppCon
 liftJoke2 = liftM3 joke
 
 -- Apply lifted jokes.
--- XXX: Doesn't seem that magical. What am I missing?
+-- XXX: Doesn't seem that magical as we still seem to be passing explicitly arguments to the joke function, whether
+-- XXX: lifted or not. What am I missing?
 
 applyLifedJoke1 :: Reader AppConfig String
 applyLifedJoke1 = liftJoke1 (asks name) (asks verb) (asks noun)

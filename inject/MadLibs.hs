@@ -1,4 +1,4 @@
--- 
+--
 -- Port of MadLibs.java from http://code.google.com/p/guice-examples/.
 --
 -- http://code.google.com/p/guice-examples/source/browse/trunk/GuiceProject/src/propertyfile/impl/MadLibs.java
