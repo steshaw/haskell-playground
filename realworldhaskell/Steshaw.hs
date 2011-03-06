@@ -1,4 +1,15 @@
-module Steshaw where
+module Steshaw (
+  (>>>),
+  (|>),
+  (>$>),
+  ($$),
+  (>.>),
+  unit,
+  d,
+  todo
+) where
+
+import Control.Arrow ((>>>))
 
 (|>) = flip ($)
 

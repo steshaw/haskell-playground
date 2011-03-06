@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module Main () where
+module Main (main) where
 
 import Steshaw
 import Prelude hiding (catch)

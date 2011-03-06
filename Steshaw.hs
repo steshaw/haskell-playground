@@ -5,6 +5,7 @@ module Steshaw
   ,(//)
   ,($$)
   ,(>.>)
+  ,(>>>)
   ,unit
   ,d
   ,todo
@@ -14,6 +15,7 @@ module Steshaw
 
 import Prelude hiding (length)
 import Data.List (genericLength)
+import Control.Arrow ((>>>))
 
 length = genericLength
 
@@ -30,7 +32,8 @@ infixl 0 >$>
 infixr 1 $$
 ($$) = ($)
 
--- TODO: investigate Control.Arrow's (>>>) as an alternative.
+-- NOTE: Probably just use Control.Arrow's (>>>) as an alternative.
+-- Interestingly, Control.Arrow(>>>) is made infixr 1.
 infixl 9 >.>
 (>.>) = flip (.)
 
