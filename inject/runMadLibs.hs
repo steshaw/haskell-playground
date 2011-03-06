@@ -3,6 +3,7 @@ module Main (main) where
 import MadLibs
 import Control.Monad
 import Control.Monad.Reader
+import Control.Applicative
 
 data AppConfig = AppConfig {
   name :: String
@@ -51,6 +52,13 @@ applyLifedJoke2 = liftJoke2 (asks name) (asks verb) (asks noun)
 applyLifedJoke3 :: Reader AppConfig String
 applyLifedJoke3 = (liftM3 joke) (asks name) (asks verb) (asks noun)
 
+-- Thanks Tony (I added the parenthesis because I still struggle with arity).
+applyLifedJoke4 :: AppConfig -> String
+applyLifedJoke4 = (liftM3 joke) name verb noun
+
+-- Turns out that we only need liftA3 here.
+applyLifedJoke5 = (liftA3 joke) name verb noun
+
 main = do
     print appConfig
     putStrLn $ joke "Marco Polo" "flew" "clock"
@@ -59,3 +67,5 @@ main = do
     putStrLn $ runReader applyLifedJoke1 appConfig
     putStrLn $ runReader applyLifedJoke2 appConfig
     putStrLn $ runReader applyLifedJoke3 appConfig
+    putStrLn $ applyLifedJoke4 appConfig
+    putStrLn $ applyLifedJoke5 appConfig
