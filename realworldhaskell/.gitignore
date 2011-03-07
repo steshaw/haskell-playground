@@ -1,4 +1,7 @@
+dist/
 test1.db
+
+# executables:
 fixeols
 DesugarMonads
 copy
@@ -6,3 +9,12 @@ countEntries
 csv
 find
 jsonMain
+NumExprCheck
+Setup
+UnitsCheck
+pgm
+readDouble
+sumInternetUsage
+tempFileFun
+toUpperBanner
+toupper
