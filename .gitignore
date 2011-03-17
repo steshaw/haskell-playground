@@ -6,3 +6,5 @@ listToString
 repeatN
 sieve_of_eratothenes
 wc
+multiThreadedLogging
+test
