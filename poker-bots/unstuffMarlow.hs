@@ -14,13 +14,14 @@ import Control.Monad
 import Control.Concurrent
 import Control.Exception
 import Foreign
-{- XXX: The follow modules are not found
+-- {- XXX: The follow modules are not found
 import Pickle
-import Endian
-import Util
-import ZLib
-import Records
--}
+--import Endian
+--import Util
+--import ZLib
+import Codec.Compression.Zlib
+--import Records
+-- -}
 import Prelude hiding (read)
 import Text.Printf
 
