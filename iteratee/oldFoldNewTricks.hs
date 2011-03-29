@@ -1,6 +1,8 @@
 module Iteratees where
 
-import Prelude hiding (drop, length)
+import Prelude hiding (head, drop, length)
+import Data.Maybe (catMaybes)
+import Control.Applicative
 
 data IterV el result
   = Done result (Stream el)
@@ -15,6 +17,23 @@ data Stream a
   | El a
   | End
   deriving (Show)
+
+instance Monad (IterV el) where
+  return x = Done x Empty
+  m >>= f = case m of
+    Done x str -> case f x of
+      Done x' _ -> Done x' str
+      Cont k    -> k str
+    Cont k     -> Cont (\str -> k str >>= f)
+
+instance Functor (IterV el) where
+  fmap f (Done x str) = Done (f x) str
+  fmap f (Cont k)     = Cont (fmap f . k)
+
+instance Applicative (IterV el) where
+  pure x = Done x Empty
+  (Done f _) <*> i2 = fmap f i2
+  (Cont k) <*> i2 = Cont (\str -> k str <*> i2)
 
 enum :: IterV el a -> [el] -> IterV el a
 enum i@(Done _ _) _  = i
@@ -79,3 +98,30 @@ go2 = run $ enum (Cont sumS) [1..2]
 go3 = run $ enum (Cont sumS) [1..3]
 go4 = run $ enum (Cont sumS) [1..4]
 go5 = run $ enum (Cont sumS) [1..5]
+
+drop1keep1 :: IterV el (Maybe el)
+drop1keep1 = drop 1 >> head
+
+alternatives :: IterV el [el]
+alternatives = fmap catMaybes . sequence . replicate 5 $ drop1keep1
+
+(|>) = flip ($)
+
+-- Note: never-ending because of (sequence. repeat). Don't work well with IterV.
+alternatives2 :: IterV el [el]
+alternatives2 = drop1keep1 |> repeat |> sequence |> fmap catMaybes
+
+-- Ex. 3. Using EOF/End constructor, trace stream threading through two iteratees combined with (>>=). Huh?
+
+-- Ex. 4.
+sequenceRepeat :: IterV el a -> IterV el [a]
+sequenceRepeat (Done result stream) = Done [result] Empty
+sequenceRepeat (Cont k) = Cont $ step []
+  where
+    step :: [a] -> Stream el -> IterV el [a]
+    step acc Empty   = Cont $ step acc
+    step acc (El el) = Cont $ step acc -- FIXME: Aaaaaaaaaaargh!
+    step acc End     = Done acc End
+
+alternatives3 :: IterV el [el]
+alternatives3 = drop1keep1 |> sequenceRepeat |> fmap catMaybes
