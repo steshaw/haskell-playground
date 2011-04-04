@@ -71,5 +71,3 @@ byteLines = EB.splitWhen (== linefeed)
 enumHandleLines :: MonadIO m => Integer -> Handle -> Enumerator ByteString m ByteString
 enumHandleLines n hdl = EB.enumHandle n hdl $= byteLines
 -}
-
-

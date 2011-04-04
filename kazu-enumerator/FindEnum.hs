@@ -39,7 +39,7 @@ enumDir dir = list
           <*> filterM isSearchableDir cnts
 
 findEnum :: FilePath -> String -> IO ()
-findEnum dir pattern = run_ $ 
+findEnum dir pattern = run_ $
   enumDir dir $$ (grepE pattern =$ printI)
 
 findEnumLimit :: FilePath -> String -> Integer -> IO ()
