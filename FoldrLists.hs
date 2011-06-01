@@ -50,7 +50,6 @@ efold x c b (BinOp f lt rt) = b f (efold x c b lt) (efold x c b rt)
 eval x = efold x id id
 freeX e = efold False (const True) (const (&&)) e
 identity e = efold X Const BinOp e
---showE = efold "X" (\n -> "Const " ++ (show n)) (\op el er -> "(BinOp " ++ el ++ " " ++ er ++ ")")
 
 eg2 = eval 3 X
 eg3 = eval 3 (Const 2)
@@ -61,7 +60,6 @@ eg6 = freeX $ BinOp (+) X (Const 2)
 
 eg7 = identity $ BinOp (*) X (Const 10)
 eg8 = eval 2 eg7
-
 
 -- Basically their ends up being a function for every case of the algebraic type that's being encoded.
 -- This is like a "handler" for each case.
