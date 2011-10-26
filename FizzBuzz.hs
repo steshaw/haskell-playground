@@ -1,4 +1,4 @@
-module FizzBuzz where
+module Main where
 
 (|>) = flip ($)
 
