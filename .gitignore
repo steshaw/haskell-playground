@@ -13,3 +13,4 @@ mutableArraysBench
 Id
 FizzBuzz
 RecursiveInstances
+runLengthEncoding
