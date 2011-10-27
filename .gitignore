@@ -12,3 +12,4 @@ threadring
 mutableArraysBench
 Id
 FizzBuzz
+RecursiveInstances
