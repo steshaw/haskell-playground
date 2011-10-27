@@ -11,8 +11,8 @@ runLengthEncode xs =
         | x == g            = (g, n+1):gs
         | otherwise         = (x, 1):gl
 
-main = 
-  let 
+main =
+  let
     foo = "aaaaaaaaaabbbbbbbbbccccccccccD"
     encoded = runLengthEncode foo
-  in  putStrLn (show encoded)
+  in putStrLn (show encoded)
