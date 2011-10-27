@@ -1,6 +1,9 @@
-
-import Data.List(sort)
+import Data.List (sort)
+-- import Control.Arrow ((>>>))
 
 main = readFile "poem" >>= putStr . process
 
-process = unlines . sort . lines
+-- Could import (>>>) from Control.Arrow but type looks weird. Sticking with something known.
+(>>>) = flip (.)
+
+process = lines >>> sort >>> unlines
