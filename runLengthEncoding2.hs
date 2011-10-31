@@ -14,8 +14,7 @@ rlencode = map (\g -> (length g, head g)) . group
  
 -- Takes an encoded list of tuples and returns the associated decoded String
 rldecode :: Encoded -> Decoded
-rldecode = concatMap decodeTuple
-    where decodeTuple (n,c) = replicate n c
+rldecode = concatMap (uncurry replicate)
  
 main :: IO ()
 main = do
