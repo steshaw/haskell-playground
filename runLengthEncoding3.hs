@@ -5,13 +5,20 @@
 import System (getArgs)
 import Control.Arrow ((>>>), (&&&))
 import Data.List (group)
+--import System.IO.Unsafe (unsafePerformIO)
+import Debug.Trace (trace)
  
 type Encoded = [(Int, Char)]
 type Decoded = String
  
 -- Takes a decoded string and returns an encoded list of tuples
 rle :: Decoded -> Encoded
-rle = group >>> map (length &&& head)
+rle =
+{-
+  unsafePerformIO $ putStrLn "rle called" >> 
+    return (group >>> map (length &&& head))
+-}
+  trace "rle called" $ group >>> map (length &&& head)
 
 -- stringify the encoded result (like the examples at Rosetta Code).
 rleString :: Encoded -> String
