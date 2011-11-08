@@ -3,6 +3,8 @@
 --   http://channel9.msdn.com/Shows/Going+Deep/Erik-Meijer-and-Matthew-Podwysocki-Perspectives-on-Functional-Programming
 --
 
+import Control.Monad ((>=>))
+
 type Action a = IO a
 type Void = ()
 
@@ -39,3 +41,12 @@ employeeCurrency emp =
   employeesDepartment emp >>= \dept ->
   departmentsCountry dept >>= \country ->
   countriesCurrency country
+
+employeeCurrency' :: Employee -> Maybe Currency
+employeeCurrency' emp = do
+  dept <- employeesDepartment emp
+  country <- departmentsCountry dept
+  countriesCurrency country
+
+employeeCurrency'' :: Employee -> Maybe Currency
+employeeCurrency'' = employeesDepartment >=> departmentsCountry >=> countriesCurrency
