@@ -4,6 +4,7 @@
 --
 
 import Control.Monad ((>=>))
+import Data.Map as M hiding (map)
 
 type Action a = IO a
 type Void = ()
@@ -22,19 +23,31 @@ recChar char = \s -> case s of
   (first : rest) | first == char -> [((), rest)]
   otherwise -> []
 
-data Employee
-data Department
-data Country
-data Currency
+type Employee = String
+data Department = Accounts | Products
+  deriving (Show, Eq, Ord)
+data Country = US | UK | Australia
+  deriving (Show, Eq, Ord)
+data Currency = USD | GBP | AUD
+  deriving (Show, Eq, Ord)
+
+emp2dept :: M.Map Employee Department
+emp2dept = M.fromList [("Fred", Accounts), ("Bob", Products), ("Wilma", Accounts)]
+
+dept2country :: M.Map Department Country
+dept2country = M.fromList [(Accounts, UK), (Products, US)]
+
+country2currency :: M.Map Country Currency
+country2currency = M.fromList [(UK, GBP), (US, USD)]
 
 employeesDepartment :: Employee -> Maybe Department
-employeesDepartment = error "todo"
+employeesDepartment emp = M.lookup emp emp2dept
 
 departmentsCountry :: Department -> Maybe Country
-departmentsCountry = error "todo"
+departmentsCountry dept = M.lookup dept dept2country
 
 countriesCurrency :: Country -> Maybe Currency
-countriesCurrency = error "todo"
+countriesCurrency country = M.lookup country country2currency
 
 employeeCurrency :: Employee -> Maybe Currency
 employeeCurrency emp =
@@ -50,3 +63,8 @@ employeeCurrency' emp = do
 
 employeeCurrency'' :: Employee -> Maybe Currency
 employeeCurrency'' = employeesDepartment >=> departmentsCountry >=> countriesCurrency
+
+eg1 :: [(Employee, Maybe Currency)]
+eg1 = currenciesFor ["Fred", "Wilhelm", "Wilma", "Bob", "Rob"]
+  where
+    currenciesFor emps = zip emps $ map employeeCurrency'' emps
