@@ -3,10 +3,10 @@ module Cast where
 import Data.IORef
 import System.IO.Unsafe
 
-r :: IORef c
-r = unsafePerformIO $ newIORef $ error "urk"
+castRef :: IORef c
+castRef = unsafePerformIO $ newIORef undefined
 
-cast :: a -> b
-cast x = unsafePerformIO $ do
-           writeIORef r x
-           readIORef r
+unsafeCast :: a -> b
+unsafeCast x = unsafePerformIO $ do
+  writeIORef castRef x
+  readIORef castRef
