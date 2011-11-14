@@ -1,3 +1,5 @@
+module Lecture5 where
+
 factors :: Integer -> [Integer]
 factors n = [ x | x <- [1..n], n `mod` x == 0 ]
 
@@ -24,7 +26,7 @@ sorted1 :: Ord a => [a] -> Bool
 sorted1 xs = and $ adjPairWith (<) xs
 
 -- recursive solution
-positions :: Eq a => a -> [a] -> [Int]
+positions :: Eq a => a -> [a] -> [Integer]
 positions a xs = iter 0 xs
   where
     iter n []              = []
@@ -32,7 +34,7 @@ positions a xs = iter 0 xs
     iter n (x:xs) | True   = iter (n+1) xs
 
 -- foldr solution - argh but counts the positions from the right!
-positions1 :: Eq a => a -> [a] -> [Int]
+positions1 :: Eq a => a -> [a] -> [Integer]
 positions1 a xs = snd $ foldr f (0, []) xs
   where
     f e (i, xs) | e == a = (i+1, i : xs)
