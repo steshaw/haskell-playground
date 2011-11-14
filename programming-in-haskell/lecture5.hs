@@ -50,3 +50,6 @@ positions2 n xs = [ i | (x, i) <- zipWithIndex xs, x == n]
 -- using zipWithIndex and map/filter
 positions3 :: Eq a => a -> [a] -> [Integer]
 positions3 n xs = map snd $ filter ((== n) . fst) $ zipWithIndex xs
+
+pyths :: Int -> [(Int, Int, Int)]
+pyths n = [ (a,b,c) | a <- [1..n], b <- [1..n], c <- [1..n], a*a + b*b == c*c ]
