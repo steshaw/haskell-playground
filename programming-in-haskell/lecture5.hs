@@ -1,4 +1,3 @@
-
 factors :: Integer -> [Integer]
 factors n = [ x | x <- [1..n], n `mod` x == 0 ]
 
@@ -48,4 +47,4 @@ positions2 n xs = [ i | (x, i) <- zipWithIndex xs, x == n]
 
 -- using zipWithIndex and map/filter
 positions3 :: Eq a => a -> [a] -> [Integer]
-positions3 n xs = map snd $ filter (\(x, i) -> x == n) $ zipWithIndex xs
+positions3 n xs = map snd $ filter ((== n) . fst) $ zipWithIndex xs
