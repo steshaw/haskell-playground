@@ -13,6 +13,10 @@
 --
 -- but it seems that Haskell evaluates from the outside i.e. True && bottom is not evaluated at all.
 --
+-- I paused too quickly and Erik does go on to explain that f (bottom) = 4711 is just 4711 is more Haskellish.
+-- However, then goes on to say that the order of evaluation does not matter in Haskell (when it seems that it
+-- does).
+--
 
 import Prelude hiding ((&&))
 
