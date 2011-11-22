@@ -25,7 +25,7 @@ import Data.List (delete, nub, permutations)
 import Control.Monad
 import Control.Monad.State
 import Maybe (fromJust)
-import MaybeT
+import Control.Monad.Trans.Maybe
 
 data Op = Add | Sub | Div | Mul
   deriving (Eq, Show)
@@ -51,7 +51,7 @@ execParser p ts =
 
 (|||) :: Parser s a -> Parser s a -> Parser s a
 p1 ||| p2 =
-  Parser $ MaybeT $ State $ \s ->
+  Parser $ MaybeT $ state $ \s ->
     case runParser p1 s of
       (Nothing, _) -> runParser p2 s
       a            -> a
@@ -82,13 +82,13 @@ skipSpaces :: Parser String ()
 skipSpaces = repeatParser (\_ -> parseWhen ' ' ()) ()
 
 lexNum :: Parser String Token
-lexNum = Parser $ MaybeT $ State (\s ->
+lexNum = Parser $ MaybeT $ state (\s ->
   case reads s of
     [(n, s)] -> (Just (Num n), s)
     otherwise -> (Nothing, s)) -- XXX: Weird that I had to supply "s" here. Not in original version.
 
 parseWhen :: Eq c => c -> a -> Parser [c] a
-parseWhen a b = Parser $ MaybeT $ State $ \s -> case s of
+parseWhen a b = Parser $ MaybeT $ state $ \s -> case s of
   [] -> (Nothing, s)
   (x:xs) -> if (x == a) then (Just b, xs) else (Nothing, s)
 
@@ -190,7 +190,7 @@ parseOp2 = parseWhen (Op Mul) Mul |||
            parseWhen (Op Div) Div
 
 parseNum :: ParseExpr Expr
-parseNum = Parser $ MaybeT $ State $ \ts -> case ts of
+parseNum = Parser $ MaybeT $ state $ \ts -> case ts of
   (Num n:ts) -> (Just (ENum n), ts)
   otherwise  -> (Nothing, ts)
 
