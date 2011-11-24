@@ -1,3 +1,4 @@
+{-# LANGUAGE Rank2Types #-}
 import Prelude hiding (getLine, putStr, putStrLn)
 import Data.List (unfoldr)
 import GHC.IO.Handle (hSetEcho)
@@ -73,6 +74,25 @@ unfoldrIO f init = do
 
 getLine3 :: IO String
 getLine3 = unfoldrIO f getChar
+  where 
+    f :: Char -> Maybe (Char, IO Char)
+    f char = 
+      if char == '\n' then Nothing
+      else Just (char, getChar)
+
+type UnfoldrM m a b = Monad m => (b -> Maybe (a, m b)) -> m b -> m [a]
+
+unfoldrM :: UnfoldrM m a b
+unfoldrM f init = do
+  x <- init
+  case f x of
+    Nothing -> return []
+    Just (a, iob) -> do
+      xs <- unfoldrM f iob
+      return (a:xs)
+
+getLine4 :: IO String
+getLine4 = unfoldrM f getChar
   where 
     f :: Char -> Maybe (Char, IO Char)
     f char = 
