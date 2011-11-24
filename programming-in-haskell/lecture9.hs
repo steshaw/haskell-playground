@@ -46,23 +46,13 @@ gen' p a baseCase step fred = if (p a) then baseCase else fred a (gen' p (step a
 atob''' :: Int -> Int -> [Int]
 atob''' a b = gen' (>b) a [] (+1) (:)
 
-{-
-getLine'' :: IO String
-getLine'' = gen' (== '\n') getChar [] id (:)
--}
-
-type Unfoldr a b = (b -> Maybe (a, b)) -> b -> [a]
-
 atob4 :: Int -> Int -> [Int]
 atob4 a b = unfoldr f a
   where
     f :: Int -> Maybe (Int, Int)
     f n = if (n > b) then Nothing else Just (n, n+1)
 
--- I need a kind of monadic unfoldr
-type UnfoldrIO a b = (b -> Maybe (a, IO b)) -> IO b -> IO [a]
-
-unfoldrIO :: UnfoldrIO a b
+unfoldrIO :: (b -> Maybe (a, IO b)) -> IO b -> IO [a]
 unfoldrIO f init = do
   x <- init
   case f x of
@@ -95,6 +85,16 @@ getLine4 = unfoldrM f getChar
     f char = 
       if char == '\n' then Nothing
       else Just (char, getChar)
+
+{-
+simpleUnfoldrM :: Monad m => (b -> Maybe a) -> m b -> m [a]
+simpleUnfoldrM f init = unfoldrM adapter init
+  where
+    adapter :: b -> Maybe (a, m b)
+    adapter b = case f b of
+      Nothing -> Nothing
+      (Just x) -> Just (x, init)
+-}
 
 putStr :: String -> IO ()
 putStr []     = return ()
