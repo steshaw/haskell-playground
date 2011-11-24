@@ -6,4 +6,4 @@
 import Control.Arrow
 import Data.List (genericLength)
 
-compute xs = (uncurry (/)) ((sum &&& genericLength) xs)
+compute = (uncurry (/)) . (sum &&& genericLength)
