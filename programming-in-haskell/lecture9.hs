@@ -1,4 +1,5 @@
 import Prelude hiding (getLine, putStr, putStrLn)
+import Data.List (unfoldr)
 
 getLine :: IO String
 getLine = do
@@ -55,6 +56,14 @@ getLine'' = gen' (== '\n') getChar [] id (:)
     cs <- getLine
     return (c:cs)
 -}
+
+type Unfoldr a b = (b -> Maybe (a, b)) -> b -> [a]
+
+atob4 :: Int -> Int -> [Int]
+atob4 a b = unfoldr f a
+  where
+    f :: Int -> Maybe (Int, Int)
+    f n = if (n > b) then Nothing else Just (n, n+1)
 
 putStr :: String -> IO ()
 putStr []     = return ()
