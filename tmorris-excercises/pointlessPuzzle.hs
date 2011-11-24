@@ -4,5 +4,6 @@
 --
 
 import Control.Arrow
+import Data.List (genericLength)
 
-compute xs = (uncurry (/)) ((fromIntegral *** fromIntegral) ((sum &&& length) xs))
+compute xs = (uncurry (/)) ((sum &&& genericLength) xs)
