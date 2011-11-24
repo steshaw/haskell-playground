@@ -101,10 +101,22 @@ hangman = do
 
 guess :: String -> IO ()
 guess word = do
-  try <- getLine
-  if try == word then do
-    putStrLn "Correct!"
-    return ()
+  putStr "> "
+  xs <- getLine
+  if xs == word then do
+    putStrLn "You got it!"
   else do
-    putStr "Try again: "
+    putStr (diff' word xs)
     guess word
+
+-- What I thought 'diff' would be.
+-- put a '*' where the person typed an incorrect character
+diff :: String -> String -> String
+diff _ [] = []
+diff [] try = (const 'x') `map` try
+diff (c:correct) (t:try) = (if c == t then c else 'x') : (diff correct try)
+
+-- diff as per the lecture
+diff' :: String -> String -> String
+diff' xs ys =
+  [if elem x ys then x else '-' | x <- xs]
