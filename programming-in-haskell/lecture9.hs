@@ -1,5 +1,7 @@
 import Prelude hiding (getLine, putStr, putStrLn)
 import Data.List (unfoldr)
+import GHC.IO.Handle (hSetEcho)
+import IO (stdin)
 
 getLine :: IO String
 getLine = do
@@ -71,3 +73,38 @@ putStr' = foldr f (return ())
 putStrLn :: String -> IO ()
 putStrLn xs = do putStr xs
                  putChar '\n'
+
+getCh :: IO Char
+getCh = do
+  hSetEcho stdin False
+  c <- getChar
+  hSetEcho stdin True
+  return c
+
+sgetLine :: IO String
+sgetLine = do
+  x <- getCh
+  if x == '\n' then do
+    putChar x
+    return []
+  else do
+    putChar '-'
+    xs <- sgetLine
+    return (x:xs)
+
+hangman :: IO ()
+hangman = do
+  putStr "Think of a word: "
+  word <- sgetLine
+  putStrLn "Try to guess it: "
+  guess word
+
+guess :: String -> IO ()
+guess word = do
+  try <- getLine
+  if try == word then do
+    putStrLn "Correct!"
+    return ()
+  else do
+    putStr "Try again: "
+    guess word
