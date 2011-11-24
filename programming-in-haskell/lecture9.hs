@@ -48,14 +48,6 @@ atob''' a b = gen' (>b) a [] (+1) (:)
 getLine'' :: IO String
 getLine'' = gen' (== '\n') getChar [] id (:)
 -}
-{-
-  c <- getChar
-  if c == '\n' then
-    return []
-  else do
-    cs <- getLine
-    return (c:cs)
--}
 
 type Unfoldr a b = (b -> Maybe (a, b)) -> b -> [a]
 
