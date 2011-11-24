@@ -59,6 +59,26 @@ atob4 a b = unfoldr f a
     f :: Int -> Maybe (Int, Int)
     f n = if (n > b) then Nothing else Just (n, n+1)
 
+-- I need a kind of monadic unfoldr
+type UnfoldrIO a b = (b -> Maybe (a, IO b)) -> IO b -> IO [a]
+
+unfoldrIO :: UnfoldrIO a b
+unfoldrIO f init = do
+  x <- init
+  case f x of
+    Nothing -> return []
+    Just (a, iob) -> do
+      xs <- unfoldrIO f iob
+      return (a:xs)
+
+getLine3 :: IO String
+getLine3 = unfoldrIO f getChar
+  where 
+    f :: Char -> Maybe (Char, IO Char)
+    f char = 
+      if char == '\n' then Nothing
+      else Just (char, getChar)
+
 putStr :: String -> IO ()
 putStr []     = return ()
 putStr (x:xs) = do putChar x
