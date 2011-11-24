@@ -5,4 +5,4 @@
 
 import Control.Arrow
 
-compute xs = (uncurry (/)) (((fromIntegral . sum) &&& (fromIntegral . length)) xs)
+compute xs = (uncurry (/)) ((fromIntegral *** fromIntegral) ((sum &&& length) xs))
