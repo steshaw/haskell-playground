@@ -23,6 +23,39 @@ getUntil p = do
 getLine' :: IO String
 getLine' = getUntil (== '\n')
 
+atob :: Int -> Int -> [Int]
+atob a b = [a..b]
+
+atob' :: Int -> Int -> [Int]
+atob' a b =
+  if (a > b) then []
+  else a:(atob' (a+1) b)
+
+gen :: Predicate a -> a -> [a] -> (a -> a) -> [a]
+gen p a baseCase step = if (p a) then baseCase else a:(gen p (step a) baseCase step)
+
+atob'' :: Int -> Int -> [Int]
+atob'' a b = gen (>b) a [] (+1)
+
+gen' :: Predicate a -> a -> b -> (a -> a) -> (a -> b -> b) -> b
+gen' p a baseCase step fred = if (p a) then baseCase else fred a (gen' p (step a) baseCase step fred)
+
+atob''' :: Int -> Int -> [Int]
+atob''' a b = gen' (>b) a [] (+1) (:)
+
+{-
+getLine'' :: IO String
+getLine'' = gen' (== '\n') getChar [] id (:)
+-}
+{-
+  c <- getChar
+  if c == '\n' then
+    return []
+  else do
+    cs <- getLine
+    return (c:cs)
+-}
+
 putStr :: String -> IO ()
 putStr []     = return ()
 putStr (x:xs) = do putChar x
