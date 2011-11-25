@@ -1,5 +1,3 @@
-import Prelude hiding ((++))
-
 -- Peano numbers
 data Nat = Succ Nat | Zero
   deriving (Show)
@@ -17,9 +15,9 @@ add (Succ m) n = Succ (m `add` n)
 data List a = Empty | Cons a (List a)
   deriving (Show)
 
-(++)               :: List a -> List a -> List a
-(++) Empty       ys = ys
-(++) (Cons x xs) ys = Cons x (xs ++ ys)
+listAppend               :: List a -> List a -> List a
+listAppend Empty       ys = ys
+listAppend (Cons x xs) ys = Cons x (xs `listAppend` ys)
 
 listFoldr :: (a -> b -> b) -> b -> List a -> b
 listFoldr consF emptyF xs = blah xs
@@ -27,8 +25,8 @@ listFoldr consF emptyF xs = blah xs
     blah Empty       = emptyF
     blah (Cons x xs) = consF x (blah xs)
 
-listAppend :: List a -> List a -> List a
-listAppend xs ys = listFoldr f ys xs
+listAppend' :: List a -> List a -> List a
+listAppend' xs ys = listFoldr f ys xs
   where f value acc = value `Cons` acc
 
 nat2int         :: Nat -> Int
@@ -85,3 +83,33 @@ fold fVal fAdd fMul expr = blah expr
     blah (Mul x y) = fMul (blah x) (blah y)
 
 eval' = fold id (+) (*)
+
+--
+-- Binary trees
+--
+
+data Tree = Leaf Int
+          | Node Tree Int Tree
+  deriving (Show)
+
+egTree :: Tree
+egTree = Node (Node (Leaf 1) 3 (Leaf 4))
+              5
+              (Node (Leaf 6) 7 (Leaf 9))
+
+occurs :: Int -> Tree -> Bool
+occurs m (Leaf n)     = m == n
+occurs m (Node l n r) = m == n 
+                     || occurs m l 
+                     || occurs m r
+
+flatten :: Tree -> [Int]
+flatten (Leaf n)     = [n]
+flatten (Node l n r) = flatten l ++ [n] ++ flatten r
+
+-- if it's a search tree we can do the following:
+occursSearchTree :: Int -> Tree -> Bool
+occursSearchTree m (Leaf n)     = m == n
+occursSearchTree m (Node l n r) = m == n 
+                               || (m < n) && (occurs m l) 
+                               || (m > n) && (occurs m r)
