@@ -111,5 +111,20 @@ flatten (Node l n r) = flatten l ++ [n] ++ flatten r
 occursSearchTree :: Int -> Tree -> Bool
 occursSearchTree m (Leaf n)              = m == n
 occursSearchTree m (Node l n r) | m == n = True
-                                | m < n  = occurs m l 
+                                | m < n  = occurs m l
                                 | m > n  = occurs m r
+
+treeFold :: (Int -> b) -> (b -> Int -> b -> b) -> Tree -> b
+treeFold leafF nodeF tree = blah tree
+  where
+    blah (Leaf n)            = leafF n
+    blah (Node left n right) = nodeF (blah left) n (blah right)
+
+occurs' :: Int -> Tree -> Bool
+occurs' m = treeFold (== m) (\left n right -> (m == n) || left || right)
+
+flatten' :: Tree -> [Int]
+flatten' = treeFold (\n -> [n]) (\left n right -> left ++ [n] ++ right)
+
+occursSearchTree' :: Int -> Tree -> Bool
+occursSearchTree' m = treeFold (== m) (\left n right -> (m == n) || (m < n) && left || (m > n) && right)
