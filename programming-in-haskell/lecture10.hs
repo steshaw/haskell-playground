@@ -1,7 +1,7 @@
 import Prelude hiding ((++))
 
 -- Peano numbers
-data Nat = Zero | Succ Nat
+data Nat = Succ Nat | Zero
   deriving (Show)
 
 inf :: Nat
@@ -21,13 +21,23 @@ data List a = Empty | Cons a (List a)
 (++) Empty       ys = ys
 (++) (Cons x xs) ys = Cons x (xs ++ ys)
 
+listFoldr :: (a -> b -> b) -> b -> List a -> b
+listFoldr consF emptyF xs = blah xs
+  where
+    blah Empty       = emptyF
+    blah (Cons x xs) = consF x (blah xs)
+
+listAppend :: List a -> List a -> List a
+listAppend xs ys = listFoldr f ys xs
+  where f value acc = value `Cons` acc
+
 nat2int         :: Nat -> Int
 nat2int Zero     = 0
 nat2int (Succ n) = 1 + nat2int n
 
 natFoldr                :: (Nat -> b -> b) -> b -> Nat -> b
 natFoldr f init Zero     = init
-natFoldr f init (Succ n) = (f n (natFoldr f init n))
+natFoldr f init (Succ n) = f n (natFoldr f init n)
 
 nat2int' :: Nat -> Int
 nat2int' = natFoldr (const (+ 1)) 0
