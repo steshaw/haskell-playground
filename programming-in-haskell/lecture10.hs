@@ -109,7 +109,7 @@ flatten (Node l n r) = flatten l ++ [n] ++ flatten r
 
 -- if it's a search tree we can do the following:
 occursSearchTree :: Int -> Tree -> Bool
-occursSearchTree m (Leaf n)     = m == n
-occursSearchTree m (Node l n r) = m == n 
-                               || (m < n) && (occurs m l) 
-                               || (m > n) && (occurs m r)
+occursSearchTree m (Leaf n)              = m == n
+occursSearchTree m (Node l n r) | m == n = True
+                                | m < n  = occurs m l 
+                                | m > n  = occurs m r
