@@ -1,4 +1,4 @@
-import Prelude hiding ((++)) -- doesn't seem to work :(
+import Prelude hiding ((++))
 
 -- Peano numbers
 data Nat = Zero | Succ Nat
