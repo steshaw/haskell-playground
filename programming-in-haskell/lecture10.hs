@@ -32,6 +32,9 @@ natFoldr f init (Succ n) = (f n (natFoldr f init n))
 nat2int' :: Nat -> Int
 nat2int' = natFoldr (const (+ 1)) 0
 
+add' :: Nat -> Nat -> Nat
+add' a b = natFoldr (const Succ) b a
+
 int2nat  :: Int -> Nat
 int2nat 0 = Zero
 -- the n+k pattern looks elegant here (comparing with nat2int).
