@@ -25,6 +25,13 @@ nat2int         :: Nat -> Int
 nat2int Zero     = 0
 nat2int (Succ n) = 1 + nat2int n
 
+natFoldr                :: (Nat -> b -> b) -> b -> Nat -> b
+natFoldr f init Zero     = init
+natFoldr f init (Succ n) = (f n (natFoldr f init n))
+
+nat2int' :: Nat -> Int
+nat2int' = natFoldr (const (+ 1)) 0
+
 int2nat  :: Int -> Nat
 int2nat 0 = Zero
 -- the n+k pattern looks elegant here (comparing with nat2int).
