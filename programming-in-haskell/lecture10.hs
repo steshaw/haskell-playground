@@ -37,3 +37,10 @@ int2nat 0 = Zero
 -- the n+k pattern looks elegant here (comparing with nat2int).
 --int2nat (n+1) = Succ (int2nat n)
 int2nat n = Succ (int2nat (n - 1))
+
+intFoldr                :: (Int -> b -> b) -> b -> Int -> b
+intFoldr f init 0        = init
+intFoldr f init n = (f n (intFoldr f init (n - 1)))
+
+int2nat' :: Int -> Nat
+int2nat' = intFoldr (const Succ) Zero
