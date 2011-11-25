@@ -47,3 +47,31 @@ intFoldr f init n = (f n (intFoldr f init (n - 1)))
 
 int2nat' :: Int -> Nat
 int2nat' = intFoldr (const Succ) Zero
+
+-- Expressions
+
+data Expr = Val Int
+          | Add Expr Expr
+          | Mul Expr Expr
+
+e :: Expr
+e = Add (Val 1) (Mul (Val 2) (Val 3))
+
+size :: Expr -> Int
+size (Val _) = 1
+size (Add x y) = size x + size y
+size (Mul x y) = size x + size y
+
+eval :: Expr -> Int
+eval (Val n) = n
+eval (Add x y) = eval x + eval y
+eval (Mul x y) = eval x * eval y
+
+fold :: (Int -> a) -> (a -> a -> a) -> (a -> a -> a) -> Expr -> a
+fold fVal fAdd fMul expr = blah expr
+  where
+    blah (Val n) = fVal n
+    blah (Add x y) = fAdd (blah x) (blah y)
+    blah (Mul x y) = fMul (blah x) (blah y)
+
+eval' = fold id (+) (*)
