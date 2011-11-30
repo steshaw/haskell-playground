@@ -12,6 +12,5 @@ main :: IO ()
 main = do
   [filename] <- getArgs
   contents <- readFile filename
-  let g = (group . sort . words) contents
-  let f = map (head &&& length) g
-  f `forM_` (\(key, len) -> printf "%s %d\n" key len)
+  ((map (head &&& length)) . group . sort . words) contents `forM_` (\(key, len) ->
+    printf "%s %d\n" key len)
