@@ -3,14 +3,16 @@
 --
 
 import Control.Arrow ((&&&))
-import Control.Monad (forM_)
 import Data.List (group, sort)
 import Text.Printf
 import System (getArgs)
+
+(|>) :: a -> (a -> b) -> b
+(|>) = flip ($)
 
 main :: IO ()
 main = do
   [filename] <- getArgs
   contents <- readFile filename
-  ((map (head &&& length)) . group . sort . words) contents `forM_` (\(key, len) ->
+  contents |> words |> sort |> group |> map (head &&& length) |> mapM_ (\(key, len) ->
     printf "%s %d\n" key len)
