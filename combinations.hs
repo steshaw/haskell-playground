@@ -4,14 +4,12 @@
 
 import Control.Monad (forM_)
 
-os = ["MacOS", "Linux", "Vista"]
-mem = ["2G", "4G", "6G", "8G"]
-disk = ["250G", "350G", "500G"]
-
-combinations = sequence [os, mem, disk]
+(|>) = flip ($)
 
 test os mem disk = putStrLn $ "os: " ++ os ++ " mem: " ++ mem ++ " disk: " ++ disk
 
-main = combinations `forM_`
-  \[os, mem, disk] ->
-    test os mem disk
+main = 
+  [["MacOS", "Linux", "Vista"]
+  ,["2G", "4G", "6G", "8G"]
+  ,["250G", "350G", "500G"]
+  ] |> sequence `forM_` \[os, mem, disk] -> test os mem disk
