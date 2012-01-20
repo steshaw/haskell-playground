@@ -50,6 +50,6 @@ a' = xs |> mapMaybe (ifO even)
 
 b' = xs |> mapMaybe (\ n -> ifO even n |> fmap (* 2))
 
-ifOm p n f = if p n then Just (f n) else Nothing
+ifOm p n f = ifO p n |> fmap f
 
 b'' = xs |> mapMaybe (\ n -> ifOm even n (* 2))
