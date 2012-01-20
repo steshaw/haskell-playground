@@ -44,16 +44,16 @@ a = xs |> filter even
  -}
 
 choose :: (a -> Maybe b) -> [a] -> [b]
-choose f xs = catMaybes (map f xs)
+choose = mapMaybe
 
 b = xs |> choose (\ n -> if even n then Just (n * 2) else Nothing)
 
 ifO p n = if p n then Just n else Nothing
 
-a' = xs |> choose (\ n -> ifO even n)
+a' = xs |> choose (ifO even)
 
-b' = xs |> choose (\ n -> ifO even n |> fmap (\ n -> n * 2))
+b' = xs |> choose (\ n -> ifO even n |> fmap (* 2))
 
 ifOm p n f = if p n then Just (f n) else Nothing
 
-b'' = xs |> choose (\ n -> ifOm even n (\ m -> m * 2))
+b'' = xs |> choose (\ n -> ifOm even n (* 2))
