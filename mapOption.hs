@@ -7,6 +7,7 @@
 --
 
 import Data.Maybe (mapMaybe)
+import Control.Arrow ((>>>))
 
 (|>) = flip ($)
 
@@ -42,6 +43,9 @@ a = xs |> filter even
  -
  -}
 
+easyA = [ x | x <- xs, even x ]
+easyB = [ x * 2 | x <- xs, even x ]
+
 b = xs |> mapMaybe (\ n -> if even n then Just (n * 2) else Nothing)
 
 ifO p n = if p n then Just n else Nothing
@@ -49,6 +53,10 @@ ifO p n = if p n then Just n else Nothing
 a' = xs |> mapMaybe (ifO even)
 
 b' = xs |> mapMaybe (\ n -> ifO even n |> fmap (* 2))
+
+bb = xs |> mapMaybe ((fmap (* 2)) . (ifO even))
+
+bb' = xs |> mapMaybe (ifO even >>> fmap (*2))
 
 ifOm p n f = ifO p n |> fmap f
 
