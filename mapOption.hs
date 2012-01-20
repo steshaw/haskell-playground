@@ -6,7 +6,6 @@
 --  [1..10] map: |n| if n even then n
 --
 
-import Data.Maybe (catMaybes)
 import Data.Maybe (mapMaybe)
 
 (|>) = flip ($)
@@ -43,17 +42,14 @@ a = xs |> filter even
  -
  -}
 
-choose :: (a -> Maybe b) -> [a] -> [b]
-choose = mapMaybe
-
-b = xs |> choose (\ n -> if even n then Just (n * 2) else Nothing)
+b = xs |> mapMaybe (\ n -> if even n then Just (n * 2) else Nothing)
 
 ifO p n = if p n then Just n else Nothing
 
-a' = xs |> choose (ifO even)
+a' = xs |> mapMaybe (ifO even)
 
-b' = xs |> choose (\ n -> ifO even n |> fmap (* 2))
+b' = xs |> mapMaybe (\ n -> ifO even n |> fmap (* 2))
 
 ifOm p n f = if p n then Just (f n) else Nothing
 
-b'' = xs |> choose (\ n -> ifOm even n (* 2))
+b'' = xs |> mapMaybe (\ n -> ifOm even n (* 2))
