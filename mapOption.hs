@@ -29,7 +29,7 @@ stripB = stripMaybes' ys
 -- Once you have a List[Option[a]], F# has a nice List.choose function which can be used to
 -- transform to a List[a].
 --
--- In Haskell, one can use catMaybes (but it's not as general as List.choose).
+-- The equivalent function in Haskell is Data.Maybe.mapMaybe.
 --
 
 a = xs |> filter even
