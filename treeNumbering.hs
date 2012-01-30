@@ -51,11 +51,11 @@ smNumberTree :: Tree a -> Tree Int
 smNumberTree t = fst (runState (ntAux t) 0)
   where
     ntAux :: Tree a -> State Int (Tree Int)
-    ntAux (Leaf _) = 
-      get >>= \n ->
-      put (n + 1) >>
+    ntAux (Leaf _) = do
+      n <- get
+      put (n + 1)
       return (Leaf n)
-    ntAux (Node t1 t2) =
-      ntAux t1 >>= \t1' ->
-      ntAux t2 >>= \t2' ->
+    ntAux (Node t1 t2) = do
+      t1' <- ntAux t1
+      t2' <- ntAux t2
       return (Node t1' t2')
