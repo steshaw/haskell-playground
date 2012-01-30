@@ -4,6 +4,8 @@
 -- See http://www.cs.nott.ac.uk/~nhn/MGS2010/LectureNotes/lecture03.pdf
 --
 
+import Control.Monad.State
+
 data Tree a = Leaf a | Node (Tree a) (Tree a)
   deriving (Show, Eq)
 
@@ -44,3 +46,16 @@ sNumberTree t = fst (ntAux t 0)
       ntAux t1 `sSeq` \t1' ->
       ntAux t2 `sSeq` \t2' ->
       sReturn (Node t1' t2')
+
+smNumberTree :: Tree a -> Tree Int
+smNumberTree t = fst (runState (ntAux t) 0)
+  where
+    ntAux :: Tree a -> State Int (Tree Int)
+    ntAux (Leaf _) = 
+      get >>= \n ->
+      put (n + 1) >>
+      return (Leaf n)
+    ntAux (Node t1 t2) =
+      ntAux t1 >>= \t1' ->
+      ntAux t2 >>= \t2' ->
+      return (Node t1' t2')
