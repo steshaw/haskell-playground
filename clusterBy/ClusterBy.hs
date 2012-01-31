@@ -1,14 +1,14 @@
 import Data.List (sortBy, groupBy)
 import Data.Ord (comparing)
-
-(|>) = flip ($)
+import Control.Arrow ((>>>))
 
 clusterBy :: Ord b => (a -> b) -> [a] -> [[a]]
-clusterBy f xs = xs
-  |> sortBy (\a b -> f a `compare` f b)
-  |> groupBy (\a b -> f a == f b)
+clusterBy f = sortBy (\a b -> f a `compare` f b) 
+  >>> groupBy (\a b -> f a == f b)
 
 antWords = words "the tan ant gets some fat"
+
+(|>) = flip ($)
 
 eg1 = antWords |> clusterBy length
 
