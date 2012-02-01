@@ -1,0 +1,11 @@
+
+{- A simple Imp program to swap the values in x and y 
+{- A few gratuitous syntactic and lexical wiggles 
+
+-} -}
+
+x := 5;  y := 3;
+
+{z := x;
+ x := y;
+ y := z;; }

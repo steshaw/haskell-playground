@@ -1,0 +1,10 @@
+
+{- A simple Imp program to compute 10! -}
+
+n := 10;
+
+fact := 1;
+while 0 <= (n-1) do {
+  fact := fact * n;
+  n := n-1
+}
