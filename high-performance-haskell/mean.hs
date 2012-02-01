@@ -1,6 +1,10 @@
 {-# LANGUAGE BangPatterns #-}
 
+import Criterion.Main
 import Data.List (foldl')
+
+leakyMean :: [Double] -> Double
+leakyMean xs = sum xs / fromIntegral (length xs)
 
 -- not lazy evaluation friendly
 unfriendlyMean :: [Double] -> Double
@@ -31,10 +35,10 @@ strictPairMean xs = s / fromIntegral l
     SP s l = foldl' step (SP 0 0) xs
     step (SP s l) a = SP (s + a) (l + 1)
 
-main :: IO ()
-main = do
-  print $ seqMean        xs
-  print $ bangMean       xs
-  print $ strictPairMean xs
-  print $ unfriendlyMean xs
-    where xs = [1 .. 10 * 1000 * 1000]
+main = let xs = [1 .. 1 * 1000 * 1000] in defaultMain 
+  [ bench "leakyMean"      (whnf leakyMean      xs)
+  , bench "unfriendlyMean" (whnf unfriendlyMean xs)
+  , bench "seqMean"        (whnf seqMean        xs)
+  , bench "bangMean"       (whnf bangMean       xs)
+  , bench "strictPairMean" (whnf strictPairMean xs)
+  ]

@@ -1,3 +1,9 @@
 sum
 mean
 foldBench
+spaceLeak
+*.aux
+*.hp
+*.pdf
+*.prof
+*.ps
