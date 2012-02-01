@@ -1,21 +1,21 @@
-import Prelude hiding (sum, product, foldl)
+import Prelude hiding (foldl)
 
 -- not stack friendly
-noTailSum :: [Int] -> Int
+noTailSum :: Num a => [a] -> a
 noTailSum [] = 0
 noTailSum (x:xs) = x + noTailSum xs
 
-noTailProduct :: [Int] -> Int
+noTailProduct :: Num a => [a] -> a
 noTailProduct [] = 1
-noTailProduct (x:xs) = x * noTailSum xs
+noTailProduct (x:xs) = x * noTailProduct xs
 
-tailSum :: [Int] -> Int
+tailSum :: Num a => [a] -> a
 tailSum xs = sum' 0 xs
   where
     sum' acc [] = acc
     sum' acc (x : xs) = sum' (acc + x) xs
 
-tailProduct :: [Int] -> Int
+tailProduct :: Num a => [a] -> a
 tailProduct xs = product' 1 xs
   where
     product' acc []     = acc
@@ -30,9 +30,26 @@ foldl f init xs = aux init xs
 fSum = foldl (+) 0
 fProduct = foldl (*) 1
 
+foldl' :: (a -> b -> a) -> a -> [b] -> a
+foldl' f init xs = aux init xs
+  where
+    aux acc []     = acc
+    aux acc (x:xs) = let y = acc `f` x
+                     in y `seq` (aux y xs)
+
+sfSum = foldl' (+) 0
+sfProduct = foldl' (*) 1
+
 main :: IO ()
 main = do
-  print $ tailSum [1..10000000]
-  print $ tailProduct [1..1000]
-  print $ fSum [1..10000000]
-  print $ fProduct [1.1000]
+  let xs = [1 .. 10000000]
+  let ys = [1 .. 1000]
+  print "tail"
+  print $ tailSum xs
+  print $ tailProduct ys
+  print "left fold"
+  print $ fSum xs
+  print $ fProduct ys
+  print "strict left fold"
+  print $ sfSum xs
+  print $ sfProduct xs
