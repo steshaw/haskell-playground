@@ -37,7 +37,7 @@ strictPairMean xs = s / fromIntegral l
 
 main = let xs = [1 .. 1 * 1000 * 1000] in defaultMain 
   [ bench "leakyMean"      (whnf leakyMean      xs)
-  , bench "unfriendlyMean" (whnf unfriendlyMean xs)
+--  , bench "unfriendlyMean" (whnf unfriendlyMean xs)    -- this is so terribly slow
   , bench "seqMean"        (whnf seqMean        xs)
   , bench "bangMean"       (whnf bangMean       xs)
   , bench "strictPairMean" (whnf strictPairMean xs)
