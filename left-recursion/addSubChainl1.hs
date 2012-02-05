@@ -1,14 +1,16 @@
 --
--- See http://stuckinaninfiniteloop.blogspot.com.au/2011/10/left-recursion-in-parsec.html
+-- Adapted from http://stuckinaninfiniteloop.blogspot.com.au/2011/10/left-recursion-in-parsec.html
 --
 
 import Text.ParserCombinators.Parsec
+import Control.Applicative ((*>), (<*))
 
-data IntExp = Const Int
-            | Add IntExp IntExp
-            | Sub IntExp IntExp
+data Exp 
+  = Const Int
+  | Add Exp Exp
+  | Sub Exp Exp
 
-instance Show (IntExp) where
+instance Show (Exp) where
   show (Const n) = show n
   show (Add l r) = "(" ++ show l ++ "+" ++ show r ++ ")"
   show (Sub l r) = "(" ++ show l ++ "-" ++ show r ++ ")"
@@ -21,28 +23,23 @@ run p input =
          print err
     Right x -> print x
 
-top :: Parser IntExp
-top = do 
-  e  <- parseIntExp
+top :: Parser Exp
+top = spaces *> term <* spaces <* eof
+
+term :: Parser Exp
+term = chainl1 parseConstant parseOperation
+
+parseOperation :: Parser (Exp -> Exp -> Exp)
+parseOperation = do 
   spaces
-  eof
-  return e
+  symbol <- char '+' <|> char '-'
+  spaces
+  case symbol of
+    '+' -> return Add
+    '-' -> return Sub
+    _   -> error "Unexpected. Should always be a '+' or '-' here"
 
-parseIntExp :: Parser IntExp
-parseIntExp =
-  chainl1 parseConstant parseOperation
-
-parseOperation :: Parser (IntExp -> IntExp -> IntExp)
-parseOperation =
-  do spaces
-     symbol <- char '+' <|> char '-'
-     spaces
-     case symbol of
-       '+' -> return Add
-       '-' -> return Sub
-       _   -> error "Unexpected. Should always be a '+' or '-' here"
-
-parseConstant :: Parser IntExp
-parseConstant =
-  do xs <- many1 digit
-     return $ Const (read xs :: Int)
+parseConstant :: Parser Exp
+parseConstant = do 
+  xs <- many1 digit
+  return $ Const (read xs :: Int)
