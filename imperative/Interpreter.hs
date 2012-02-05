@@ -49,76 +49,70 @@ update (State fm) x n =
 		  | otherwise   = ((y,n'): listUpdate ps x n)
 
 instance Show State where
---    show :: a -> String
     show (State bindings) = "environment = {\n" ++ concat middle ++ "}\n"
       where
         middle = map fred bindings
         fred (var, value) = "  " ++ var ++ " = " ++ (show value) ++ "\n"
-{-
-    showsPrec _ (State []) s = s
-    showsPrec i (State ((var, n):ps)) s
-	= concat [ var, " = ", show n, "\n", showsPrec i (State ps) s]
--}
 
 arid :: State
 arid = State []
 
 -- Arithmetic expressions:
 
-eA :: Aexp -> State -> Int
+evalA :: Aexp -> State -> Int
 
-eA (Num n) s      = n
-eA (Var x) s      = apply s x
-eA (a0 :+: a1) s  = n0 + n1
-    where n0 = eA a0 s
-          n1 = eA a1 s
-eA (a0 :-: a1) s  = n0 - n1
-    where n0 = eA a0 s
-          n1 = eA a1 s
-eA (a0 :*: a1) s  = n0 * n1
-    where n0 = eA a0 s
-          n1 = eA a1 s
+evalA (Num n) s      = n
+evalA (Var x) s      = apply s x
+evalA (a0 :+: a1) s  = n0 + n1
+    where n0 = evalA a0 s
+          n1 = evalA a1 s
+evalA (a0 :-: a1) s  = n0 - n1
+    where n0 = evalA a0 s
+          n1 = evalA a1 s
+evalA (a0 :*: a1) s  = n0 * n1
+    where n0 = evalA a0 s
+          n1 = evalA a1 s
 
 -- Boolean expressions:
 
-eB :: Bexp -> State -> Bool
+evalB :: Bexp -> State -> Bool
 
-eB TrueLit s        = True
-eB FalseLit s       = False
-eB (a0 :=: a1) s    = n0 == n1
-    where n0 = eA a0 s
-          n1 = eA a1 s
-eB (a0 :<=: a1) s   = n0 <= n1
-    where n0 = eA a0 s
-          n1 = eA a1 s
-eB (Not b) s = not t
-    where t = eB b s
-eB (b0 `And` b1) s  = t0 && t1
-    where t0 = eB b0 s
-          t1 = eB b1 s
-eB (b0 `Or` b1) s   = t0 || t1
-    where t0 = eB b0 s
-          t1 = eB b1 s
+evalB TrueLit s        = True
+evalB FalseLit s       = False
+evalB (a0 :=: a1) s    = n0 == n1
+    where n0 = evalA a0 s
+          n1 = evalA a1 s
+evalB (a0 :<=: a1) s   = n0 <= n1
+    where n0 = evalA a0 s
+          n1 = evalA a1 s
+evalB (Not b) s = not t
+    where t = evalB b s
+evalB (b0 `And` b1) s  = t0 && t1
+    where t0 = evalB b0 s
+          t1 = evalB b1 s
+evalB (b0 `Or` b1) s   = t0 || t1
+    where t0 = evalB b0 s
+          t1 = evalB b1 s
 
 -- Commands:
 
-eC :: Com -> State -> State
+eval :: Com -> State -> State
 
-eC (x := a) s     = update s x n
-    where n = eA a s
-eC Skip s         = s
-eC (c0 :~: c1) s  = s''
-    where s'  = eC c0 s
-          s'' = eC c1 s'
-eC (If b c0 c1) s
+eval (x := a) s     = update s x n
+    where n = evalA a s
+eval Skip s         = s
+eval (c0 :~: c1) s  = s''
+    where s'  = eval c0 s
+          s'' = eval c1 s'
+eval (If b c0 c1) s
     | t           = s0
     | otherwise   = s1
-    where t  = eB b s
-          s0 = eC c0 s
-          s1 = eC c1 s
-eC (While b c) s
+    where t  = evalB b s
+          s0 = eval c0 s
+          s1 = eval c1 s
+eval (While b c) s
     | t           = s''
     | otherwise   = s
-    where t   = eB b s
-	  s'  = eC c s
-          s'' = eC (While b c) s'
+    where t   = evalB b s
+	  s'  = eval c s
+          s'' = eval (While b c) s'
