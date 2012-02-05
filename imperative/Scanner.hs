@@ -76,8 +76,8 @@ checkResWord other   = ID other
 
 unscan :: Token -> String
 
-unscan (ID x)    = "Indentifier " ++ x
-unscan (NUM n)   = "Numeral " ++ show n
+unscan (ID x)    = "identifier " ++ x
+unscan (NUM n)   = "number " ++ show n
 unscan PLUS      = "+"
 unscan MINUS     = "-"
 unscan TIMES     = "*"
