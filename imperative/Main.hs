@@ -18,9 +18,9 @@ import Control.Monad (forM_)
 printTokens :: [Token] -> IO ()
 printTokens tokens = do
   putStrLn "scanner: "
+  putStr "  "; print tokens
   tokens `forM_` \token -> do
-    putStr "  "
-    print token
+    putStr "  "; print token
 
 main :: IO ()
 main = do
