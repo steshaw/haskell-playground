@@ -14,13 +14,14 @@ import Parser
 import Interpreter
 import System (getArgs)
 import Control.Monad (forM_)
+import Control.Arrow ((>>>), (&&&))
 
 printTokens :: [Token] -> IO ()
 printTokens tokens = do
   putStrLn "scanner: "
   putStr "  "; print tokens
-  tokens `forM_` \token -> do
-    putStr "  "; print token
+  (map (id &&& unscan) tokens) `forM_` \(token, unscan) -> do
+    putStr "  "; putStr unscan; putStr "\t\t\t"; print token
 
 main :: IO ()
 main = do
