@@ -34,12 +34,11 @@ scan ('<':'=':cs) = LEQ       : scan cs
 scan (':':'=':cs) = ASSIGN    : scan cs
 scan input@(c:cs)
     | isSpace c   = scan cs
-    | isAlpha c   = checkResWord word : scan afterWord
-    | isDigit c   = NUM (read num)    : scan afterNum
+    | isAlpha c   = let (word, afterWord) = span isAlphaNum input
+                    in checkResWord word : scan afterWord
+    | isDigit c   = let (num,  afterNum)  = span isDigit    input
+                    in NUM (read num)    : scan afterNum
     | otherwise   = error (c:" : illegal character.")
-    where
-    (word, afterWord) = span isAlphaNum input
-    (num,  afterNum)  = span isDigit    input
 
 -- Skip comments delimited by {- ... -}.
 -- Handles nested comments. The 2nd argument is the nesting depth.
