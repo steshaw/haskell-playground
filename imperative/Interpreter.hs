@@ -61,58 +61,58 @@ initEnv = Env []
 
 evalA :: Aexp -> Env -> Int
 
-evalA (Num n) s      = n
-evalA (Var x) s      = apply s x
-evalA (a0 :+: a1) s  = n0 + n1
-    where n0 = evalA a0 s
-          n1 = evalA a1 s
-evalA (a0 :-: a1) s  = n0 - n1
-    where n0 = evalA a0 s
-          n1 = evalA a1 s
-evalA (a0 :*: a1) s  = n0 * n1
-    where n0 = evalA a0 s
-          n1 = evalA a1 s
+evalA (Num n) env      = n
+evalA (Var x) env      = apply env x
+evalA (a0 :+: a1) env  = n0 + n1
+    where n0 = evalA a0 env
+          n1 = evalA a1 env
+evalA (a0 :-: a1) env  = n0 - n1
+    where n0 = evalA a0 env
+          n1 = evalA a1 env
+evalA (a0 :*: a1) env  = n0 * n1
+    where n0 = evalA a0 env
+          n1 = evalA a1 env
 
 -- Boolean expressions:
 
 evalB :: Bexp -> Env -> Bool
 
-evalB TrueLit s        = True
-evalB FalseLit s       = False
-evalB (a0 :=: a1) s    = n0 == n1
-    where n0 = evalA a0 s
-          n1 = evalA a1 s
-evalB (a0 :<=: a1) s   = n0 <= n1
-    where n0 = evalA a0 s
-          n1 = evalA a1 s
-evalB (Not b) s = not t
-    where t = evalB b s
-evalB (b0 `And` b1) s  = t0 && t1
-    where t0 = evalB b0 s
-          t1 = evalB b1 s
-evalB (b0 `Or` b1) s   = t0 || t1
-    where t0 = evalB b0 s
-          t1 = evalB b1 s
+evalB TrueLit env        = True
+evalB FalseLit env       = False
+evalB (a0 :=: a1) env    = n0 == n1
+    where n0 = evalA a0 env
+          n1 = evalA a1 env
+evalB (a0 :<=: a1) env   = n0 <= n1
+    where n0 = evalA a0 env
+          n1 = evalA a1 env
+evalB (Not b) env = not t
+    where t = evalB b env
+evalB (b0 `And` b1) env  = t0 && t1
+    where t0 = evalB b0 env
+          t1 = evalB b1 env
+evalB (b0 `Or` b1) env   = t0 || t1
+    where t0 = evalB b0 env
+          t1 = evalB b1 env
 
 -- Commands:
 
 eval :: Com -> Env -> Env
 
-eval (x := a) s     = update s x n
-    where n = evalA a s
-eval Skip s         = s
-eval (c0 :~: c1) s  = s''
-    where s'  = eval c0 s
-          s'' = eval c1 s'
-eval (If b c0 c1) s
+eval (x := a) env     = update env x n
+    where n = evalA a env
+eval Skip env         = env
+eval (c0 :~: c1) env  = env''
+    where env'  = eval c0 env
+          env'' = eval c1 env'
+eval (If b c0 c1) env
     | t           = s0
     | otherwise   = s1
-    where t  = evalB b s
-          s0 = eval c0 s
-          s1 = eval c1 s
-eval (While b c) s
-    | t           = s''
-    | otherwise   = s
-    where t   = evalB b s
-	  s'  = eval c s
-          s'' = eval (While b c) s'
+    where t  = evalB b env
+          s0 = eval c0 env
+          s1 = eval c1 env
+eval (While b c) env
+    | t           = env''
+    | otherwise   = env
+    where t     = evalB b env
+	  env'  = eval c env
+          env'' = eval (While b c) env'
