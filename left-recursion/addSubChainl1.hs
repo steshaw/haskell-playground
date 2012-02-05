@@ -24,14 +24,13 @@ run p input =
     Right x -> print x
 
 top :: Parser Exp
-top = spaces *> term <* spaces <* eof
+top = spaces *> term <* eof
 
 term :: Parser Exp
 term = chainl1 parseConstant parseOperation
 
 parseOperation :: Parser (Exp -> Exp -> Exp)
 parseOperation = do 
-  spaces
   symbol <- char '+' <|> char '-'
   spaces
   case symbol of
@@ -42,4 +41,5 @@ parseOperation = do
 parseConstant :: Parser Exp
 parseConstant = do 
   xs <- many1 digit
+  spaces
   return $ Const (read xs :: Int)
