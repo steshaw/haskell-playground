@@ -21,6 +21,13 @@ run p input =
          print err
     Right x -> print x
 
+top :: Parser IntExp
+top = do 
+  e  <- parseIntExp
+  spaces
+  eof
+  return e
+
 parseIntExp :: Parser IntExp
 parseIntExp =
   chainl1 parseConstant parseOperation
@@ -33,6 +40,7 @@ parseOperation =
      case symbol of
        '+' -> return Add
        '-' -> return Sub
+       _   -> error "Unexpected. Should always be a '+' or '-' here"
 
 parseConstant :: Parser IntExp
 parseConstant =
