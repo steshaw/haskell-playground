@@ -25,7 +25,7 @@ run p input =
     Right x -> print x
 
 top :: Parser Exp
-top = spaces *> term <* spaces <* eof
+top = spaces *> term <* eof
 
 --
 -- Adapted from buildExpressionParser example at
