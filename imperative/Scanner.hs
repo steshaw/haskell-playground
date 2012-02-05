@@ -36,7 +36,7 @@ scan input@(c:cs)
     | isSpace c   = scan cs
     | isAlpha c   = let (word, afterWord) = span isAlphaNum input
                     in checkResWord word : scan afterWord
-    | isDigit c   = let (num,  afterNum)  = span isDigit    input
+    | isDigit c   = let (num,  afterNum)  = span isDigit input
                     in NUM (read num)    : scan afterNum
     | otherwise   = error (c:" : illegal character.")
 
