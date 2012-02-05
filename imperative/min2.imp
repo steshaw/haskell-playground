@@ -1,0 +1,6 @@
+a := 100;
+b := 99;
+
+if a <= b 
+then r := a
+else r := b
