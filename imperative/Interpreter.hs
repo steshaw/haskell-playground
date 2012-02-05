@@ -49,9 +49,16 @@ update (State fm) x n =
 		  | otherwise   = ((y,n'): listUpdate ps x n)
 
 instance Show State where
+--    show :: a -> String
+    show (State bindings) = "environment = {\n" ++ concat middle ++ "}\n"
+      where
+        middle = map fred bindings
+        fred (var, value) = "  " ++ var ++ " = " ++ (show value) ++ "\n"
+{-
     showsPrec _ (State []) s = s
-    showsPrec i (State ((x,n):ps)) s
-	= concat [ show x, "\t->  ", show n, "\n", showsPrec i (State ps) s]
+    showsPrec i (State ((var, n):ps)) s
+	= concat [ var, " = ", show n, "\n", showsPrec i (State ps) s]
+-}
 
 arid :: State
 arid = State []

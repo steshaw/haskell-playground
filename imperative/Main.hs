@@ -30,4 +30,5 @@ main = do
   let tokens = scan input
   printTokens tokens
   let result = eC (parse tokens) arid
+  putStrLn "eval ==>"
   putStr (show result)
