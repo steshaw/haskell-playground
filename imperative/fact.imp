@@ -1,5 +1,6 @@
-
-{- A simple Imp program to compute 10! -}
+{-
+ - A simple Imp program to compute 10!
+ -}
 
 n := 10;
 
