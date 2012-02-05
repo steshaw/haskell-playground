@@ -16,7 +16,6 @@ import System (getArgs)
 main :: IO()
 main = do
   [filename] <- getArgs
-  file <- openFile filename ReadMode
-  input <- hGetContents file
+  input <- readFile filename
   let result = eC (parseProg input) arid
   putStr (show result)
