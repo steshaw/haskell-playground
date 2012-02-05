@@ -30,36 +30,36 @@ update s x n = \y -> if x==y then n else s y
 -- list manipulation is easier, but I want a new type which can be an
 -- instance of Show.
 
-newtype State = State [(Name, Int)]
+newtype Env = Env [(Name, Int)]
 
-apply :: State -> Name -> Int
+apply :: Env -> Name -> Int
 
-apply (State fm) x =
+apply (Env fm) x =
     case lookup x fm of
     Just n  -> n
     Nothing -> error ("Undeclared identifier: " ++ show x)
 
-update :: State -> Name -> Int -> State
+update :: Env -> Name -> Int -> Env
 
-update (State fm) x n =
-    State (listUpdate fm x n)
+update (Env fm) x n =
+    Env (listUpdate fm x n)
 	where listUpdate [] x n = [(x,n)]
 	      listUpdate ((y,n'):ps) x n
 		  | x==y        = ((x,n):ps)
 		  | otherwise   = ((y,n'): listUpdate ps x n)
 
-instance Show State where
-    show (State bindings) = "environment = {\n" ++ concat middle ++ "}\n"
+instance Show Env where
+    show (Env bindings) = "environment = {\n" ++ concat middle ++ "}\n"
       where
         middle = map fred bindings
         fred (var, value) = "  " ++ var ++ " = " ++ (show value) ++ "\n"
 
-arid :: State
-arid = State []
+initEnv :: Env
+initEnv = Env []
 
 -- Arithmetic expressions:
 
-evalA :: Aexp -> State -> Int
+evalA :: Aexp -> Env -> Int
 
 evalA (Num n) s      = n
 evalA (Var x) s      = apply s x
@@ -75,7 +75,7 @@ evalA (a0 :*: a1) s  = n0 * n1
 
 -- Boolean expressions:
 
-evalB :: Bexp -> State -> Bool
+evalB :: Bexp -> Env -> Bool
 
 evalB TrueLit s        = True
 evalB FalseLit s       = False
@@ -96,7 +96,7 @@ evalB (b0 `Or` b1) s   = t0 || t1
 
 -- Commands:
 
-eval :: Com -> State -> State
+eval :: Com -> Env -> Env
 
 eval (x := a) s     = update s x n
     where n = evalA a s

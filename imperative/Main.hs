@@ -29,6 +29,6 @@ main = do
   input <- readFile filename
   let tokens = scan input
   printTokens tokens
-  let result = eval (parse tokens) arid
+  let result = eval (parse tokens) initEnv
   putStrLn "eval ==>"
   putStr (show result)
