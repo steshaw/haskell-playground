@@ -21,6 +21,7 @@ check tok []  = error "Unexpected end of input."
 check tok (t:ts)
     | tok == t  = ts
     | otherwise = error (unscan tok ++ " expected.\n" ++ unscan t ++ " scanned.")
+
 -- Parse an arithmetic expression.
 -- Operator precedence is as usual, represented by the following grammar:
 
@@ -64,7 +65,7 @@ exprOpt :: (Aexp, [Token]) -> (Aexp, [Token])
 
 exprOpt (t1, PLUS:toks)  = exprOpt (t1 :+: t2, toks')
     where
-    (t2, toks') = term toks		      
+    (t2, toks') = term toks
 exprOpt (t1, MINUS:toks) = exprOpt (t1 :-: t2, toks')
     where
     (t2, toks') = term toks
