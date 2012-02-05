@@ -8,7 +8,7 @@
 -- The commentary has also been modified and is now hopefully more
 -- helpful for students interested in understanding parsers.
 
-module Parser (parseProg) where
+module Parser (parse, parseProg) where
 
 import Scanner
 import AbsSyn
@@ -236,7 +236,10 @@ seqOpt (c, SEMICOLON:toks)  = seqOpt (c :~: c', toks')
 -- program ::= comSeq
 
 parseProg :: String -> Com
+parseProg source = parseProg1 $ scan source
 
-parseProg source = body
-    where
-    (body, []) = comSeq $ scan source
+parse :: [Token] -> Com
+parse tokens = parseProg1 tokens
+
+parseProg1 :: [Token] -> Com
+parseProg1 tokens = let (body, []) = comSeq tokens in body

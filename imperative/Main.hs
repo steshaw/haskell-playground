@@ -9,13 +9,24 @@
 module Main (main) where
 
 import IO
+import Scanner
 import Parser
 import Interpreter
 import System (getArgs)
+import Control.Monad (forM_)
 
-main :: IO()
+printTokens :: [Token] -> IO ()
+printTokens tokens = do
+  putStrLn "scanner: "
+  tokens `forM_` \token -> do
+    putStr "  "
+    print token
+
+main :: IO ()
 main = do
   [filename] <- getArgs
   input <- readFile filename
-  let result = eC (parseProg input) arid
+  let tokens = scan input
+  printTokens tokens
+  let result = eC (parse tokens) arid
   putStr (show result)
