@@ -243,8 +243,8 @@ seqOpt (c, SEMICOLON:toks)  = seqOpt (c :~: c', toks')
 parseProg :: String -> Com
 parseProg source = parseProg1 $ scan source
 
-parse :: [Token] -> Com
-parse tokens = parseProg1 tokens
-
 parseProg1 :: [Token] -> Com
 parseProg1 tokens = let (body, []) = comSeq tokens in body
+
+parse :: [Token] -> Com
+parse = parseProg1
