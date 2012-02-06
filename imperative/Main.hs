@@ -1,5 +1,5 @@
 --
--- Hacked by Steven Shaw to accept filename as arg.
+-- Modified by Steven Shaw.
 --
 
 -- Main module for Imp parser and interpreter.
