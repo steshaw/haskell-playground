@@ -49,14 +49,14 @@ update (Env fm) x n =
     Env (listUpdate fm x n)
 	where listUpdate [] x n = [(x,n)]
 	      listUpdate ((y,n'):ps) x n
-		  | x==y        = ((x,n):ps)
-		  | otherwise   = ((y,n'): listUpdate ps x n)
+		  | x == y      = (x,n)  : ps
+		  | otherwise   = (y,n') : listUpdate ps x n
 
 instance Show Env where
     show (Env bindings) = "environment = {\n" ++ concat middle ++ "}\n"
       where
         middle = map fred bindings
-        fred (var, value) = "  " ++ var ++ " = " ++ (show value) ++ "\n"
+        fred (var, value) = "  " ++ var ++ " = " ++ show value ++ "\n"
 
 initEnv :: Env
 initEnv = Env []
