@@ -3,6 +3,7 @@
 --
 
 import Control.Monad
+import Debug.Trace
 
 data Expr
   = Val Int
@@ -26,7 +27,7 @@ data Op
   | THROW
   | MARK Code
   | UNMARK
-  deriving (Show)
+  deriving (Eq, Show)
 
 comp :: Expr -> Code
 comp (Val n)     = [PUSH n]
@@ -37,19 +38,24 @@ comp (Catch x h) = [MARK (comp h)] ++ comp x ++ [UNMARK]
 exec :: Code -> Maybe Int
 exec = exec' []
 
-data StackElement 
-  = StackVal Int
-
+type StackElement = Int
 type Stack = [StackElement]
 
 exec' :: Stack -> Code -> Maybe Int
-exec' [StackVal n] []                = Just n
-exec' stack (PUSH n : cs)            = exec' (StackVal n : stack) cs
-exec' (StackVal a : StackVal b : stack) (ADD : cs) = exec' (StackVal (a + b) : stack) cs
+exec' [n] []                             = Just n
+exec' stack (PUSH n : code)              = exec' (n : stack) code
+exec' (a : b : stack) (ADD : code)       = exec' ((a + b) : stack) code
+exec' stack (MARK h : code)              = let result = exec' stack code in
+                                           case result of
+                                             Just n -> Just n
+                                             Nothing -> exec' stack (h ++ rest)
+                                               where
+                                                 rest = tail $ dropWhile (/= UNMARK) code
+exec' stack (THROW : code)               = Nothing
+exec' stack (UNMARK : code)              = exec' stack code
 
-main = do
-  let e = Add (Val 1) (Add (Val 2) (Val 3))
-  putStr "expr: "
+go e = do
+  putStr "\nexpr: "
   print e
   putStr "eval: "
   print $ eval e
@@ -58,3 +64,12 @@ main = do
   print $ code
   putStr "exec: "
   print $ exec code
+
+main = sequence_ 
+  [ go $ Val 27 `Add` Val 15 -- example from slide 12
+  , go $ Throw `Catch` Throw -- example from slide 12
+  , go $ Throw `Catch` (Val 1336 `Add` Val 1) -- example from slide 12
+  , go $ Add (Val 1) (Add (Val 2) (Val 3))
+  , go $ Add (Val 1) (Catch (Add (Val 2) (Val 3)) (Val 10))
+  , go $ Add (Val 1) (Catch (Add (Val 2) (Throw)) (Val 10))
+  ]
