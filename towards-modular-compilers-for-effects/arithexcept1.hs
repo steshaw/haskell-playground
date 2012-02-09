@@ -37,7 +37,8 @@ comp (Catch x h) = [MARK (comp h)] ++ comp x ++ [UNMARK]
 exec :: Code -> Int
 exec = exec' []
 
-type Stack = [Int]
+type StackElement = Int
+type Stack = [StackElement]
 
 exec' :: Stack -> Code -> Int
 exec' [result] []                = result
