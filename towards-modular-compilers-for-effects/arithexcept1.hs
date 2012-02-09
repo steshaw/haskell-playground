@@ -42,16 +42,14 @@ type StackElement = Int
 type Stack = [StackElement]
 
 exec' :: Stack -> Code -> Maybe Int
-exec' [n] []                             = Just n
+exec' [n] []                             = return n
 exec' stack (PUSH n : code)              = exec' (n : stack) code
 exec' (a : b : stack) (ADD : code)       = exec' ((a + b) : stack) code
-exec' stack (MARK h : code)              = let result = exec' stack code in
-                                           case result of
-                                             Just n -> Just n
-                                             Nothing -> exec' stack (h ++ rest)
+exec' stack (MARK h : code)              = exec' stack code `mplus`
+                                             exec' stack (h ++ rest)
                                                where
                                                  rest = tail $ dropWhile (/= UNMARK) code
-exec' stack (THROW : code)               = Nothing
+exec' stack (THROW : code)               = mzero
 exec' stack (UNMARK : code)              = exec' stack code
 
 go e = do
