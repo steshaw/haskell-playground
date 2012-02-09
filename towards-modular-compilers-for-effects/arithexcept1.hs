@@ -38,18 +38,28 @@ comp (Catch x h) = [MARK (comp h)] ++ comp x ++ [UNMARK]
 exec :: Code -> Maybe Int
 exec = exec' []
 
-data StackElement = SVal Int
+data StackElement 
+  = SVal Int 
+  | SHandler Code
+  deriving (Show)
 type Stack = [StackElement]
 
 exec' :: Stack -> Code -> Maybe Int
 exec' [SVal n] []                  = return n
 exec' stack (PUSH n : code)        = exec' (SVal n : stack) code
 exec' (SVal a : SVal b : stack) (ADD : code) = exec' (SVal (a + b) : stack) code
-exec' stack (MARK h : code)        = -- bit evil here to use the Haskell stack
-                                     exec' stack code `mplus` exec' stack (h ++ rest)
-                                       where rest = tail $ dropWhile (/= UNMARK) code
-exec' stack (THROW : code)         = mzero
-exec' stack (UNMARK : code)        = exec' stack code
+exec' stack (MARK h : code)        = exec' (SHandler h : stack) code
+exec' stack (THROW : code)         = unwind stack code
+exec' (result : SHandler _ : stack) (UNMARK : code) = exec' (result : stack) code
+
+unwind :: Stack -> Code -> Maybe Int
+unwind (SHandler handler : stack) code = 
+  exec' stack code'
+    where
+      rest = tail $ dropWhile (/= UNMARK) code
+      code' = handler ++ rest
+unwind (_ : stack) code                = unwind stack code
+unwind [] _ = Nothing
 
 go e = do
   putStr "\nexpr: "
