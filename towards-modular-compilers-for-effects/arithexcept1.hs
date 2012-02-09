@@ -42,15 +42,14 @@ type StackElement = Int
 type Stack = [StackElement]
 
 exec' :: Stack -> Code -> Maybe Int
-exec' [n] []                             = return n
-exec' stack (PUSH n : code)              = exec' (n : stack) code
-exec' (a : b : stack) (ADD : code)       = exec' ((a + b) : stack) code
-exec' stack (MARK h : code)              = exec' stack code `mplus`
-                                             exec' stack (h ++ rest)
-                                               where
-                                                 rest = tail $ dropWhile (/= UNMARK) code
-exec' stack (THROW : code)               = mzero
-exec' stack (UNMARK : code)              = exec' stack code
+exec' [n] []                       = return n
+exec' stack (PUSH n : code)        = exec' (n : stack) code
+exec' (a : b : stack) (ADD : code) = exec' ((a + b) : stack) code
+exec' stack (MARK h : code)        = -- bit evil here to use the Haskell stack
+                                     exec' stack code `mplus` exec' stack (h ++ rest)
+                                       where rest = tail $ dropWhile (/= UNMARK) code
+exec' stack (THROW : code)         = mzero
+exec' stack (UNMARK : code)        = exec' stack code
 
 go e = do
   putStr "\nexpr: "
@@ -63,7 +62,7 @@ go e = do
   putStr "exec: "
   print $ exec code
 
-main = sequence_ 
+main = sequence_
   [ go $ Val 27 `Add` Val 15 -- example from slide 12
   , go $ Throw `Catch` Throw -- example from slide 12
   , go $ Throw `Catch` (Val 1336 `Add` Val 1) -- example from slide 12
