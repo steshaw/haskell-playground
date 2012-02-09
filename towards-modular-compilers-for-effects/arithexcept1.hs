@@ -34,16 +34,18 @@ comp (Add x y)   = comp x ++ comp y ++ [ADD]
 comp Throw       = [THROW]
 comp (Catch x h) = [MARK (comp h)] ++ comp x ++ [UNMARK]
 
-exec :: Code -> Int
+exec :: Code -> Maybe Int
 exec = exec' []
 
-type StackElement = Int
+data StackElement 
+  = StackVal Int
+
 type Stack = [StackElement]
 
-exec' :: Stack -> Code -> Int
-exec' [result] []                = result
-exec' stack (PUSH n : cs)        = exec' (n : stack) cs
-exec' (a : b : stack) (ADD : cs) = exec' (a + b : stack) cs
+exec' :: Stack -> Code -> Maybe Int
+exec' [StackVal n] []                = Just n
+exec' stack (PUSH n : cs)            = exec' (StackVal n : stack) cs
+exec' (StackVal a : StackVal b : stack) (ADD : cs) = exec' (StackVal (a + b) : stack) cs
 
 main = do
   let e = Add (Val 1) (Add (Val 2) (Val 3))
