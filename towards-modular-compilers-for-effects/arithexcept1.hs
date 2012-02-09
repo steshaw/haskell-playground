@@ -38,13 +38,13 @@ comp (Catch x h) = [MARK (comp h)] ++ comp x ++ [UNMARK]
 exec :: Code -> Maybe Int
 exec = exec' []
 
-type StackElement = Int
+data StackElement = SVal Int
 type Stack = [StackElement]
 
 exec' :: Stack -> Code -> Maybe Int
-exec' [n] []                       = return n
-exec' stack (PUSH n : code)        = exec' (n : stack) code
-exec' (a : b : stack) (ADD : code) = exec' ((a + b) : stack) code
+exec' [SVal n] []                  = return n
+exec' stack (PUSH n : code)        = exec' (SVal n : stack) code
+exec' (SVal a : SVal b : stack) (ADD : code) = exec' (SVal (a + b) : stack) code
 exec' stack (MARK h : code)        = -- bit evil here to use the Haskell stack
                                      exec' stack code `mplus` exec' stack (h ++ rest)
                                        where rest = tail $ dropWhile (/= UNMARK) code
