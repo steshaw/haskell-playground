@@ -2,3 +2,5 @@ TXL2C
 test*.c
 test*.s
 test*.i
+test1
+test2

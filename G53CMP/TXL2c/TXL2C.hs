@@ -346,7 +346,7 @@ printCDecls ((i, e) : ds) =
     . printCDecls ds
 
 printCVar :: Id -> ShowS
-printCVar i = showString ("v" ++ i)
+printCVar i = showChar 'v' . showString i
 
 printCOp :: BinOp -> ShowS
 printCOp Plus   = showChar '+'
@@ -359,11 +359,11 @@ printCOp Divide = showChar '/'
 -- Utilities
 ----------------------------------------------------------------
 
-indent n = showString (take (2 * n) (repeat ' '))
-
 nl  = showChar '\n'
 
 spc = showChar ' '
+
+indent n s = iterate spc s !! n
 
 
 ----------------------------------------------------------------
