@@ -302,9 +302,10 @@ printAsC (ds, e) = printAsCAux ""
     where
         printAsCAux = printPreamble
 		      . printCDecls ds
-		      . showString "printf(\"%d\\n\", "
+		      . indent 1 . showString "printf(\"%d\\n\", "
                       . printCExp e
                       . showString ");" . nl
+                      . indent 1 . showString "return 0;" . nl
                       . printEpilogue
 
 printPreamble :: ShowS
@@ -333,7 +334,8 @@ printCExp (Let _ _ _) =
 printCDecls :: [(Id, Exp)] -> ShowS
 printCDecls [] = id
 printCDecls ((i, e) : ds) =
-    showString "int "
+    indent 1
+    . showString "int "
     . printCVar i
     . spc
     . showChar '='
