@@ -13,5 +13,5 @@ clean:
 TXL2C: TXL2C.hs
 	ghc -Wall --make TXL2C.hs
 
-%.c: %.txl
+%.c: %.txl TXL2C
 	./TXL2C $<
