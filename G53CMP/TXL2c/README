@@ -1,0 +1,37 @@
+See course notes at
+
+  http://red.cs.nott.ac.uk/~nhn/G53CMP/G53CMP-lecture-note-index.html#lect2+3
+
+
+Original left-recursive grammar:
+
+  TXL     → Exp
+
+  Exp     → Exp + PrimExp
+          | Exp - PrimExp
+          | Exp * PrimExp
+          | Exp / Primexp
+          | PrimExp
+
+  PrimExp → IntegerLiteral
+          | Identifier
+          | ( Exp )
+          | let Identifier = Exp in Exp
+
+
+Modified right-recursive grammar:
+
+  TXL     → Exp
+
+  Exp     → PrimExp ExpRec
+
+  ExpRec  → + PrimExp ExpRec
+          | - PrimExp ExpRec
+          | * PrimExp ExpRec
+          | / Primexp ExpRec
+          | ε
+
+  PrimExp → IntegerLiteral
+          | Identifier
+          | ( Exp )
+          | let Identifier = Exp in Exp
