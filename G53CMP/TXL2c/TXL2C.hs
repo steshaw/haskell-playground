@@ -360,7 +360,7 @@ nl  = showChar '\n'
 
 spc = showChar ' '
 
-indent n s = iterate spc s !! n
+indent n s = iterate spc s !! (n * 2)
 
 ----------------------------------------------------------------
 -- Main
