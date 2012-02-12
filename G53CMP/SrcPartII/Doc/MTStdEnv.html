@@ -1,0 +1,230 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>MTStdEnv</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+><SCRIPT TYPE="text/javascript"
+>window.onload = function () {setSynopsis("mini_MTStdEnv.html")};</SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>HMTC</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>MTStdEnv</FONT
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>MiniTriangle initial environment
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3AEnv"
+>Env</A
+> </TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmtStdEnv"
+>mtStdEnv</A
+> :: <A HREF="MTStdEnv.html#t%3AEnv"
+>Env</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Documentation</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:Env"
+><A NAME="t%3AEnv"
+></A
+></A
+><B
+>Env</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Environment (symbol table). Abstract.
+</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:mtStdEnv"
+><A NAME="v%3AmtStdEnv"
+></A
+></A
+><B
+>mtStdEnv</B
+> :: <A HREF="MTStdEnv.html#t%3AEnv"
+>Env</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+><P
+>The MiniTriangle initial environment.
+</P
+><DL
+><DT
+>Types:</DT
+><DD
+> Boolean, Integer
+</DD
+><DT
+>Constants:</DT
+><DD
+>
+</DD
+></DL
+><UL
+><LI
+> false, true : Boolean
+</LI
+><LI
+> maxInt : Integer
+</LI
+></UL
+><DL
+><DT
+>Functions (binary and unary operators):</DT
+><DD
+>
+</DD
+></DL
+><UL
+><LI
+> (+), (-), (*), (/), (^) : (Integer, Integer) -&gt; Integer
+</LI
+><LI
+> (neg) : Integer -&gt; Integer
+</LI
+><LI
+> (&lt;), (&lt;=), (==), (!=), (&gt;=), (&gt;) : (Integer, Integer) -&gt; Boolean
+</LI
+><LI
+> (&amp;&amp;), (||) : (Boolean, Boolean) -&gt; Boolean
+</LI
+><LI
+> (!) : Boolean -&gt; Boolean
+</LI
+></UL
+><DL
+><DT
+>Procedures:</DT
+><DD
+>
+</DD
+></DL
+><UL
+><LI
+> getint : (Sink Integer) -&gt; Unit
+</LI
+><LI
+> putint : Integer -&gt; Unit
+</LI
+></UL
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.6.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>

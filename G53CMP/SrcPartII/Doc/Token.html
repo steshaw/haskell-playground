@@ -1,0 +1,692 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>Token</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+><SCRIPT TYPE="text/javascript"
+>window.onload = function () {setSynopsis("mini_Token.html")};</SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>HMTC</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>Token</FONT
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Representation of tokens (lexical symbols).
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3AToken"
+>Token</A
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>= <A HREF="#v%3ALPar"
+>LPar</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ARPar"
+>RPar</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AComma"
+>Comma</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ASemicol"
+>Semicol</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AColon"
+>Colon</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AColEq"
+>ColEq</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AEquals"
+>Equals</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ABegin"
+>Begin</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AConst"
+>Const</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ADo"
+>Do</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AElse"
+>Else</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AEnd"
+>End</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AIf"
+>If</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AIn"
+>In</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ALet"
+>Let</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AThen"
+>Then</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AVar"
+>Var</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AWhile"
+>While</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ALitInt"
+>LitInt</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AliVal"
+>liVal</A
+> :: Integer</TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AId"
+>Id</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AidName"
+>idName</A
+> :: <A HREF="Name.html#t%3AName"
+>Name</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AOp"
+>Op</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AopName"
+>opName</A
+> :: <A HREF="Name.html#t%3AName"
+>Name</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AEOF"
+>EOF</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Documentation</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:Token"
+><A NAME="t%3AToken"
+></A
+></A
+><B
+>Token</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Token type.
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="5" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:LPar"
+><A NAME="v%3ALPar"
+></A
+></A
+><B
+>LPar</B
+></TD
+><TD CLASS="rdoc"
+>&quot;(&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:RPar"
+><A NAME="v%3ARPar"
+></A
+></A
+><B
+>RPar</B
+></TD
+><TD CLASS="rdoc"
+>&quot;)&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Comma"
+><A NAME="v%3AComma"
+></A
+></A
+><B
+>Comma</B
+></TD
+><TD CLASS="rdoc"
+>&quot;,&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Semicol"
+><A NAME="v%3ASemicol"
+></A
+></A
+><B
+>Semicol</B
+></TD
+><TD CLASS="rdoc"
+>&quot;;&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Colon"
+><A NAME="v%3AColon"
+></A
+></A
+><B
+>Colon</B
+></TD
+><TD CLASS="rdoc"
+>&quot;:&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:ColEq"
+><A NAME="v%3AColEq"
+></A
+></A
+><B
+>ColEq</B
+></TD
+><TD CLASS="rdoc"
+>&quot;:=&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Equals"
+><A NAME="v%3AEquals"
+></A
+></A
+><B
+>Equals</B
+></TD
+><TD CLASS="rdoc"
+>&quot;=&quot;
+  | Cond      -- ^ &quot;?&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Begin"
+><A NAME="v%3ABegin"
+></A
+></A
+><B
+>Begin</B
+></TD
+><TD CLASS="rdoc"
+>&quot;begin&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Const"
+><A NAME="v%3AConst"
+></A
+></A
+><B
+>Const</B
+></TD
+><TD CLASS="rdoc"
+>&quot;const&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Do"
+><A NAME="v%3ADo"
+></A
+></A
+><B
+>Do</B
+></TD
+><TD CLASS="rdoc"
+>&quot;do&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Else"
+><A NAME="v%3AElse"
+></A
+></A
+><B
+>Else</B
+></TD
+><TD CLASS="rdoc"
+>&quot;else&quot;
+  | Elsif	-- ^ &quot;elsif&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:End"
+><A NAME="v%3AEnd"
+></A
+></A
+><B
+>End</B
+></TD
+><TD CLASS="rdoc"
+>&quot;end&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:If"
+><A NAME="v%3AIf"
+></A
+></A
+><B
+>If</B
+></TD
+><TD CLASS="rdoc"
+>&quot;if&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:In"
+><A NAME="v%3AIn"
+></A
+></A
+><B
+>In</B
+></TD
+><TD CLASS="rdoc"
+>&quot;in&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Let"
+><A NAME="v%3ALet"
+></A
+></A
+><B
+>Let</B
+></TD
+><TD CLASS="rdoc"
+>&quot;let&quot;
+  | Repeat	-- ^ &quot;repeat&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Then"
+><A NAME="v%3AThen"
+></A
+></A
+><B
+>Then</B
+></TD
+><TD CLASS="rdoc"
+>&quot;then&quot;
+  | Until	-- ^ &quot;until&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Var"
+><A NAME="v%3AVar"
+></A
+></A
+><B
+>Var</B
+></TD
+><TD CLASS="rdoc"
+>&quot;var&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:While"
+><A NAME="v%3AWhile"
+></A
+></A
+><B
+>While</B
+></TD
+><TD CLASS="rdoc"
+>&quot;while&quot;
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:LitInt"
+><A NAME="v%3ALitInt"
+></A
+></A
+><B
+>LitInt</B
+></TD
+><TD CLASS="rdoc"
+>Integer literals
+  | LitChr {lcVal :: Char}            -- ^ Character literals
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:liVal"
+><A NAME="v%3AliVal"
+></A
+></A
+><B
+>liVal</B
+> :: Integer</TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Id"
+><A NAME="v%3AId"
+></A
+></A
+><B
+>Id</B
+></TD
+><TD CLASS="rdoc"
+>Identifiers
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:idName"
+><A NAME="v%3AidName"
+></A
+></A
+><B
+>idName</B
+> :: <A HREF="Name.html#t%3AName"
+>Name</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Op"
+><A NAME="v%3AOp"
+></A
+></A
+><B
+>Op</B
+></TD
+><TD CLASS="rdoc"
+>Operators
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:opName"
+><A NAME="v%3AopName"
+></A
+></A
+><B
+>opName</B
+> :: <A HREF="Name.html#t%3AName"
+>Name</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:EOF"
+><A NAME="v%3AEOF"
+></A
+></A
+><B
+>EOF</B
+></TD
+><TD CLASS="rdoc"
+>End of file (input) marker.
+</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:Token')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:Token" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>Eq <A HREF="Token.html#t%3AToken"
+>Token</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>Show <A HREF="Token.html#t%3AToken"
+>Token</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.6.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>

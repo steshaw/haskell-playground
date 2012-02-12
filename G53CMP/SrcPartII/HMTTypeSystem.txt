@@ -1,0 +1,392 @@
+Type System for the HMTC Version of MiniTriangle
+================================================
+
+The notation essentially follows B.C. Pierce "Types and Programming
+Languages", and the presentation is also inspired by that book.
+
+Naming conventions:
+
+    G .........	Gamma, type environment (or typing context)
+    S, T, U ...	Type
+    c .........	Command
+    e .........	Expression
+    x, y, z ...	Variable
+    p, f ......	Procedure/function names (also variables)
+    n .........	Integer
+    _ .........	Wild card, don't care
+
+Indexed variants of the above are allowed. E.g. "e1", "e2", "e32" all stand
+for expressions.
+
+Furthermore, a suffix "s" denotes a vector (or list) of entities, and we
+allow shorthand forms such as
+
+    es : Ts
+
+to say each of the expressions in "es" have the corresponding type in "Ts",
+i.e. if
+
+    es = <e1, e2, ..., en>
+    Ts = <T1, T2, ..., Tn>
+
+then
+
+    e1 : T1, e2 : T2, ..., en : Tn
+
+Syntax
+------
+
+Types:
+
+T ::= Unit		The unit type (used as the return type of procedures)
+  |   Boolean		Type of booleans
+  |   Integer		Type of integers
+  |   Source T		Variable reference that may be read
+  |   Sink T		Variable reference that may be written
+  |   Ref T		Variable reference that may both be read and written
+  |   Ts -> T		Type of procedures/functions ("Arrow")
+
+The syntax of types is (much) more permissive than what is actually needed in
+this version of MiniTriangle (henceforth referred to as HMT). E.g. the type
+syntax does not rule out variables of reference type ("Ref (Ref T))") or
+function type ("Ref (Ts -> T)"), neither of which is possible at present since
+the HMT grammar simply does not provide any way to express programs using such
+types. However, the given syntax of types is simpler than a more precise
+account of the HMT types that can actually occur, and it facilitates future
+generalisations.
+
+Commands:
+
+c ::= x := e			Assignment
+  |   p ( es )			Procedure call
+  |   c ; c			Sequencing
+  |   if e then c else c	If-command
+  |   while e do c		While-command
+  |   let x : T = e in c	Let-command defining a constant
+  |   let x : T in c		Let-command declaring a variable
+  |   let x : T := e in c	Let-command declaring a variable with
+				initialization.
+
+The abstract command syntax above follows the actual implementation of the HMT
+abstract syntax in "AST.hs" closely, except that command sequences ("CmdSeq")
+are replaced by sequencing of only two commands, and that let-commands only
+have a single declaration, meaning that let commands declaring/defining
+multiple variables and constants have to be replaced by nested lets.
+
+Expressions:
+
+e ::= n			Literal integer
+  |   x			Variable reference
+  |   f ( es )		Function call (operators are just one- or two-argument
+			functions)
+
+Subtyping
+---------
+
+One type S is said to be a subtype of another type T, written S <: T, if a
+value of type S can be used wherever a value of type T is expected.
+
+Object-oriented languages, like Java and C#, are important examples of
+languages with type systems based on subtyping. Recall that an object that is
+an instance of a class C can be used wherever instances of any of C's
+superclasses are expected. I.e. C is a subtype of C's superclasses.
+
+However, there are other possibilities as well. For example, in a language
+that has a type Nat for natural numbers, Nat might be considered to be a
+subtype of the integer type Int, as any natural number is also an integer.
+
+Subtyping in HMT
+----------------
+
+HMT supports a simple and somewhat ad-hoc notion of subtyping. At present, the
+subtyping is only used to handle references, i.e. imperative variables, as
+described below. However, this could be generalized. E.g. one might want to
+treat Boolean as a subtype of Integer, thereby allowing e.g. the comparison
+operators to work on both boolean and integer arguments.
+
+The HMT type system does not quite support *true* subtyping, as the type
+system lacks the general subsumption rule that formally captures the
+intuitive notion of subtyping described above:
+
+    G |- e : S   S <: T
+    ------------------- T-SUB
+        G |- e : T
+
+Instead, subtyping is explicitly allowed in some of the typing rules. This was
+done for a number of reasons. One is that HMT has a couple of features (and
+lacks others) which make general subtyping problematic. Another is that this
+approach makes the typing rules "algorithmic", meaning that they more or less
+can be read as specifying functions, which in turn facilitates their
+implementation in the type checker. (If the rules only specify relations, one
+would either have to transform them first to make them algorithmic, or one
+would need to use a more sophisticated implementation, or, possibly, switch to
+an implementation language that directly supports relations, i.e. a logic
+programming language like Prolog.)
+
+Imperative Variables and References
+-----------------------------------
+
+One feature of variables in most imperative languages is that dereferencing is
+implicit when variables are read. For example, consider the
+following C-like declarations
+
+    int x;
+    int y;
+
+and the code fragment
+
+    y = x + 1
+
+The variables x and y are both really *references* to a memory cell
+where an integer can be stored. So the code above actually says:
+
+    *Fetch* the integer stored at the address x refers to.
+    Add one to this integer.
+    Store the result at the address y refers to.
+
+Whereas the addition (+ 1) and storing the result (=) are both operations that
+are explicitly mentioned in the above code fragment, fetching is not. It is
+simply assumed that when a variable is used, this means the value stored in
+the memory cell that the variable refers to. With a few exceptions, however,
+such as when the variable is used on the Left Hand Side (LHS) of an assignment
+operator, like y above, where the meaning is the address of the memory cell
+associated with y and not the contents of that address (which is about to be
+overwritten). Not needing to explicitly indicate when a value has to be
+fetched from memory is what is meant by implicit dereferencing.
+
+Imperative Variables and References in HMT
+------------------------------------------
+
+In HMT, the fact that variables are references to memory cells is made
+explicit: when, say, a variable of type Int is declared, its type really
+becomes "reference to Int".
+
+In fact, HMT has three different forms of reference types: "Source", that
+denotes a reference that can only be read from; "Sink", that denotes a
+reference that can only be written to; and "Ref", that denotes a reference
+that can both be read from and written to. Ref is used for ordinary variables.
+Source is used to handle constants, as HMT constants are single-assignment
+variables. Source is also used for procedure and function input arguments,
+i.e. input arguments are just like constants. Sink is used for output
+arguments.
+
+However, for convenience, dereferencing is still implicit. In fact, HMT at
+present does not even have an explicit dereferencing operator (like * in C). 
+This works as follows. The HMT typing rules are such that when variables are
+used in a context appropriate for implicit dereferencing, the variable is
+considered to have just type T by simply ignoring the reference bit (Ref or
+Source). Behind the scenes, however, the type checker will insert an explicit
+dereferencing operation at the appropriate place in the internal
+representation of the program being compiled to ensure that the types work out
+and that, eventually, code is generated to fetch the actual value of the
+variable.
+
+This may seem a bit complicated, but being explicit about reference types has
+a number of advantages. One is that it allows for a direct and precise account
+of call-by-reference. For example, consider a procedure foo which returns an
+integer result through its actual argument, which must be reference to a
+memory cell. It's type is
+
+   foo : (Ref Integer) -> Unit
+
+This type makes it clear that the argument *has* to be something of reference
+type, i.e. a variable, as opposed to some arbitrary expression of type
+"Integer".
+
+Now, let's return to the HMT notion of subtyping. As Ref allows both reading
+and writing, it should be clear that something of type Ref can be used when
+Sink is expected, and that something of type Ref can be used when Source is
+expected. Thus, formally, Ref T <: Source T, and Ref T <: Sink T for an
+arbitrary type T. The opposite is not true, however: a Sink cannot be used in
+place of a Ref since Sinks do not allow reading, nor can a Source be used in
+place of a Ref since Sources do not allow writing.
+
+In fact, the subtyping rules could be made a bit more permissive. Source S <:
+Source T if S <: T (Source is monotonic w.r.t. <:, covariant subtyping), Sink
+S <: Sink T if T <: S (Sink is anti-monotonic w.r.t. <:, contravariant
+subtyping), and finally Ref S <: Ref T if T <: S and S <: T. The latter is not
+very useful at present, since all possible HMT types are such that if T <: S
+and S <: T, then S = T. But one could imagine extending HMT with further types
+where this would not necessarily be the case, say if records were introduced,
+and permutation of the record field ordering was accounted for through the
+subtyping relation.
+
+Whether these last three subtyping rules are a good idea depends on how
+subtyping actually is implemented. If subtyping relies on coercion, i.e. 
+possible explicit change of representation, allowing these subtyping rules
+leads to a very complicated implementation.
+
+Typing Rules
+------------
+
+Subtyping Relation
+~~~~~~~~~~~~~~~~~~
+
+The relation "S <: T" means "S is a subtype of T".
+
+------------- S-SOME
+SomeType <: T
+
+------------- S-ALL
+T <: AllTypes
+
+------ S-REFL
+T <: T
+
+S <: U   U <: T
+--------------- S-TRANS
+    S <: T
+
+S <: T   T <: S
+--------------- S-REF
+Ref S <: Ref T
+
+     S <: T
+-------------------- S-SOURCE
+Source S <: Source T
+
+     T <: S
+---------------- S-SINK
+Sink S <: Sink T
+
+----------------- S-REFSOURCE
+Ref T <: Source T
+
+--------------- S-REFSINK
+Ref T <: Sink T
+
+
+Because of the simplicity of HMT, there is no subtyping rule for "Arrow"
+(functions/procedures). Promoting arguments on an individual basis is going to
+be enough for our purposes.
+
+We also use S /<: T to mean "S is not a subtype of T", i.e. for the
+logical negation of <:. 
+
+The actual implementation of the suptyping predicate in the HMTC compiler is
+structurally a bit different from the rules above as they are not
+"algorithmic". The main problem is the rule S-TRANS, which, if implemented
+directly, would involve "guessing" a type U. However, it is straightforward to
+systematically transform the rules above to make them algorithmic, and from
+there the implementation is direct.
+
+Typing relations
+~~~~~~~~~~~~~~~~
+
+Three typing relations:
+
+   G |- c	Command "c" is well typed in the typing context "G"
+   G |- e : T	Expression "e" has type "T" in the typing context "G"
+   G |- e ? T	The type of the actual parameter "e" agrees with the
+                formal parameter type "T" in the typing context "G".
+
+The third relation is introduced because specific rules are needed
+to check whether the type of the actual arguments are compatible with the
+types of the formal arguments. 
+
+Commands:
+
+G(x) = S   G |- e : T   S <: Sink T
+----------------------------------- T-ASSIGN
+           G |- x := e
+
+G |- p : Ts -> _   G |- es ? Ts
+------------------------------- T-CALL
+      G |- p ( es )
+
+G |- c1   G |- c2
+----------------- T-SEQ
+  G |- c1 ; c2
+
+G |- e : Boolean   G |- c1   G |- c2
+------------------------------------ T-IF
+      G |- if e then c1 else c2
+
+G |- e : Boolean   G |- c
+------------------------- T-WHILE
+   G |- while e do c
+
+G |- e : S   S <: T   G, x:Source T |- c
+---------------------------------------- T-LETCONST
+      G |- let x : T = e in c
+
+  G, x:Ref T |- c
+------------------- T-LETVAR
+G |- let x : T in c
+
+G |- e : S   S <: T   G, x:Ref T |- c
+------------------------------------- T-LETVARINIT
+G |- let x : T := e in c
+
+
+T-ASSIGN makes it clear that it must be possible to write a value
+of the type T of the RHS to the LHS variable by insisting that the
+type S of the latter is a subtype of Sink T.
+
+T-LETCONST assigns the type Source T to a defined constant, where T is the
+type of the defining expression. This ensures that constants cannot be
+overwritten.
+
+T-LETVAR  assigns the type Ref T to a declared variable, where T is the
+declared type. Thus, variables can be both read and written.
+
+
+Expressions:
+
+---------------- T-LITINT
+G |- n : Integer
+
+
+ G(x) = S  S <: Source T
+------------------------- T-DEREFVAR
+        G |- x : T
+
+
+ G(x) = S  S /<: Source _
+------------------------- T-VAR
+        G |- x : S
+
+
+G |- f : Ts -> T   G |- es ? Ts
+-------------------------------- T-APP
+      G |- f ( es ) : T
+
+
+The rule T-DEREFVAR accounts for the implicit dereferencing.
+It says that any variable whose type S is a subtype of
+Source T, is treated as if it has type T. I.e. the variable
+is implicitly dereferenced.
+
+The rule T-VAR says that if a variable cannot be read, i.e. its type is not a
+subtype of Source T for any type T (note the use of the wildcard _ to avoid
+having to introduce an arbitrary name like T for something we don't care
+about), then it simply has whatever type it has according to the environment.
+
+Note that T-DEREFVAR and T-VAR are mutually exclusive.
+
+
+Agreement between the types of actual and formal parameters:
+
+G(x) = S   S <: T   (T <: Sink _ or T <: Source _)
+------------------------------------------------- A-REF
+        G |- x ? T
+
+
+G |- e : S   S <: T   (e not variable or (T /<: Sink _ and T /<: Source _))
+------------------------------------------------------------------------- A-VAL
+        G |- e ? T
+
+These rules are very similar to the rules for typing expressions above.
+Their purpose is to *avoid* implicit dereferencing when a procedure
+or function expects to be passed a reference.
+
+The rule A-REF says that if the expected type T is a reference type, i.e. Ref
+U is a subtype of T for some type U (again, note the wildcard _), then the
+type S of a variable agrees with the expected type if S is a subtype of T. No
+implicit dereferencing.
+
+However, in all other cases (argument expressions that are not variables,
+or if the expected type T is not a reference type), we have agreement if
+the expression has a type S according to the "normal" typing rules
+for expressions above (including implicit dereferencing) which is a subtype
+of the expected type T.

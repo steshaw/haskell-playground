@@ -1,0 +1,522 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>Type</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+><SCRIPT TYPE="text/javascript"
+>window.onload = function () {setSynopsis("mini_Type.html")};</SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>HMTC</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>Type</FONT
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>MiniTriangle type representation and related definitions.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3AType"
+>Type</A
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>= <A HREF="#v%3ASomeType"
+>SomeType</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AUnit"
+>Unit</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ABoolean"
+>Boolean</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AInteger"
+>Integer</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ASource"
+>Source</A
+> <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ASink"
+>Sink</A
+> <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ARef"
+>Ref</A
+> <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AArrow"
+>Arrow</A
+> [<A HREF="Type.html#t%3AType"
+>Type</A
+>] <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AAllTypes"
+>AllTypes</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3A%3C%3A"
+>(&lt;:)</A
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+> -&gt; <A HREF="Type.html#t%3AType"
+>Type</A
+> -&gt; Bool</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AisRefType"
+>isRefType</A
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+> -&gt; Bool</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AderefType"
+>derefType</A
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+> -&gt; <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AshowsTypes"
+>showsTypes</A
+> :: [<A HREF="Type.html#t%3AType"
+>Type</A
+>] -&gt; ShowS</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Documentation</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:Type"
+><A NAME="t%3AType"
+></A
+></A
+><B
+>Type</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Type for representing MiniTriangle types. Type representations can
+ be compared for equality. Types are only equal if they have the same
+ representation.
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:SomeType"
+><A NAME="v%3ASomeType"
+></A
+></A
+><B
+>SomeType</B
+></TD
+><TD CLASS="rdoc"
+>The smallest type
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Unit"
+><A NAME="v%3AUnit"
+></A
+></A
+><B
+>Unit</B
+></TD
+><TD CLASS="rdoc"
+>The unit type (return type of procedures)
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Boolean"
+><A NAME="v%3ABoolean"
+></A
+></A
+><B
+>Boolean</B
+></TD
+><TD CLASS="rdoc"
+>The Boolean type
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Integer"
+><A NAME="v%3AInteger"
+></A
+></A
+><B
+>Integer</B
+></TD
+><TD CLASS="rdoc"
+>The Integer type
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Source"
+><A NAME="v%3ASource"
+></A
+></A
+><B
+>Source</B
+> <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+><TD CLASS="rdoc"
+>Read-only variable reference
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Sink"
+><A NAME="v%3ASink"
+></A
+></A
+><B
+>Sink</B
+> <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+><TD CLASS="rdoc"
+>Write-only variable reference
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Ref"
+><A NAME="v%3ARef"
+></A
+></A
+><B
+>Ref</B
+> <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+><TD CLASS="rdoc"
+>Variable reference
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:Arrow"
+><A NAME="v%3AArrow"
+></A
+></A
+><B
+>Arrow</B
+> [<A HREF="Type.html#t%3AType"
+>Type</A
+>] <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+><TD CLASS="rdoc"
+>Type of procedures and functions. The
+ fields represent the argument types the
+ and result type. The latter is <TT
+><A HREF="Type.html#v%3AUnit"
+>Unit</A
+></TT
+> for
+ procedures.
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:AllTypes"
+><A NAME="v%3AAllTypes"
+></A
+></A
+><B
+>AllTypes</B
+></TD
+><TD CLASS="rdoc"
+>The largest type
+</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:Type')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:Type" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>Eq <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>Show <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:<:"
+><A NAME="v%3A%3C%3A"
+></A
+></A
+><B
+>(&lt;:)</B
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+> -&gt; <A HREF="Type.html#t%3AType"
+>Type</A
+> -&gt; Bool</TD
+></TR
+><TR
+><TD CLASS="doc"
+>MiniTriangle Subtyping relation. Predicate that decides whether the
+ type represented by the first argument is a subtype of the type
+ represented by the second. Note: forall T . Sink T &lt;: Sink SomeType
+ and forall T . Source T &lt;: Source AllTypes.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:isRefType"
+><A NAME="v%3AisRefType"
+></A
+></A
+><B
+>isRefType</B
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+> -&gt; Bool</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Predicate that decides if the type is a reference type.
+ isRefType T == T &lt;: Sink SomeType || T &lt;: Source AllTypes
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:derefType"
+><A NAME="v%3AderefType"
+></A
+></A
+><B
+>derefType</B
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+> -&gt; <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>Strips off one layer of referencing.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:showsTypes"
+><A NAME="v%3AshowsTypes"
+></A
+></A
+><B
+>showsTypes</B
+> :: [<A HREF="Type.html#t%3AType"
+>Type</A
+>] -&gt; ShowS</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.6.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>

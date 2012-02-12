@@ -1,0 +1,477 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>SrcPos</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+><SCRIPT TYPE="text/javascript"
+>window.onload = function () {setSynopsis("mini_SrcPos.html")};</SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>HMTC</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>SrcPos</FONT
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Source-code positions and related definitions
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3ASrcPos"
+>SrcPos</A
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>= <A HREF="#v%3ANoSrcPos"
+>NoSrcPos</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ASrcPos"
+>SrcPos</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AspLine"
+>spLine</A
+> :: Int</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AspCol"
+>spCol</A
+> :: Int</TD
+></TR
+></TABLE
+>}</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+>  <A HREF="#t%3AHasSrcPos"
+>HasSrcPos</A
+> a  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AsrcPos"
+>srcPos</A
+> :: a -&gt; <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Documentation</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:SrcPos"
+><A NAME="t%3ASrcPos"
+></A
+></A
+><B
+>SrcPos</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Representation of source-code positions
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="5" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:NoSrcPos"
+><A NAME="v%3ANoSrcPos"
+></A
+></A
+><B
+>NoSrcPos</B
+></TD
+><TD CLASS="rdoc"
+>Unknown source-code position
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:SrcPos"
+><A NAME="v%3ASrcPos"
+></A
+></A
+><B
+>SrcPos</B
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:spLine"
+><A NAME="v%3AspLine"
+></A
+></A
+><B
+>spLine</B
+> :: Int</TD
+><TD CLASS="rdoc"
+>Line number
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:spCol"
+><A NAME="v%3AspCol"
+></A
+></A
+><B
+>spCol</B
+> :: Int</TD
+><TD CLASS="rdoc"
+>Character column number
+</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:SrcPos')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:SrcPos" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>Eq <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>Ord <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>Show <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>class</SPAN
+>  <A NAME="t:HasSrcPos"
+><A NAME="t%3AHasSrcPos"
+></A
+></A
+><B
+>HasSrcPos</B
+> a  <SPAN CLASS="keyword"
+>where</SPAN
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Class of types that have a source-code position as a stored or computed
+ attribute.
+</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+>Methods</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A NAME="v:srcPos"
+><A NAME="v%3AsrcPos"
+></A
+></A
+><B
+>srcPos</B
+> :: a -&gt; <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:HasSrcPos')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:HasSrcPos" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="Symbol.html#t%3ATypeSym"
+>TypeSym</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="Symbol.html#t%3ATermSym"
+>TermSym</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="MTIR.html#t%3ADeclaration"
+>Declaration</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="MTIR.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="MTIR.html#t%3AMTIR"
+>MTIR</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="AST.html#t%3ATypeDenoter"
+>TypeDenoter</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="AST.html#t%3ADeclaration"
+>Declaration</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="AST.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="AST.html#t%3AAST"
+>AST</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> a =&gt; <A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> [a]</TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.6.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>

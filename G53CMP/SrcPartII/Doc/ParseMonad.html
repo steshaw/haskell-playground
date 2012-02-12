@@ -1,0 +1,422 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>ParseMonad</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+><SCRIPT TYPE="text/javascript"
+>window.onload = function () {setSynopsis("mini_ParseMonad.html")};</SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>HMTC</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>ParseMonad</FONT
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Monad for scanning and parsing. 
+ The scanner and parser are both monadic, following the design outlined
+ in the Happy documentation on monadic parsers. The parse monad P
+ is built on top of the diagnostics monad D, additionally keeping track
+ of the input and current source code position, and exploiting that
+ the source code position is readily available to avoid having to pass
+ the position as an explicit argument.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>newtype</SPAN
+>  <A HREF="#t%3AP"
+>P</A
+> a = <A HREF="#v%3AP"
+>P</A
+> (Int -&gt; Int -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> a)</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AunP"
+>unP</A
+> ::  <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> a -&gt; Int -&gt; Int -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> a</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AemitInfoP"
+>emitInfoP</A
+> :: String -&gt; <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AemitWngP"
+>emitWngP</A
+> :: String -&gt; <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AemitErrP"
+>emitErrP</A
+> :: String -&gt; <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AfailP"
+>failP</A
+> ::  String -&gt; <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> a</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AgetSrcPosP"
+>getSrcPosP</A
+> :: <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ArunP"
+>runP</A
+> ::  <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> a -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> a</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Documentation</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>newtype</SPAN
+>  <A NAME="t:P"
+><A NAME="t%3AP"
+></A
+></A
+><B
+>P</B
+> a </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:P"
+><A NAME="v%3AP"
+></A
+></A
+><B
+>P</B
+> (Int -&gt; Int -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> a)</TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:P')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:P" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>Monad <A HREF="ParseMonad.html#t%3AP"
+>P</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:unP"
+><A NAME="v%3AunP"
+></A
+></A
+><B
+>unP</B
+> ::  <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> a -&gt; Int -&gt; Int -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> a</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:emitInfoP"
+><A NAME="v%3AemitInfoP"
+></A
+></A
+><B
+>emitInfoP</B
+> :: String -&gt; <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Emits an information message.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:emitWngP"
+><A NAME="v%3AemitWngP"
+></A
+></A
+><B
+>emitWngP</B
+> :: String -&gt; <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Emits a warning message.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:emitErrP"
+><A NAME="v%3AemitErrP"
+></A
+></A
+><B
+>emitErrP</B
+> :: String -&gt; <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Emits an error message.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:failP"
+><A NAME="v%3AfailP"
+></A
+></A
+><B
+>failP</B
+> ::  String -&gt; <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> a</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Emits an error message and fails.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:getSrcPosP"
+><A NAME="v%3AgetSrcPosP"
+></A
+></A
+><B
+>getSrcPosP</B
+> :: <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>Gets the current source code position.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:runP"
+><A NAME="v%3ArunP"
+></A
+></A
+><B
+>runP</B
+> ::  <A HREF="ParseMonad.html#t%3AP"
+>P</A
+> a -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> a</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Runs parser (and scanner), yielding a result in the diagnostics monad D.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.6.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>

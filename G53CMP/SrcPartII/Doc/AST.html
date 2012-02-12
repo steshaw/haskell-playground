@@ -1,0 +1,1706 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>AST</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+><SCRIPT TYPE="text/javascript"
+>window.onload = function () {setSynopsis("mini_AST.html")};</SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>HMTC</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>AST</FONT
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>MiniTriangle Abstract Syntax Tree. Representation of MiniTriangle programs
+ after parsing but prior to type-checking.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3AAST"
+>AST</A
+>  = <A HREF="#v%3AAST"
+>AST</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AastCmd"
+>astCmd</A
+> :: <A HREF="AST.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3ACommand"
+>Command</A
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>= <A HREF="#v%3ACmdAssign"
+>CmdAssign</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcaVar"
+>caVar</A
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcaVal"
+>caVal</A
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcmdSrcPos"
+>cmdSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ACmdCall"
+>CmdCall</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AccProc"
+>ccProc</A
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AccArgs"
+>ccArgs</A
+> :: [<A HREF="AST.html#t%3AExpression"
+>Expression</A
+>]</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcmdSrcPos"
+>cmdSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ACmdSeq"
+>CmdSeq</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcsCmds"
+>csCmds</A
+> :: [<A HREF="AST.html#t%3ACommand"
+>Command</A
+>]</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcmdSrcPos"
+>cmdSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ACmdIf"
+>CmdIf</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AciCond"
+>ciCond</A
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AciThen"
+>ciThen</A
+> :: <A HREF="AST.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AciElse"
+>ciElse</A
+> :: <A HREF="AST.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcmdSrcPos"
+>cmdSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ACmdWhile"
+>CmdWhile</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcwCond"
+>cwCond</A
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcwBody"
+>cwBody</A
+> :: <A HREF="AST.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcmdSrcPos"
+>cmdSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ACmdLet"
+>CmdLet</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AclDecls"
+>clDecls</A
+> :: [<A HREF="AST.html#t%3ADeclaration"
+>Declaration</A
+>]</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AclBody"
+>clBody</A
+> :: <A HREF="AST.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcmdSrcPos"
+>cmdSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3AExpression"
+>Expression</A
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>= <A HREF="#v%3AExpLitInt"
+>ExpLitInt</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AeliVal"
+>eliVal</A
+> :: Integer</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AexpSrcPos"
+>expSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AExpLitChr"
+>ExpLitChr</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AelcVal"
+>elcVal</A
+> :: Char</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AexpSrcPos"
+>expSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AExpVar"
+>ExpVar</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AevVar"
+>evVar</A
+> :: <A HREF="Name.html#t%3AName"
+>Name</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AexpSrcPos"
+>expSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AExpApp"
+>ExpApp</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AeaFun"
+>eaFun</A
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AeaArgs"
+>eaArgs</A
+> :: [<A HREF="AST.html#t%3AExpression"
+>Expression</A
+>]</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AexpSrcPos"
+>expSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3ADeclaration"
+>Declaration</A
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>= <A HREF="#v%3ADeclConst"
+>DeclConst</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdcConst"
+>dcConst</A
+> :: <A HREF="Name.html#t%3AName"
+>Name</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdcType"
+>dcType</A
+> :: <A HREF="AST.html#t%3ATypeDenoter"
+>TypeDenoter</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdcVal"
+>dcVal</A
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdeclSrcPos"
+>declSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ADeclVar"
+>DeclVar</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdvVar"
+>dvVar</A
+> :: <A HREF="Name.html#t%3AName"
+>Name</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdvType"
+>dvType</A
+> :: <A HREF="AST.html#t%3ATypeDenoter"
+>TypeDenoter</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdvMbVal"
+>dvMbVal</A
+> :: Maybe <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdeclSrcPos"
+>declSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3ATypeDenoter"
+>TypeDenoter</A
+>  = <A HREF="#v%3ATDBaseType"
+>TDBaseType</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AtdbtName"
+>tdbtName</A
+> :: <A HREF="Name.html#t%3AName"
+>Name</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AtdSrcPos"
+>tdSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Documentation</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:AST"
+><A NAME="t%3AAST"
+></A
+></A
+><B
+>AST</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Abstract syntax for the syntactic category Program
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="5" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:AST"
+><A NAME="v%3AAST"
+></A
+></A
+><B
+>AST</B
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:astCmd"
+><A NAME="v%3AastCmd"
+></A
+></A
+><B
+>astCmd</B
+> :: <A HREF="AST.html#t%3ACommand"
+>Command</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:AST')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:AST" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="AST.html#t%3AAST"
+>AST</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:Command"
+><A NAME="t%3ACommand"
+></A
+></A
+><B
+>Command</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Abstract syntax for the syntactic category Command
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="5" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:CmdAssign"
+><A NAME="v%3ACmdAssign"
+></A
+></A
+><B
+>CmdAssign</B
+></TD
+><TD CLASS="rdoc"
+>Assignment
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:caVar"
+><A NAME="v%3AcaVar"
+></A
+></A
+><B
+>caVar</B
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Assigned variable
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:caVal"
+><A NAME="v%3AcaVal"
+></A
+></A
+><B
+>caVal</B
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Right-hand-side expression
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cmdSrcPos"
+><A NAME="v%3AcmdSrcPos"
+></A
+></A
+><B
+>cmdSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:CmdCall"
+><A NAME="v%3ACmdCall"
+></A
+></A
+><B
+>CmdCall</B
+></TD
+><TD CLASS="rdoc"
+>Procedure call
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:ccProc"
+><A NAME="v%3AccProc"
+></A
+></A
+><B
+>ccProc</B
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Called procedure
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:ccArgs"
+><A NAME="v%3AccArgs"
+></A
+></A
+><B
+>ccArgs</B
+> :: [<A HREF="AST.html#t%3AExpression"
+>Expression</A
+>]</TD
+><TD CLASS="rdoc"
+>Arguments
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cmdSrcPos"
+><A NAME="v%3AcmdSrcPos"
+></A
+></A
+><B
+>cmdSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:CmdSeq"
+><A NAME="v%3ACmdSeq"
+></A
+></A
+><B
+>CmdSeq</B
+></TD
+><TD CLASS="rdoc"
+>Command sequence (block)
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:csCmds"
+><A NAME="v%3AcsCmds"
+></A
+></A
+><B
+>csCmds</B
+> :: [<A HREF="AST.html#t%3ACommand"
+>Command</A
+>]</TD
+><TD CLASS="rdoc"
+>Commands
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cmdSrcPos"
+><A NAME="v%3AcmdSrcPos"
+></A
+></A
+><B
+>cmdSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:CmdIf"
+><A NAME="v%3ACmdIf"
+></A
+></A
+><B
+>CmdIf</B
+></TD
+><TD CLASS="rdoc"
+>Conditional command
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:ciCond"
+><A NAME="v%3AciCond"
+></A
+></A
+><B
+>ciCond</B
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Condition
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:ciThen"
+><A NAME="v%3AciThen"
+></A
+></A
+><B
+>ciThen</B
+> :: <A HREF="AST.html#t%3ACommand"
+>Command</A
+></TD
+><TD CLASS="rdoc"
+>Then-branch
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:ciElse"
+><A NAME="v%3AciElse"
+></A
+></A
+><B
+>ciElse</B
+> :: <A HREF="AST.html#t%3ACommand"
+>Command</A
+></TD
+><TD CLASS="rdoc"
+>Else-branch
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cmdSrcPos"
+><A NAME="v%3AcmdSrcPos"
+></A
+></A
+><B
+>cmdSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:CmdWhile"
+><A NAME="v%3ACmdWhile"
+></A
+></A
+><B
+>CmdWhile</B
+></TD
+><TD CLASS="rdoc"
+>While-loop
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:cwCond"
+><A NAME="v%3AcwCond"
+></A
+></A
+><B
+>cwCond</B
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Loop-condition
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cwBody"
+><A NAME="v%3AcwBody"
+></A
+></A
+><B
+>cwBody</B
+> :: <A HREF="AST.html#t%3ACommand"
+>Command</A
+></TD
+><TD CLASS="rdoc"
+>Loop-body
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cmdSrcPos"
+><A NAME="v%3AcmdSrcPos"
+></A
+></A
+><B
+>cmdSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:CmdLet"
+><A NAME="v%3ACmdLet"
+></A
+></A
+><B
+>CmdLet</B
+></TD
+><TD CLASS="rdoc"
+>Repeat-loop
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:clDecls"
+><A NAME="v%3AclDecls"
+></A
+></A
+><B
+>clDecls</B
+> :: [<A HREF="AST.html#t%3ADeclaration"
+>Declaration</A
+>]</TD
+><TD CLASS="rdoc"
+>Declarations
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:clBody"
+><A NAME="v%3AclBody"
+></A
+></A
+><B
+>clBody</B
+> :: <A HREF="AST.html#t%3ACommand"
+>Command</A
+></TD
+><TD CLASS="rdoc"
+>Let-body
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cmdSrcPos"
+><A NAME="v%3AcmdSrcPos"
+></A
+></A
+><B
+>cmdSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:Command')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:Command" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="AST.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:Expression"
+><A NAME="t%3AExpression"
+></A
+></A
+><B
+>Expression</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Abstract syntax for the syntactic category Expression
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="5" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:ExpLitInt"
+><A NAME="v%3AExpLitInt"
+></A
+></A
+><B
+>ExpLitInt</B
+></TD
+><TD CLASS="rdoc"
+>Literal integer
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:eliVal"
+><A NAME="v%3AeliVal"
+></A
+></A
+><B
+>eliVal</B
+> :: Integer</TD
+><TD CLASS="rdoc"
+>Integer value
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:expSrcPos"
+><A NAME="v%3AexpSrcPos"
+></A
+></A
+><B
+>expSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:ExpLitChr"
+><A NAME="v%3AExpLitChr"
+></A
+></A
+><B
+>ExpLitChr</B
+></TD
+><TD CLASS="rdoc"
+>Literal character
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:elcVal"
+><A NAME="v%3AelcVal"
+></A
+></A
+><B
+>elcVal</B
+> :: Char</TD
+><TD CLASS="rdoc"
+>Character value
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:expSrcPos"
+><A NAME="v%3AexpSrcPos"
+></A
+></A
+><B
+>expSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:ExpVar"
+><A NAME="v%3AExpVar"
+></A
+></A
+><B
+>ExpVar</B
+></TD
+><TD CLASS="rdoc"
+>Variable reference
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:evVar"
+><A NAME="v%3AevVar"
+></A
+></A
+><B
+>evVar</B
+> :: <A HREF="Name.html#t%3AName"
+>Name</A
+></TD
+><TD CLASS="rdoc"
+>Name of referenced variable
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:expSrcPos"
+><A NAME="v%3AexpSrcPos"
+></A
+></A
+><B
+>expSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:ExpApp"
+><A NAME="v%3AExpApp"
+></A
+></A
+><B
+>ExpApp</B
+></TD
+><TD CLASS="rdoc"
+>Function or n-ary operator application
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:eaFun"
+><A NAME="v%3AeaFun"
+></A
+></A
+><B
+>eaFun</B
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Applied function or operator
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:eaArgs"
+><A NAME="v%3AeaArgs"
+></A
+></A
+><B
+>eaArgs</B
+> :: [<A HREF="AST.html#t%3AExpression"
+>Expression</A
+>]</TD
+><TD CLASS="rdoc"
+>Arguments
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:expSrcPos"
+><A NAME="v%3AexpSrcPos"
+></A
+></A
+><B
+>expSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:Expression')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:Expression" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:Declaration"
+><A NAME="t%3ADeclaration"
+></A
+></A
+><B
+>Declaration</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Abstract syntax for the syntactic category Declaration
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="5" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:DeclConst"
+><A NAME="v%3ADeclConst"
+></A
+></A
+><B
+>DeclConst</B
+></TD
+><TD CLASS="rdoc"
+>Constant declaration
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:dcConst"
+><A NAME="v%3AdcConst"
+></A
+></A
+><B
+>dcConst</B
+> :: <A HREF="Name.html#t%3AName"
+>Name</A
+></TD
+><TD CLASS="rdoc"
+>Name of defined constant
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:dcType"
+><A NAME="v%3AdcType"
+></A
+></A
+><B
+>dcType</B
+> :: <A HREF="AST.html#t%3ATypeDenoter"
+>TypeDenoter</A
+></TD
+><TD CLASS="rdoc"
+>Type of defined constant
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:dcVal"
+><A NAME="v%3AdcVal"
+></A
+></A
+><B
+>dcVal</B
+> :: <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Value of defined constant
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:declSrcPos"
+><A NAME="v%3AdeclSrcPos"
+></A
+></A
+><B
+>declSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:DeclVar"
+><A NAME="v%3ADeclVar"
+></A
+></A
+><B
+>DeclVar</B
+></TD
+><TD CLASS="rdoc"
+>Variable declaration
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:dvVar"
+><A NAME="v%3AdvVar"
+></A
+></A
+><B
+>dvVar</B
+> :: <A HREF="Name.html#t%3AName"
+>Name</A
+></TD
+><TD CLASS="rdoc"
+>Name of declared variable
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:dvType"
+><A NAME="v%3AdvType"
+></A
+></A
+><B
+>dvType</B
+> :: <A HREF="AST.html#t%3ATypeDenoter"
+>TypeDenoter</A
+></TD
+><TD CLASS="rdoc"
+>Type of declared variable
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:dvMbVal"
+><A NAME="v%3AdvMbVal"
+></A
+></A
+><B
+>dvMbVal</B
+> :: Maybe <A HREF="AST.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Initial value of declared
+ varible, if any
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:declSrcPos"
+><A NAME="v%3AdeclSrcPos"
+></A
+></A
+><B
+>declSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:Declaration')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:Declaration" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="AST.html#t%3ADeclaration"
+>Declaration</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:TypeDenoter"
+><A NAME="t%3ATypeDenoter"
+></A
+></A
+><B
+>TypeDenoter</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Abstract syntax for the syntactic category TypeDenoter
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="5" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:TDBaseType"
+><A NAME="v%3ATDBaseType"
+></A
+></A
+><B
+>TDBaseType</B
+></TD
+><TD CLASS="rdoc"
+>Base Type
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:tdbtName"
+><A NAME="v%3AtdbtName"
+></A
+></A
+><B
+>tdbtName</B
+> :: <A HREF="Name.html#t%3AName"
+>Name</A
+></TD
+><TD CLASS="rdoc"
+>Name of the base type
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:tdSrcPos"
+><A NAME="v%3AtdSrcPos"
+></A
+></A
+><B
+>tdSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:TypeDenoter')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:TypeDenoter" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="AST.html#t%3ATypeDenoter"
+>TypeDenoter</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.6.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>

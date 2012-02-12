@@ -1,0 +1,1140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>Diagnostics</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+><SCRIPT TYPE="text/javascript"
+>window.onload = function () {setSynopsis("mini_Diagnostics.html")};</SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>HMTC</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>Diagnostics</FONT
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="section4"
+><B
+>Contents</B
+></TD
+></TR
+><TR
+><TD
+><DL
+><DT
+><A HREF="#1"
+>Diagnostic messages
+</A
+></DT
+><DT
+><A HREF="#2"
+>Diagnostic computations
+</A
+></DT
+><DT
+><A HREF="#3"
+>Reporting internal errors
+</A
+></DT
+></DL
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Diagnostic messages and computations (monad). The module provides
+ a datatype for representing diagnostic messages, tagged with
+ source-code position and severity level (error, warning, information).
+ It also provides an abstraction for diagnostic computations, where
+ a computation has the ability to emit diagnostic messages and, possibly,
+ fail. Finally, it provides a utility function for reporting internal
+ compiler errors in a standardized way.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3ADMsg"
+>DMsg</A
+>  = <A HREF="#v%3ADMsg"
+>DMsg</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdmLvl"
+>dmLvl</A
+> :: <A HREF="Diagnostics.html#t%3ADMLvl"
+>DMLvl</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdmSrcPos"
+>dmSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdmTxt"
+>dmTxt</A
+> :: String</TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3ADMLvl"
+>DMLvl</A
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>= <A HREF="#v%3ADMLInfo"
+>DMLInfo</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ADMLWng"
+>DMLWng</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ADMLErr"
+>DMLErr</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmkInfoMsg"
+>mkInfoMsg</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmkWngMsg"
+>mkWngMsg</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AmkErrMsg"
+>mkErrMsg</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AdmIsInfo"
+>dmIsInfo</A
+> :: <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+> -&gt; Bool</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AdmIsWng"
+>dmIsWng</A
+> :: <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+> -&gt; Bool</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AdmIsErr"
+>dmIsErr</A
+> :: <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+> -&gt; Bool</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AdmCmpLvlPos"
+>dmCmpLvlPos</A
+> :: <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+> -&gt; <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+> -&gt; Ordering</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AppDMsg"
+>ppDMsg</A
+> :: <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+> -&gt; String</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3AD"
+>D</A
+> a</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AemitInfoD"
+>emitInfoD</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AemitWngD"
+>emitWngD</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AemitErrD"
+>emitErrD</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AfailD"
+>failD</A
+> ::  <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> a</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AfailNoReasonD"
+>failNoReasonD</A
+> :: <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AfailIfErrorsD"
+>failIfErrorsD</A
+> :: <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AstopD"
+>stopD</A
+> ::  <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> a</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3ArunD"
+>runD</A
+> ::  <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> a -&gt; (Maybe a, [<A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+>])</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A HREF="#v%3AinternalError"
+>internalError</A
+> ::  String -&gt; String -&gt; String -&gt; a</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+><A NAME="1"
+><A NAME="1"
+>Diagnostic messages
+</A
+></A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:DMsg"
+><A NAME="t%3ADMsg"
+></A
+></A
+><B
+>DMsg</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Representation of diagnostic messages
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="5" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:DMsg"
+><A NAME="v%3ADMsg"
+></A
+></A
+><B
+>DMsg</B
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:dmLvl"
+><A NAME="v%3AdmLvl"
+></A
+></A
+><B
+>dmLvl</B
+> :: <A HREF="Diagnostics.html#t%3ADMLvl"
+>DMLvl</A
+></TD
+><TD CLASS="rdoc"
+>Severity level
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:dmSrcPos"
+><A NAME="v%3AdmSrcPos"
+></A
+></A
+><B
+>dmSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+>Associated source position
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:dmTxt"
+><A NAME="v%3AdmTxt"
+></A
+></A
+><B
+>dmTxt</B
+> :: String</TD
+><TD CLASS="rdoc"
+>Message text
+</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:DMsg')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:DMsg" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:DMLvl"
+><A NAME="t%3ADMLvl"
+></A
+></A
+><B
+>DMLvl</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Severity levels
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:DMLInfo"
+><A NAME="v%3ADMLInfo"
+></A
+></A
+><B
+>DMLInfo</B
+></TD
+><TD CLASS="rdoc"
+>Information (least severe)
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:DMLWng"
+><A NAME="v%3ADMLWng"
+></A
+></A
+><B
+>DMLWng</B
+></TD
+><TD CLASS="rdoc"
+>Warning
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:DMLErr"
+><A NAME="v%3ADMLErr"
+></A
+></A
+><B
+>DMLErr</B
+></TD
+><TD CLASS="rdoc"
+>Error (most severe)
+</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:DMLvl')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:DMLvl" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>Eq <A HREF="Diagnostics.html#t%3ADMLvl"
+>DMLvl</A
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+>Ord <A HREF="Diagnostics.html#t%3ADMLvl"
+>DMLvl</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:mkInfoMsg"
+><A NAME="v%3AmkInfoMsg"
+></A
+></A
+><B
+>mkInfoMsg</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>Constructs information message.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:mkWngMsg"
+><A NAME="v%3AmkWngMsg"
+></A
+></A
+><B
+>mkWngMsg</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>Constructs warning message.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:mkErrMsg"
+><A NAME="v%3AmkErrMsg"
+></A
+></A
+><B
+>mkErrMsg</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+></TD
+></TR
+><TR
+><TD CLASS="doc"
+>Constructs error message.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:dmIsInfo"
+><A NAME="v%3AdmIsInfo"
+></A
+></A
+><B
+>dmIsInfo</B
+> :: <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+> -&gt; Bool</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Checks if information message.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:dmIsWng"
+><A NAME="v%3AdmIsWng"
+></A
+></A
+><B
+>dmIsWng</B
+> :: <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+> -&gt; Bool</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Checks if warning message.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:dmIsErr"
+><A NAME="v%3AdmIsErr"
+></A
+></A
+><B
+>dmIsErr</B
+> :: <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+> -&gt; Bool</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Checks if error message.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:dmCmpLvlPos"
+><A NAME="v%3AdmCmpLvlPos"
+></A
+></A
+><B
+>dmCmpLvlPos</B
+> :: <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+> -&gt; <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+> -&gt; Ordering</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Comparison function for ordering messages first by severity, then
+ by source position.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:ppDMsg"
+><A NAME="v%3AppDMsg"
+></A
+></A
+><B
+>ppDMsg</B
+> :: <A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+> -&gt; String</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Formats a diagnostic message for printing.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+><A NAME="2"
+><A NAME="2"
+>Diagnostic computations
+</A
+></A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:D"
+><A NAME="t%3AD"
+></A
+></A
+><B
+>D</B
+> a </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Diagnostic computation. A computation with diagnostic output can
+ succeed or fail, and additionally yields a list of diagnostic messages.
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:D')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:D" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>Monad <A HREF="Diagnostics.html#t%3AD"
+>D</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:emitInfoD"
+><A NAME="v%3AemitInfoD"
+></A
+></A
+><B
+>emitInfoD</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Emits an information message.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:emitWngD"
+><A NAME="v%3AemitWngD"
+></A
+></A
+><B
+>emitWngD</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Emits a warning message.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:emitErrD"
+><A NAME="v%3AemitErrD"
+></A
+></A
+><B
+>emitErrD</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Emits an error message.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:failD"
+><A NAME="v%3AfailD"
+></A
+></A
+><B
+>failD</B
+> ::  <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+> -&gt; String -&gt; <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> a</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Emits an error message and fails.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:failNoReasonD"
+><A NAME="v%3AfailNoReasonD"
+></A
+></A
+><B
+>failNoReasonD</B
+> :: <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Fails without giving any specific reason.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:failIfErrorsD"
+><A NAME="v%3AfailIfErrorsD"
+></A
+></A
+><B
+>failIfErrorsD</B
+> :: <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> ()</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Fails if there has been errors thus far
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:stopD"
+><A NAME="v%3AstopD"
+></A
+></A
+><B
+>stopD</B
+> ::  <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> a</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Forces a stop, e.g. after some user-specified pass.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:runD"
+><A NAME="v%3ArunD"
+></A
+></A
+><B
+>runD</B
+> ::  <A HREF="Diagnostics.html#t%3AD"
+>D</A
+> a -&gt; (Maybe a, [<A HREF="Diagnostics.html#t%3ADMsg"
+>DMsg</A
+>])</TD
+></TR
+><TR
+><TD CLASS="doc"
+><P
+>Runs a diagnostic computation. Returns:
+</P
+><OL
+><LI
+> Result of the computation, if any.
+</LI
+><LI
+> Sorted list of diagnostic messages.
+</LI
+></OL
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+><A NAME="3"
+><A NAME="3"
+>Reporting internal errors
+</A
+></A
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><A NAME="v:internalError"
+><A NAME="v%3AinternalError"
+></A
+></A
+><B
+>internalError</B
+> ::  String -&gt; String -&gt; String -&gt; a</TD
+></TR
+><TR
+><TD CLASS="doc"
+>Signals an internal compiler error.
+ Call with module name, name of function, and error message
+ to report internal errors; i.e., things that should not happen.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.6.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>

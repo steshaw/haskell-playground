@@ -1,0 +1,1600 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--Rendered using the Haskell Html Library v0.2-->
+<HTML
+><HEAD
+><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"
+><TITLE
+>MTIR</TITLE
+><LINK HREF="haddock.css" REL="stylesheet" TYPE="text/css"
+><SCRIPT SRC="haddock-util.js" TYPE="text/javascript"
+></SCRIPT
+><SCRIPT TYPE="text/javascript"
+>window.onload = function () {setSynopsis("mini_MTIR.html")};</SCRIPT
+></HEAD
+><BODY
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="topbar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><IMG SRC="haskell_icon.gif" WIDTH="16" HEIGHT="16" ALT=" "
+></TD
+><TD CLASS="title"
+>HMTC</TD
+><TD CLASS="topbut"
+><A HREF="index.html"
+>Contents</A
+></TD
+><TD CLASS="topbut"
+><A HREF="doc-index.html"
+>Index</A
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="modulebar"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD
+><FONT SIZE="6"
+>MTIR</FONT
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Description</TD
+></TR
+><TR
+><TD CLASS="doc"
+>MiniTriangle Internal Representation. The definitions mirror the
+ AST, but the program should be type correct at this stage and semantical
+ annotations have been added. In particular, variables are represented
+ by symbols (with name, type info, and source position) as opposed to just
+ their names.
+</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Synopsis</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3AMTIR"
+>MTIR</A
+>  = <A HREF="#v%3AMTIR"
+>MTIR</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AmtirCmd"
+>mtirCmd</A
+> :: <A HREF="MTIR.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3ACommand"
+>Command</A
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>= <A HREF="#v%3ACmdAssign"
+>CmdAssign</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcaVar"
+>caVar</A
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcaVal"
+>caVal</A
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcmdSrcPos"
+>cmdSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ACmdCall"
+>CmdCall</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AccProc"
+>ccProc</A
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AccArgs"
+>ccArgs</A
+> :: [<A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+>]</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcmdSrcPos"
+>cmdSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ACmdSeq"
+>CmdSeq</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcsCmds"
+>csCmds</A
+> :: [<A HREF="MTIR.html#t%3ACommand"
+>Command</A
+>]</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcmdSrcPos"
+>cmdSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ACmdIf"
+>CmdIf</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AciCond"
+>ciCond</A
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AciThen"
+>ciThen</A
+> :: <A HREF="MTIR.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AciElse"
+>ciElse</A
+> :: <A HREF="MTIR.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcmdSrcPos"
+>cmdSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ACmdWhile"
+>CmdWhile</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcwCond"
+>cwCond</A
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcwBody"
+>cwBody</A
+> :: <A HREF="MTIR.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcmdSrcPos"
+>cmdSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ACmdLet"
+>CmdLet</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AclDecls"
+>clDecls</A
+> :: [<A HREF="MTIR.html#t%3ADeclaration"
+>Declaration</A
+>]</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AclBody"
+>clBody</A
+> :: <A HREF="MTIR.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AcmdSrcPos"
+>cmdSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3AExpression"
+>Expression</A
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>= <A HREF="#v%3AExpLitInt"
+>ExpLitInt</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AeliVal"
+>eliVal</A
+> :: <A HREF="MTIR.html#t%3AMTInt"
+>MTInt</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AexpType"
+>expType</A
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AexpSrcPos"
+>expSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AExpVar"
+>ExpVar</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AevVar"
+>evVar</A
+> :: <A HREF="Symbol.html#t%3ATermSym"
+>TermSym</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AexpType"
+>expType</A
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AexpSrcPos"
+>expSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AExpDeref"
+>ExpDeref</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AedArg"
+>edArg</A
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AexpType"
+>expType</A
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AexpSrcPos"
+>expSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3AExpApp"
+>ExpApp</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AeaFun"
+>eaFun</A
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AeaArgs"
+>eaArgs</A
+> :: [<A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+>]</TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AexpType"
+>expType</A
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AexpSrcPos"
+>expSrcPos</A
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A HREF="#t%3ADeclaration"
+>Declaration</A
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+>= <A HREF="#v%3ADeclConst"
+>DeclConst</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdcConst"
+>dcConst</A
+> :: <A HREF="Symbol.html#t%3ATermSym"
+>TermSym</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdcVal"
+>dcVal</A
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+><TR
+><TD CLASS="decl"
+>| <A HREF="#v%3ADeclVar"
+>DeclVar</A
+> {<TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdvVar"
+>dvVar</A
+> :: <A HREF="Symbol.html#t%3ATermSym"
+>TermSym</A
+></TD
+></TR
+><TR
+><TD CLASS="recfield"
+><A HREF="#v%3AdvMbVal"
+>dvMbVal</A
+> :: Maybe <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+></TABLE
+>}</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s8"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>type</SPAN
+> <A HREF="#t%3AMTInt"
+>MTInt</A
+> = Word32</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="section1"
+>Documentation</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:MTIR"
+><A NAME="t%3AMTIR"
+></A
+></A
+><B
+>MTIR</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Internal representation of MiniTriangle Programs
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="5" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:MTIR"
+><A NAME="v%3AMTIR"
+></A
+></A
+><B
+>MTIR</B
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:mtirCmd"
+><A NAME="v%3AmtirCmd"
+></A
+></A
+><B
+>mtirCmd</B
+> :: <A HREF="MTIR.html#t%3ACommand"
+>Command</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:MTIR')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:MTIR" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="MTIR.html#t%3AMTIR"
+>MTIR</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:Command"
+><A NAME="t%3ACommand"
+></A
+></A
+><B
+>Command</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="ndoc"
+>Internal representation of Commands
+</TD
+></TR
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="5" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:CmdAssign"
+><A NAME="v%3ACmdAssign"
+></A
+></A
+><B
+>CmdAssign</B
+></TD
+><TD CLASS="rdoc"
+>Assignment
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:caVar"
+><A NAME="v%3AcaVar"
+></A
+></A
+><B
+>caVar</B
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Assigned variable
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:caVal"
+><A NAME="v%3AcaVal"
+></A
+></A
+><B
+>caVal</B
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Right-hand side expression
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cmdSrcPos"
+><A NAME="v%3AcmdSrcPos"
+></A
+></A
+><B
+>cmdSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:CmdCall"
+><A NAME="v%3ACmdCall"
+></A
+></A
+><B
+>CmdCall</B
+></TD
+><TD CLASS="rdoc"
+>Procedure call
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:ccProc"
+><A NAME="v%3AccProc"
+></A
+></A
+><B
+>ccProc</B
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Called procedure
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:ccArgs"
+><A NAME="v%3AccArgs"
+></A
+></A
+><B
+>ccArgs</B
+> :: [<A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+>]</TD
+><TD CLASS="rdoc"
+>Arguments
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cmdSrcPos"
+><A NAME="v%3AcmdSrcPos"
+></A
+></A
+><B
+>cmdSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:CmdSeq"
+><A NAME="v%3ACmdSeq"
+></A
+></A
+><B
+>CmdSeq</B
+></TD
+><TD CLASS="rdoc"
+>Command sequence (block)
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:csCmds"
+><A NAME="v%3AcsCmds"
+></A
+></A
+><B
+>csCmds</B
+> :: [<A HREF="MTIR.html#t%3ACommand"
+>Command</A
+>]</TD
+><TD CLASS="rdoc"
+>Commands
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cmdSrcPos"
+><A NAME="v%3AcmdSrcPos"
+></A
+></A
+><B
+>cmdSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:CmdIf"
+><A NAME="v%3ACmdIf"
+></A
+></A
+><B
+>CmdIf</B
+></TD
+><TD CLASS="rdoc"
+>Conditional command
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:ciCond"
+><A NAME="v%3AciCond"
+></A
+></A
+><B
+>ciCond</B
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Condition
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:ciThen"
+><A NAME="v%3AciThen"
+></A
+></A
+><B
+>ciThen</B
+> :: <A HREF="MTIR.html#t%3ACommand"
+>Command</A
+></TD
+><TD CLASS="rdoc"
+>Then-branch
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:ciElse"
+><A NAME="v%3AciElse"
+></A
+></A
+><B
+>ciElse</B
+> :: <A HREF="MTIR.html#t%3ACommand"
+>Command</A
+></TD
+><TD CLASS="rdoc"
+>Else-branch
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cmdSrcPos"
+><A NAME="v%3AcmdSrcPos"
+></A
+></A
+><B
+>cmdSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:CmdWhile"
+><A NAME="v%3ACmdWhile"
+></A
+></A
+><B
+>CmdWhile</B
+></TD
+><TD CLASS="rdoc"
+>While-loop
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:cwCond"
+><A NAME="v%3AcwCond"
+></A
+></A
+><B
+>cwCond</B
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Loop-condition
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cwBody"
+><A NAME="v%3AcwBody"
+></A
+></A
+><B
+>cwBody</B
+> :: <A HREF="MTIR.html#t%3ACommand"
+>Command</A
+></TD
+><TD CLASS="rdoc"
+>Loop-body
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cmdSrcPos"
+><A NAME="v%3AcmdSrcPos"
+></A
+></A
+><B
+>cmdSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:CmdLet"
+><A NAME="v%3ACmdLet"
+></A
+></A
+><B
+>CmdLet</B
+></TD
+><TD CLASS="rdoc"
+>Let-command
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:clDecls"
+><A NAME="v%3AclDecls"
+></A
+></A
+><B
+>clDecls</B
+> :: [<A HREF="MTIR.html#t%3ADeclaration"
+>Declaration</A
+>]</TD
+><TD CLASS="rdoc"
+>Declarations
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:clBody"
+><A NAME="v%3AclBody"
+></A
+></A
+><B
+>clBody</B
+> :: <A HREF="MTIR.html#t%3ACommand"
+>Command</A
+></TD
+><TD CLASS="rdoc"
+>Let-body
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:cmdSrcPos"
+><A NAME="v%3AcmdSrcPos"
+></A
+></A
+><B
+>cmdSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:Command')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:Command" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="MTIR.html#t%3ACommand"
+>Command</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:Expression"
+><A NAME="t%3AExpression"
+></A
+></A
+><B
+>Expression</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="5" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:ExpLitInt"
+><A NAME="v%3AExpLitInt"
+></A
+></A
+><B
+>ExpLitInt</B
+></TD
+><TD CLASS="rdoc"
+>Literal integer
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:eliVal"
+><A NAME="v%3AeliVal"
+></A
+></A
+><B
+>eliVal</B
+> :: <A HREF="MTIR.html#t%3AMTInt"
+>MTInt</A
+></TD
+><TD CLASS="rdoc"
+>Literal integer.
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:expType"
+><A NAME="v%3AexpType"
+></A
+></A
+><B
+>expType</B
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+><TD CLASS="rdoc"
+>Type
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:expSrcPos"
+><A NAME="v%3AexpSrcPos"
+></A
+></A
+><B
+>expSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:ExpVar"
+><A NAME="v%3AExpVar"
+></A
+></A
+><B
+>ExpVar</B
+></TD
+><TD CLASS="rdoc"
+>Variable reference
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:evVar"
+><A NAME="v%3AevVar"
+></A
+></A
+><B
+>evVar</B
+> :: <A HREF="Symbol.html#t%3ATermSym"
+>TermSym</A
+></TD
+><TD CLASS="rdoc"
+>Referenced variable (symbol!)
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:expType"
+><A NAME="v%3AexpType"
+></A
+></A
+><B
+>expType</B
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+><TD CLASS="rdoc"
+>Type
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:expSrcPos"
+><A NAME="v%3AexpSrcPos"
+></A
+></A
+><B
+>expSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:ExpDeref"
+><A NAME="v%3AExpDeref"
+></A
+></A
+><B
+>ExpDeref</B
+></TD
+><TD CLASS="rdoc"
+>Dereferencing of reference variable
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:edArg"
+><A NAME="v%3AedArg"
+></A
+></A
+><B
+>edArg</B
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Argument
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:expType"
+><A NAME="v%3AexpType"
+></A
+></A
+><B
+>expType</B
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+><TD CLASS="rdoc"
+>Type
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:expSrcPos"
+><A NAME="v%3AexpSrcPos"
+></A
+></A
+><B
+>expSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:ExpApp"
+><A NAME="v%3AExpApp"
+></A
+></A
+><B
+>ExpApp</B
+></TD
+><TD CLASS="rdoc"
+>Function or n-ary operator application
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:eaFun"
+><A NAME="v%3AeaFun"
+></A
+></A
+><B
+>eaFun</B
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Applied function or operator
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:eaArgs"
+><A NAME="v%3AeaArgs"
+></A
+></A
+><B
+>eaArgs</B
+> :: [<A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+>]</TD
+><TD CLASS="rdoc"
+>Arguments
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:expType"
+><A NAME="v%3AexpType"
+></A
+></A
+><B
+>expType</B
+> :: <A HREF="Type.html#t%3AType"
+>Type</A
+></TD
+><TD CLASS="rdoc"
+>Type
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:expSrcPos"
+><A NAME="v%3AexpSrcPos"
+></A
+></A
+><B
+>expSrcPos</B
+> :: <A HREF="SrcPos.html#t%3ASrcPos"
+>SrcPos</A
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:Expression')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:Expression" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>data</SPAN
+>  <A NAME="t:Declaration"
+><A NAME="t%3ADeclaration"
+></A
+></A
+><B
+>Declaration</B
+>  </TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="0" CELLPADDING="0"
+><TR
+><TD CLASS="section4"
+>Constructors</TD
+></TR
+><TR
+><TD CLASS="body"
+><TABLE CLASS="vanilla" CELLSPACING="5" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:DeclConst"
+><A NAME="v%3ADeclConst"
+></A
+></A
+><B
+>DeclConst</B
+></TD
+><TD CLASS="rdoc"
+>Constant declaration
+</TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:dcConst"
+><A NAME="v%3AdcConst"
+></A
+></A
+><B
+>dcConst</B
+> :: <A HREF="Symbol.html#t%3ATermSym"
+>TermSym</A
+></TD
+><TD CLASS="rdoc"
+>Defined constant (symbol!)
+ (The symbol carries the type.)
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:dcVal"
+><A NAME="v%3AdcVal"
+></A
+></A
+><B
+>dcVal</B
+> :: <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Value of defined constant
+</TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:DeclVar"
+><A NAME="v%3ADeclVar"
+></A
+></A
+><B
+>DeclVar</B
+></TD
+><TD CLASS="rdoc"
+></TD
+></TR
+><TR
+><TD CLASS="body" COLSPAN="2"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="arg"
+><A NAME="v:dvVar"
+><A NAME="v%3AdvVar"
+></A
+></A
+><B
+>dvVar</B
+> :: <A HREF="Symbol.html#t%3ATermSym"
+>TermSym</A
+></TD
+><TD CLASS="rdoc"
+>Declared variable (symbol!)
+ (The symbol carries the type.)
+</TD
+></TR
+><TR
+><TD CLASS="arg"
+><A NAME="v:dvMbVal"
+><A NAME="v%3AdvMbVal"
+></A
+></A
+><B
+>dvMbVal</B
+> :: Maybe <A HREF="MTIR.html#t%3AExpression"
+>Expression</A
+></TD
+><TD CLASS="rdoc"
+>Initial value of declared
+ variable, if any
+</TD
+></TR
+></TABLE
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="section4"
+><IMG SRC="minus.gif" CLASS="coll" ONCLICK="toggle(this,'i:Declaration')" ALT="show/hide"
+> Instances</TD
+></TR
+><TR
+><TD CLASS="body"
+><DIV ID="i:Declaration" STYLE="display:block;"
+><TABLE CLASS="vanilla" CELLSPACING="1" CELLPADDING="0"
+><TR
+><TD CLASS="decl"
+><A HREF="SrcPos.html#t%3AHasSrcPos"
+>HasSrcPos</A
+> <A HREF="MTIR.html#t%3ADeclaration"
+>Declaration</A
+></TD
+></TR
+></TABLE
+></DIV
+></TD
+></TR
+></TABLE
+></TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="decl"
+><SPAN CLASS="keyword"
+>type</SPAN
+> <A NAME="t:MTInt"
+><A NAME="t%3AMTInt"
+></A
+></A
+><B
+>MTInt</B
+> = Word32</TD
+></TR
+><TR
+><TD CLASS="s15"
+></TD
+></TR
+><TR
+><TD CLASS="botbar"
+>Produced by <A HREF="http://www.haskell.org/haddock/"
+>Haddock</A
+> version 2.6.0</TD
+></TR
+></TABLE
+></BODY
+></HTML
+>
