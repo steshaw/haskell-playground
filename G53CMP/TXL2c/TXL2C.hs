@@ -43,7 +43,6 @@ data Exp = LitInt   Int
          | Let      Id Exp Exp
          deriving Show
 
-
 ----------------------------------------------------------------
 -- Scanner
 ----------------------------------------------------------------
@@ -77,7 +76,6 @@ scanner (c : cs) | isDigit c =
         mkIdOrKwd "in"  = T_In
         mkIdOrKwd cs    = T_Id cs
 
-
 ----------------------------------------------------------------
 -- Parser
 ----------------------------------------------------------------
@@ -189,7 +187,6 @@ ppExpAux n (Let i e1 e2) =
     . ppExpAux (n+1) e1
     . ppExpAux (n+1) e2
 
-
 ----------------------------------------------------------------
 -- Contextual analysis
 ----------------------------------------------------------------
@@ -313,7 +310,7 @@ printPreamble = showString "#include <stdio.h>" . nl
                 . nl
                 . showString "int main(int argc, char* argv[]) {"
                 . nl
-
+
 printEpilogue :: ShowS
 printEpilogue = showString "}" . nl
 
@@ -365,7 +362,6 @@ spc = showChar ' '
 
 indent n s = iterate spc s !! n
 
-
 ----------------------------------------------------------------
 -- Main
 ----------------------------------------------------------------
