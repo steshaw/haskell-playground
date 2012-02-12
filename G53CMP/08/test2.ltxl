@@ -1,0 +1,13 @@
+! LTXL test demonstrating nested scopes.
+! Should pass the identification phase.
+
+let
+    int a  = 10;
+    bool b = a < 2
+in let
+    int c = a * 10;
+    bool a = a == 42;
+    int d = if a then 1 else 2
+in
+    if a && b then c else 42
+

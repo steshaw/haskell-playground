@@ -1,0 +1,8 @@
+! A simple LTXL test.
+! Should pass the identification phase.
+
+let
+    int a  = 10;
+    bool b = a < 2
+in
+    if b then a else 42
