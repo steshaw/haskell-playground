@@ -13,12 +13,12 @@
 
 -- | Main MiniTriangle compiler driver.
 
-module Main (main) where
+--module Main (main) where
 
 -- Standard library imports
 import Maybe (isJust, fromJust)
 import Monad (when)
-import System (getArgs)
+import System (getArgs, exitWith, ExitCode(..))
 
 -- HMTC module imports
 import SrcPos (SrcPos(..))
@@ -90,17 +90,28 @@ version = "Haskell Mini Triangle Compiler (HMTC) version 1.00 (Part I)"
 main :: IO ()
 main = do
     (opts, mf) <- parseCmdLine
-    if optHelp opts then
+    if optHelp opts then do
         printHelp
-     else if optVersion opts then
+        exitWith $ ExitFailure 2
+     else if optVersion opts then do
         putStrLn version
+        exitWith $ ExitFailure 2
+     else if optPAChecking opts then do
+        putStrLn "--print-after-checking only valid in PartII"
+        exitWith $ ExitFailure 2
+     else if optSAChecking opts then do
+        putStrLn "--stop-after-checking only valid in PartII"
+        exitWith $ ExitFailure 2
      else do
         prog <- case mf of
                     Nothing -> getContents
                     Just f  -> readFile f
         let (mc, msgs) = runD (compile opts prog)
         mapM_ (putStrLn . ppDMsg) msgs
-        when (isJust mc) (putStrLn ("\nCode:\n" ++ show (fromJust mc)))
+        case mc of
+          Just mc -> putStrLn ("\nCode:\n" ++ show mc)
+          Nothing -> exitWith $ ExitFailure 1
+--        when (isJust mc) (putStrLn ("\nCode:\n" ++ show (fromJust mc)))
 
 
 ------------------------------------------------------------------------------
