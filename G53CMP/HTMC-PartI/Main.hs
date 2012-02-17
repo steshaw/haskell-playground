@@ -49,7 +49,7 @@ defaultOptions =
         optHelp       = False,
 	optSAParsing  = False,
         optSAChecking = False,
-        optPAParsing  = False,
+        optPAParsing  = True,
         optPAChecking = False,
 	optVersion    = False
     }
@@ -97,6 +97,9 @@ main = do
         putStrLn version
         exitWith $ ExitFailure 2
      else if optPAChecking opts then do
+        putStrLn "--stop-after-parsing only meaningful in PartII (PartI _always_ stops after parsing)"
+        exitWith $ ExitFailure 2
+     else if optPAChecking opts then do
         putStrLn "--print-after-checking only valid in PartII"
         exitWith $ ExitFailure 2
      else if optSAChecking opts then do
@@ -109,9 +112,8 @@ main = do
         let (mc, msgs) = runD (compile opts prog)
         mapM_ (putStrLn . ppDMsg) msgs
         case mc of
-          Just mc -> putStrLn ("\nCode:\n" ++ show mc)
+          Just mc -> exitWith $ ExitSuccess
           Nothing -> exitWith $ ExitFailure 1
---        when (isJust mc) (putStrLn ("\nCode:\n" ++ show (fromJust mc)))
 
 
 ------------------------------------------------------------------------------
