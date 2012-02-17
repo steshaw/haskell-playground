@@ -16,14 +16,14 @@
 --module Main (main) where
 
 -- Standard library imports
-import Maybe (isJust, fromJust)
+--import Maybe (isJust, fromJust)
 import Monad (when)
 import System (getArgs, exitWith, ExitCode(..))
 
 -- HMTC module imports
 import SrcPos (SrcPos(..))
 import Diagnostics
-import AST (AST)
+--import AST (AST)              -- Not directly required in Part I
 import PPAST
 -- import MTIR (MTIR)		-- For Part II
 -- import PPMTIR		-- For Part II
@@ -112,7 +112,7 @@ main = do
         let (mc, msgs) = runD (compile opts prog)
         mapM_ (putStrLn . ppDMsg) msgs
         case mc of
-          Just mc -> exitWith $ ExitSuccess
+          Just _ -> exitWith $ ExitSuccess
           Nothing -> exitWith $ ExitFailure 1
 
 
@@ -198,6 +198,7 @@ compile opts src = do
 -- Print Help Text
 ------------------------------------------------------------------------------
 
+helpText :: [Char]
 helpText = "\
 \Usage:\n\
 \    hmtc [options] file.mt      Compile \"file.mt\"\n\

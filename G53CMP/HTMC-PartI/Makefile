@@ -38,7 +38,7 @@ hs_sources = \
 
 SHELL = /bin/sh
 
-HS_OPTS += -O $(HS_PACKAGES) $(HS_EXTRA_IMPORTS) $(HS_USER_OPTS)
+HS_OPTS += -Wall -O $(HS_PACKAGES) $(HS_EXTRA_IMPORTS) $(HS_USER_OPTS)
 MAKE.hs  = ghc --make $(HS_OPTS) -o $@
 
 # ghc-specific (for now)
