@@ -143,7 +143,7 @@ ppDMsg (DMsg {dmLvl = lvl, dmSrcPos = sp, dmTxt = msg}) =
                    DMLErr  -> "Error"
 
         srcPosTxt NoSrcPos = ""
-        srcPosTxt sp       = " at " ++ show sp
+        srcPosTxt sp2      = " at " ++ show sp2
 
 
 ------------------------------------------------------------------------------

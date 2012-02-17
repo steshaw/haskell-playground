@@ -81,7 +81,7 @@ scanner cont = P $ scan
         -- End Of File
         scan l c []         = retTkn EOF l c c []
         -- Skip white space and comments
-        scan l c ('\n' : s) = scan (l + 1) 1 s
+        scan l _ ('\n' : s) = scan (l + 1) 1 s
         scan l c ('\t' : s) = scan l (nextTabStop c) s
         scan l c (' ' : s)  = scan l (c + 1) s
         scan l c ('/' : '/' : s) = scan l c (dropWhile (/='\n') s)
@@ -104,17 +104,17 @@ scanner cont = P $ scan
 
 
         -- scanLitInt :: Int -> Int -> Char -> String -> D a
-        scanLitInt l c x s = retTkn (LitInt (read (x : tail))) l c c' s'
+        scanLitInt l c d s = retTkn (LitInt (read (d : digits))) l c c' s'
             where
-                (tail, s') = span isDigit s
-                c'         = c + 1 + length tail
+                (digits, s') = span isDigit s
+                c'         = c + 1 + length digits
 
         -- Allows multi-character operators.
         -- scanOperator :: Int -> Int -> Char -> String -> D a
-        scanOperator l c x s = retTkn (mkOpOrSpecial (x:tail)) l c c' s'
+        scanOperator l c opChr s = retTkn (mkOpOrSpecial (opChr : opChrs)) l c c' s'
             where
-                (tail, s') = span isOpChr s
-                c'         = c + 1 + length tail
+                (opChrs, s') = span isOpChr s
+                c'           = c + 1 + length opChrs
 
         mkOpOrSpecial :: String -> Token
         mkOpOrSpecial ":"  = Colon
@@ -123,10 +123,10 @@ scanner cont = P $ scan
         mkOpOrSpecial name = Op {opName = name}
 
         -- scanIdOrKwd :: Int -> Int -> Char -> String -> D a
-        scanIdOrKwd l c x s = retTkn (mkIdOrKwd (x : tail)) l c c' s'
+        scanIdOrKwd l c alpha s = retTkn (mkIdOrKwd (alpha : alphas)) l c c' s'
             where
-                (tail, s') = span isAlphaNum s
-                c'         = c + 1 + length tail
+                (alphas, s') = span isAlphaNum s
+                c'           = c + 1 + length alphas
 
         mkIdOrKwd :: String -> Token
         mkIdOrKwd "begin" = Begin

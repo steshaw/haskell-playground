@@ -18,8 +18,8 @@ module PPAST (
 ) where
 
 -- HMTC module imports
-import Name (Name)
-import SrcPos (SrcPos)
+--import Name (Name)
+--import SrcPos (SrcPos)
 import PPUtilities
 import AST
 

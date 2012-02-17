@@ -135,8 +135,8 @@ parseCmdLine = do
 
 
 processOptions :: Options -> [String] -> D (Options, [String])
-processOptions opts as = do
-    oas <- posAux opts as
+processOptions initialOpts args = do
+    oas <- posAux initialOpts args
     failIfErrorsD
     return oas
     where
