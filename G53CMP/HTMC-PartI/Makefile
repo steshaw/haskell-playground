@@ -31,6 +31,9 @@ hs_sources = \
     SrcPos.hs \
     Token.hs
 
+.PHONY:
+sources:
+	@echo ${hs_sources} Parser.y
 
 #-----------------------------------------------------------------------------
 # Tools, arguments, and auxiliary files
