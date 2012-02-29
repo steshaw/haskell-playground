@@ -1,0 +1,17 @@
+Program to be type checked:
+
+BinOpApp
+  2
+  Plus
+  Let
+    x
+      TpInt
+      1
+    x
+      TpInt
+      2
+    x
+
+
+There were errors:
+Variable x is already defined at this level (1).

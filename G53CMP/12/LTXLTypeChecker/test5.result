@@ -1,0 +1,19 @@
+Program to be type checked:
+
+Let
+  x
+    TpInt
+    7
+  y
+    TpInt
+    5
+  If
+    BinOpApp
+      x
+      Greater
+      y
+    x
+    y
+
+
+Type of the program: int

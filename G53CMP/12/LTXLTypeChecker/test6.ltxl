@@ -1,0 +1,5 @@
+!
+! Multiple definitions of `x`.
+!
+
+let int x = 1; int x = 2 in x

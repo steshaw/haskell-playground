@@ -1,0 +1,22 @@
+Program to be type checked:
+
+Let
+  a
+    TpInt
+    Let
+      b
+        TpInt
+        1
+      b
+        TpInt
+        2
+      b
+  a
+    TpInt
+    2
+  a
+
+
+There were errors:
+Variable b is already defined at this level (2).
+Variable a is already defined at this level (1).

@@ -58,7 +58,7 @@ tcAux _ env (Var i)             = case lookupVar i env of
 
 tcAux l env (UnOpApp uo e1)     = (toT, e1Msgs ++ errs)
                                     where
-                                      (e1Type, e1Msgs) = tcAux (l+1) env e1
+                                      (e1Type, e1Msgs) = tcAux l env e1
                                       (TpArr fromT toT) = lookupUO uo env
                                       errs = if fromT `compatible` e1Type
                                              then []
@@ -66,8 +66,8 @@ tcAux l env (UnOpApp uo e1)     = (toT, e1Msgs ++ errs)
 
 tcAux l env (BinOpApp bo e1 e2) = (resTy, msgs ++ ty1Msg ++ ty2Msg)
                                     where 
-                                      (e1Type, e1Msgs) = tcAux (l+1) env e1
-                                      (e2Type, e2Msgs) = tcAux (l+1) env e2
+                                      (e1Type, e1Msgs) = tcAux l env e1
+                                      (e2Type, e2Msgs) = tcAux l env e2
                                       msgs = e1Msgs ++ e2Msgs
                                       (TpArr (TpProd ty1 ty2) resTy) = lookupBO bo env
                                       ty1Msg = if ty1 `compatible` e1Type
@@ -79,9 +79,9 @@ tcAux l env (BinOpApp bo e1 e2) = (resTy, msgs ++ ty1Msg ++ ty2Msg)
 
 tcAux l env (If e1 e2 e3)       = (e2Ty, e1Errs ++ e2Errs ++ e3Errs ++ notBoolErr ++ branchErr)
                                     where
-                                      (e1Ty, e1Errs) = tcAux (l+1) env e1
-                                      (e2Ty, e2Errs) = tcAux (l+1) env e2
-                                      (e3Ty, e3Errs) = tcAux (l+1) env e3
+                                      (e1Ty, e1Errs) = tcAux l env e1
+                                      (e2Ty, e2Errs) = tcAux l env e2
+                                      (e3Ty, e3Errs) = tcAux l env e3
                                       notBoolErr = if e1Ty `compatible` TpBool 
                                                    then []
                                                    else [illTypedCond e1Ty] 
@@ -103,7 +103,7 @@ enterDecls l env ((var, ty, _) : ds) errs = case enterVar var l ty env of
 
 checkDecl l env (_, ty, e) = eErrs ++ declErr
                                where
-                                 (eTy, eErrs) = tcAux (l+1) env e
+                                 (eTy, eErrs) = tcAux l env e
                                  declErr = if ty `compatible` eTy 
                                            then []
                                            else [declMismatch ty eTy] 

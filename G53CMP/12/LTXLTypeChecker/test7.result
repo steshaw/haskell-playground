@@ -1,0 +1,14 @@
+Program to be type checked:
+
+Let
+  x
+    TpInt
+    1
+  Let
+    x
+      TpInt
+      2
+    x
+
+
+Type of the program: int

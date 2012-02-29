@@ -1,0 +1,5 @@
+!
+! Shadowing is ok
+!
+
+let int x = 1 in let int x = 2 in x
