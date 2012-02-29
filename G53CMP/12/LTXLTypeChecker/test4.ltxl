@@ -1,0 +1,1 @@
+let int x = 7; int y = 5 in 7 + x * y
