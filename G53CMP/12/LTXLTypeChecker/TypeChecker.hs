@@ -45,18 +45,62 @@ import GlobalEnvironment
 -- 
 -- Written for clarity, not efficiency.
 
-
 typeCheck :: Exp -> (Type, [ErrorMsg])
 typeCheck e = tcAux 0 glblEnv e
 
 tcAux :: Int -> Env -> Exp -> (Type, [ErrorMsg])
-tcAux l env (LitInt n)          = undefined
-tcAux l env (Var i)             = undefined
-tcAux l env (UnOpApp uo e1)     = undefined
-tcAux l env (BinOpApp bo e1 e2) = undefined
-tcAux l env (If e1 e2 e3)       = undefined
-tcAux l env (Let ds e)          = undefined
 
+tcAux _ _ (LitInt _)            = (TpInt, [])
+
+tcAux _ env (Var i)             = case lookupVar i env of
+                                    Left (_, typ) -> (typ, [])
+                                    Right errorMsg -> (TpUnknown, [errorMsg])
+
+tcAux l env (UnOpApp uo e1)     = let 
+                                    (e1Type, e1Msgs) = tcAux (l+1) env e1
+                                    (TpArr fromT toT) = lookupUO uo env
+                                  in
+                                    if fromT /= e1Type 
+                                    then (toT, e1Msgs ++ [illTypedOpApp fromT e1Type])
+                                    else (toT, e1Msgs)
+
+tcAux l env (BinOpApp bo e1 e2) = let 
+                                    (e1Type, e1Msgs) = tcAux (l+1) env e1
+                                    (e2Type, e2Msgs) = tcAux (l+1) env e2
+                                    msgs = e1Msgs ++ e2Msgs
+                                    (TpArr (TpProd ty1 ty2) resTy) = lookupBO bo env
+                                    ty1Msg = if ty1 /= e1Type
+                                             then [illTypedOpApp ty1 e1Type]
+                                             else []
+                                    ty2Msg = if ty2 /= e2Type
+                                             then [illTypedOpApp ty2 e2Type]
+                                             else []
+                                  in
+                                    (resTy, msgs ++ ty1Msg ++ ty2Msg)
+
+tcAux l env (If e1 e2 e3)       = (e2Ty, e1Errs ++ e2Errs ++ e3Errs ++ notBoolErr ++ branchErr)
+                                    where
+                                      (e1Ty, e1Errs) = tcAux (l+1) env e1
+                                      (e2Ty, e2Errs) = tcAux (l+1) env e2
+                                      (e3Ty, e3Errs) = tcAux (l+1) env e3
+                                      notBoolErr = if e1Ty /= TpBool then [illTypedCond e1Ty] else []
+                                      branchErr = if e2Ty /= e3Ty then [incompatibleBranches e2Ty e3Ty] else []
+
+tcAux l env (Let ds e)          = (eTy, checkDeclErrs ++ enterDeclErrs ++ eErrs)
+                                    where
+                                      checkDeclErrs = concatMap (checkDecl l env) ds
+                                      (env', enterDeclErrs) = enterDecls l env ds []
+                                      (eTy, eErrs) = tcAux (l+1) env' e
+
+enterDecls l env [] errs = (env, errs)
+enterDecls l env ((var, ty, _) : ds) errs = case enterVar var l ty env of
+                                              Left env'    -> enterDecls l env' ds errs
+                                              Right errMsg -> enterDecls l env  ds (errs ++ [errMsg])
+
+checkDecl l env (_, ty, e) = eErrs ++ declErr
+                               where
+                                 (eTy, eErrs) = tcAux (l+1) env e
+                                 declErr = if ty /= eTy then [declMismatch ty eTy] else []
 
 ------------------------------------------------------------------------------
 -- Utilities
@@ -90,5 +134,4 @@ incompatibleBranches t1 t2 =
 declMismatch :: Type -> Type -> ErrorMsg
 declMismatch t1 t2 =
     "Declared type " ++ ppType t1
-    ++ " does not macth inferred type " ++ ppType t2
-
+    ++ " does not match inferred type " ++ ppType t2
