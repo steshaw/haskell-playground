@@ -91,9 +91,10 @@ tcAux l env (If e1 e2 e3)       = (e2Ty, e1Errs ++ e2Errs ++ e3Errs ++ notBoolEr
 
 tcAux l env (Let ds e)          = (eTy, checkDeclErrs ++ enterDeclErrs ++ eErrs)
                                     where
-                                      checkDeclErrs = concatMap (checkDecl l env) ds
-                                      (env', enterDeclErrs) = enterDecls l env ds []
-                                      (eTy, eErrs) = tcAux (l+1) env' e
+                                      l' = l + 1
+                                      checkDeclErrs = concatMap (checkDecl l' env) ds
+                                      (env', enterDeclErrs) = enterDecls l' env ds []
+                                      (eTy, eErrs) = tcAux l' env' e
 
 enterDecls l env [] errs = (env, errs)
 enterDecls l env ((var, ty, _) : ds) errs = case enterVar var l ty env of
