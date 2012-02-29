@@ -1,0 +1,11 @@
+! LTXL test demonstrating error reporting.
+
+let
+    int a = 1;
+    int b = c * 2
+in let
+    int a = b > 4;
+    bool c = a < 1
+in
+    if a + b + c then a < b else 0
+

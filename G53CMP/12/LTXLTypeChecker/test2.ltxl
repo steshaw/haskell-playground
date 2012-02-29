@@ -1,0 +1,14 @@
+! LTXL test demonstrating nested scopes.
+
+let
+    int a  = 10
+in let
+    bool b = a < 2
+in let
+    bool a = a == 42;
+    int c = a * 10
+in let
+    int d = if a then 1 else 2
+in
+    if a && b then c else d
+

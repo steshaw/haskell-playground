@@ -1,0 +1,45 @@
+Program to be type checked:
+
+Let
+  a
+    TpInt
+    1
+  b
+    TpInt
+    BinOpApp
+      c
+      Times
+      2
+  Let
+    a
+      TpInt
+      BinOpApp
+        b
+        Greater
+        4
+    c
+      TpBool
+      BinOpApp
+        a
+        Less
+        1
+    If
+      BinOpApp
+        BinOpApp
+          a
+          Plus
+          b
+        Plus
+        c
+      BinOpApp
+        a
+        Less
+        b
+      0
+
+
+There were errors:
+Variable c is not defined.
+Declared type int does not macth inferred type bool
+Ill-typed operator application: expected type int, got type bool
+Expected same type in both then and else branch, but got types bool and int

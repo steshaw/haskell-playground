@@ -1,0 +1,43 @@
+Program to be type checked:
+
+Let
+  a
+    TpInt
+    10
+  Let
+    b
+      TpBool
+      BinOpApp
+        a
+        Less
+        2
+    Let
+      a
+        TpBool
+        BinOpApp
+          a
+          Equal
+          42
+      c
+        TpInt
+        BinOpApp
+          a
+          Times
+          10
+      Let
+        d
+          TpInt
+          If
+            a
+            1
+            2
+        If
+          BinOpApp
+            a
+            And
+            b
+          c
+          d
+
+
+Type of the program: int

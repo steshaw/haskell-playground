@@ -1,0 +1,20 @@
+Program to be type checked:
+
+Let
+  a
+    TpInt
+    10
+  Let
+    b
+      TpBool
+      BinOpApp
+        a
+        Less
+        2
+    If
+      b
+      a
+      42
+
+
+Type of the program: int
