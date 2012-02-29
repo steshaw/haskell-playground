@@ -40,6 +40,6 @@ Let
 
 There were errors:
 Variable c is not defined.
-Declared type int does not macth inferred type bool
+Declared type int does not match inferred type bool
 Ill-typed operator application: expected type int, got type bool
 Expected same type in both then and else branch, but got types bool and int
