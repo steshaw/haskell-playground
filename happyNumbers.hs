@@ -8,7 +8,7 @@ import Data.List ((\\))
 
 (|>) = flip ($)
 
-isHappy n = case sumSquares (digits n) of
+isHappy n | n > 0 = case sumSquares (digits n) of
     1 -> True
     4 -> False -- all unhappy numbers go through 4. In fact this sequence: 4, 16, 37, 58, 89, 145, 42, 20, 4, ….
     n -> isHappy n
