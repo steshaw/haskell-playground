@@ -26,9 +26,9 @@ test ref f = do { val <- readIORef ref; return (f val) }
 --     i += 1
 
 main = do
-  foreach [1..10] print
+  foreach [1..10] $ \x ->
+    print x
   ref <- newIORef 0
-  while (test ref (< 5))
-        (do 
-           print "Still running!"
-           incr ref)
+  while (test ref (< 5)) $ do
+    putStrLn "Still running!"
+    incr ref
