@@ -6,6 +6,8 @@
 --
 
 import Control.Arrow ((>>>))
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 import Person
 
@@ -96,3 +98,43 @@ foldLens xs = foldr composeL idL xs
 eg1 = get (personStreetL *** ageL) (person1, person2)
 
 eg2 = set (personStreetL *** ageL) ((person1, person2), ("Ann Street", 33))
+
+--
+-- 5.4 Standard Lens
+--
+
+first :: Lens (a, b) a
+first = Lens 
+  { get = fst
+  , set = \(ab, a) -> (a, snd ab)
+  }
+
+second :: Lens (a, b) b
+second = Lens 
+  { get = snd
+  , set = \(ab, b) -> (fst ab, b)
+  }
+
+mapL :: Ord k => k -> Lens (M.Map k v) (Maybe v)
+mapL k = Lens
+  { get = \m -> M.lookup k m
+  , set = \(m, v) -> case v of
+      Nothing -> M.delete k m
+      Just w  -> M.insert k w m
+  }
+
+m = M.fromList [(1, "one"), (2, "two")]
+ml = mapL 3
+m1 = get ml m
+m2 = set ml (m, Just "three")
+m3 = get ml m2
+
+setL :: Ord k => k -> Lens (S.Set k) Bool
+setL k = Lens
+  { get = \s -> S.member k s
+  , set = \(s, p) -> case p of
+      False -> S.delete k s
+      True  -> S.insert k s
+  }
+
+s = S.fromList [2, 4]
