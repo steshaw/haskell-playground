@@ -1,6 +1,8 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE KindSignatures #-}
 
+module Lens where
+
 import Control.Arrow ((>>>))
 import qualified Data.Map as M
 import qualified Data.Set as S

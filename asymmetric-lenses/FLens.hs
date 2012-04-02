@@ -3,12 +3,14 @@
 -- FLens section of the paper.
 --
 
+module FLens where
+
 import Person
+import qualified Data.Map as M
 
 --
 -- 4. Representing an Asymmetric Lens in Scala
 --
-
 
 -- A fused lens.
 newtype FLens record field = FLens
@@ -80,6 +82,14 @@ composeL l1 l2 = FLens (\r -> CoState
   { get = get ((apply l1) (get ((apply l2) r)))
   , set = \f -> let csm2 = apply l2 r 
                 in set csm2 (set (apply l1 (get csm2)) f)
+  })
+
+mapL :: Ord k => k -> FLens (M.Map k v) (Maybe v)
+mapL k = FLens (\m -> CoState
+  { get = M.lookup k m
+  , set = \v -> case v of
+      Nothing -> M.delete k m
+      Just w  -> M.insert k w m
   })
 
 personStreetL = streetL `composeL` addressL
