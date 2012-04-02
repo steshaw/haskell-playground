@@ -1,0 +1,3 @@
+See http://hackage.haskell.org/trac/ghc/ticket/1114
+
+Not really a bug - just confusing behaviour of SIGPIPE.
