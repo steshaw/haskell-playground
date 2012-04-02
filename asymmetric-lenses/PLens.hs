@@ -58,6 +58,10 @@ flens2plens l =
     plApply = \a -> Just (apply l a)
   }
 
+--
+-- Demo
+--
+
 type Addresses = M.Map String Address
 
 data Contact = 

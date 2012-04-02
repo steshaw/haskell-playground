@@ -1,8 +1,4 @@
 {-# LANGUAGE RankNTypes #-}
---
--- FLens section of the paper.
---
-
 module FLens where
 
 import Person
