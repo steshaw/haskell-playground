@@ -1,4 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE KindSignatures #-}
 --
 -- See "Asymmetric Lenses" by Tony Morris
 --   http://dl.dropbox.com/u/7810909/media/doc/lenses.pdf
@@ -82,7 +83,7 @@ idL = Lens
   , set = \(a, _) -> a
   }
 
-data Category cat = Category
+data Category (cat :: * -> * -> *) = Category
   { id :: forall a. cat a a
   , compose :: forall a b c. cat b c -> cat a b -> cat a c
   }
