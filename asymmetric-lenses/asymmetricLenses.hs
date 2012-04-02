@@ -8,6 +8,7 @@
 import Control.Arrow ((>>>))
 import qualified Data.Map as M
 import qualified Data.Set as S
+import qualified Control.Monad.State as St
 
 import Person
 
@@ -138,3 +139,56 @@ setL k = Lens
   }
 
 s = S.fromList [2, 4]
+
+--
+-- 5.7 Emulating Imperative Programming
+--
+
+(+=) :: (Num f) => Lens r f -> f -> St.State r f
+l += n = St.state (\r -> 
+           let w = get l r + n
+           in (w, (set l) (r, w)))
+
+(<==) :: Lens r f -> f -> St.State r f
+l <== f = St.state (\r -> (f, (set l) (r, f)))
+
+st :: Lens r f -> St.State r f
+st l = St.state (\s -> ((get l) s, s))
+
+data Employee =
+  Employee {
+    emName :: String
+  , emSalary :: Integer
+  , emAge :: Integer
+  }
+  deriving (Show)
+
+emNameL =
+  Lens {
+    get = emName
+  , set = \(e, v) -> e {emName = v}
+  }
+
+emSalaryL =
+  Lens {
+    get = emSalary
+  , set = \(e, v) -> e {emSalary = v}
+  }
+
+emAgeL = 
+  Lens {
+    get = emAge
+  , set = \(e, v) -> e {emAge = v}
+  }
+
+modification = do
+  _ <- emSalaryL += 100
+  n <- st emNameL
+  _ <- emNameL <== (n ++ " Jones")
+  e <- St.get
+  return e
+
+applyModification em = St.evalState modification em
+
+bill = Employee "Bill" 1100 33
+bill2 = applyModification bill
