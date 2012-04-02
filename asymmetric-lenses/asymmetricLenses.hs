@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 --
 -- See "Asymmetric Lenses" by Tony Morris
 --   http://dl.dropbox.com/u/7810909/media/doc/lenses.pdf
@@ -5,13 +6,25 @@
 
 import Control.Arrow ((>>>))
 
-data Address = Address { street :: String, state :: String }
+data Address = Address 
+  { street :: String
+  , state :: String
+  }
   deriving (Show)
 
-data Person = Person { age :: Int, address :: Address }
+data Person = Person 
+  { age :: Int
+  , address :: Address 
+  }
   deriving (Show)
 
-person = Person {age = 9, address = Address {street = "Park Place", state = "QLD"}}
+person = Person 
+  { age = 9
+  , address = Address
+    { street = "Edward Street"
+    , state = "QLD"
+    }
+  }
 
 modifyAge :: (Int -> Int) -> Person -> Person
 modifyAge f p = p {age = f (age p)}
@@ -57,11 +70,34 @@ stateL = Lens
   , set = \(p, a) -> p {state = a}
   }
 
-composeL :: Lens f1 f -> Lens r1 f1 -> Lens r1 f
+composeL :: Lens b c -> Lens a b -> Lens a c
 composeL l1 l2 = Lens
   { get = (get l1) . (get l2)
   , set = \(r, f) -> (set l2) (r, (set l1) ((get l2) r, f))
   }
 
-streetOfPerson = get (streetL `composeL` addressL) person
-newPerson = set (streetL `composeL` addressL) (person, "Queens Place")
+idL :: Lens a a
+idL = Lens
+  { get = Prelude.id
+  , set = \(a, _) -> a
+  }
+
+data Category cat = Category
+  { id :: forall a. cat a a
+  , compose :: forall a b c. cat b c -> cat a b -> cat a c
+  }
+
+lensCat = Category
+  { Main.id = idL
+  , compose = composeL
+  }
+
+personStreetL = streetL `composeL` addressL
+streetOfPerson = get personStreetL person
+newPerson = set personStreetL (person, "Elizabeth Street")
+
+-- TODO
+{-
+foldLens :: [Lens a a] -> Lens a a
+foldLens xs = undefined -- foldr idL composeL xs
+-}
