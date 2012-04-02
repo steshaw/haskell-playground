@@ -1,6 +1,6 @@
 {-# LANGUAGE RankNTypes #-}
 --
--- Second part of the paper.
+-- FLens section of the paper.
 --
 
 import Person
