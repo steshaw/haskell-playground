@@ -96,8 +96,5 @@ personStreetL = streetL `composeL` addressL
 streetOfPerson = get personStreetL person
 newPerson = set personStreetL (person, "Elizabeth Street")
 
--- TODO
-{-
 foldLens :: [Lens a a] -> Lens a a
-foldLens xs = undefined -- foldr idL composeL xs
--}
+foldLens xs = foldr composeL idL xs
