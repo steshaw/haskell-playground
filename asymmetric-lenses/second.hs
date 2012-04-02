@@ -78,7 +78,8 @@ stateL = FLens (\p -> CoState
 composeL :: FLens b c -> FLens a b -> FLens a c
 composeL l1 l2 = FLens (\r -> CoState
   { get = get ((apply l1) (get ((apply l2) r)))
-  , set = \f -> set (apply l2 r) (set (apply l1 (get ((apply l2) r))) f)
+  , set = \f -> let csm2 = apply l2 r 
+                in set csm2 (set (apply l1 (get csm2)) f)
   })
 
 personStreetL = streetL `composeL` addressL
