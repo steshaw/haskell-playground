@@ -145,7 +145,7 @@ s = S.fromList [2, 4]
 --
 
 (+=) :: (Num f) => Lens r f -> f -> St.State r f
-l += n = St.state (\r -> 
+l += n = St.state (\r ->
            let w = get l r + n
            in (w, (set l) (r, w)))
 
@@ -155,13 +155,17 @@ l <== f = St.state (\r -> (f, (set l) (r, f)))
 st :: Lens r f -> St.State r f
 st l = St.state (\s -> ((get l) s, s))
 
+--
+-- Example
+--
+
 data Employee =
   Employee {
     emName :: String
   , emSalary :: Integer
   , emAge :: Integer
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 emNameL =
   Lens {
@@ -175,7 +179,7 @@ emSalaryL =
   , set = \(e, v) -> e {emSalary = v}
   }
 
-emAgeL = 
+emAgeL =
   Lens {
     get = emAge
   , set = \(e, v) -> e {emAge = v}
@@ -191,4 +195,15 @@ modification = do
 applyModification em = St.evalState modification em
 
 bill = Employee "Bill" 1100 33
+bill' = applyModification bill
+
+--
+-- Simply alternatives of this example.
+--
+applyModification2 em = em {emSalary = (emSalary em) + 100, emName = (emName em) ++ " Jones"}
 bill2 = applyModification bill
+
+plus100 em = em {emSalary = (emSalary em) + 100}
+plusJones em = em {emName = (emName em) ++ " Jones"}
+applyModification3 = plus100 . plusJones
+bill3 = applyModification3 bill
