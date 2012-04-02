@@ -1,9 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE KindSignatures #-}
---
--- See "Asymmetric Lenses" by Tony Morris
---   http://dl.dropbox.com/u/7810909/media/doc/lenses.pdf
---
 
 import Control.Arrow ((>>>))
 import qualified Data.Map as M
