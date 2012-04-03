@@ -64,7 +64,7 @@ flens2plens l =
 
 type Addresses = M.Map String Address
 
-data Contact = 
+data Contact =
   Contact  {
     name :: String
   , addresses :: Addresses
@@ -79,7 +79,7 @@ data Address =
   }
   deriving (Show)
 
-fred = Contact "Fred" $ M.fromList 
+fred = Contact "Fred" $ M.fromList
   [ ("Home", Address "Sunny Cresent" "QLD" (Just "4300"))
   , ("Office", Address "Adelaide Street" "QLD" (Just "4000"))
   ]

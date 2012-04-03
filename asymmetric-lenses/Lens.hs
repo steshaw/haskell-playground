@@ -28,7 +28,7 @@ data Lens record field = Lens
   }
 
 ageL :: Lens Person Int
-ageL = Lens 
+ageL = Lens
   { get = age
   , set = \(p, a) -> p {age = a}
   }
@@ -103,13 +103,13 @@ eg2 = set (personStreetL *** ageL) ((person1, person2), ("Ann Street", 33))
 --
 
 first :: Lens (a, b) a
-first = Lens 
+first = Lens
   { get = fst
   , set = \(ab, a) -> (a, snd ab)
   }
 
 second :: Lens (a, b) b
-second = Lens 
+second = Lens
   { get = snd
   , set = \(ab, b) -> (fst ab, b)
   }

@@ -1,14 +1,14 @@
 module Person where
 
-data Address = Address 
+data Address = Address
   { street :: String
   , state :: String
   }
   deriving (Show)
 
-data Person = Person 
+data Person = Person
   { age :: Int
-  , address :: Address 
+  , address :: Address
   }
   deriving (Show)
 

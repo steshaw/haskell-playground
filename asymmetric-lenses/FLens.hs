@@ -68,7 +68,7 @@ streetL = FLens (\p -> CoState
   })
 
 stateL :: FLens Address String
-stateL = FLens (\p -> CoState 
+stateL = FLens (\p -> CoState
   { get = state p
   , set = \a -> p {state = a}
   })
@@ -76,7 +76,7 @@ stateL = FLens (\p -> CoState
 composeL :: FLens b c -> FLens a b -> FLens a c
 composeL l1 l2 = FLens (\r -> CoState
   { get = get ((apply l1) (get ((apply l2) r)))
-  , set = \f -> let csm2 = apply l2 r 
+  , set = \f -> let csm2 = apply l2 r
                 in set csm2 (set (apply l1 (get csm2)) f)
   })
 
