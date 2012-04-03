@@ -101,7 +101,7 @@ homeAddressL = apply (mapL "Home") (get (apply addressesL fred))
 homeAddressPostcodeL = flens2plens ((mapL "Home") `composeL` addressesL) >>> justPLens >>> flens2plens postcodeL
 
 fredsHomePostcode = fmap get $ plApply homeAddressPostcodeL fred -- Just (Just "4300")
-setFredsHomePostcode postcode = fmap (flip set (Just postcode)) $ plApply homeAddressPostcodeL fred -- Just result
+setFredsHomePostcode postcode = fmap (flip set postcode) $ plApply homeAddressPostcodeL fred -- Just result
 
 homeAddressPostcodeL' =
   flens2plens ((mapL "Home") `composeL` addressesL)
