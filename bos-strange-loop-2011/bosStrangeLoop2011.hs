@@ -6,6 +6,13 @@ import Data.Char (isUpper, isLower, toLower)
 
 import Prelude hiding (filter)
 import Control.Arrow ((>>>))
+import Network.HTTP.Enumerator (simpleHttp)
+import Data.ByteString.Lazy.UTF8 (toString)
+import Text.HTML.TagSoup
+import Network.URI (parseURI, parseURIReference, uriToString, nonStrictRelativeTo)
+import Data.Maybe (catMaybes)
+import qualified Data.Map as Map
+import qualified Data.Set as Set
 
 data Foo = One | Two | Three
   deriving (Show, Enum)
@@ -58,3 +65,69 @@ disemvowel = unwords . (filter startsWithVowel) . words
 bosDisEmvowel =
   let isVowel c = toLower c `elem` "aeiou"
   in  unwords . filter (isVowel . head) . words
+
+--
+-- Web Spider
+--
+
+download :: String -> IO String
+download url = do
+  contents <- simpleHttp url
+  return $ toString contents
+
+saveAs :: String -> Int -> IO ()
+saveAs contents k = writeFile (makeFileName k) contents
+
+makeFileName :: Int -> FilePath
+makeFileName k = "download-" ++ show k ++ ".html"
+
+anchors = filter (isTagOpenName "a")
+
+nofollow tagOpen = fromAttrib "rel" tagOpen == "nofollow"
+
+canonicalizeLink :: String -> String -> Maybe String
+canonicalizeLink referer path = do
+  r <- parseURI referer
+  p <- parseURIReference path
+  u <- nonStrictRelativeTo p r
+  return $ uriToString id u ""
+
+links url =
+  filter (\url -> (take 4 url) == "http") . -- only http urls
+  catMaybes .
+  map (canonicalizeLink url) .
+  filter (not . null) .        -- ignore null/empty href attributes
+  map (fromAttrib "href") .
+  filter (not . nofollow) .
+  anchors .
+  canonicalizeTags .
+  parseTags
+
+processPage url = do
+  page <- download url
+  return (links url page)
+
+data Link = Link String [String]
+  deriving (Show)
+
+linkFrom (Link url _) = url
+linkTo (Link _ links) = links
+
+type URL = String
+
+spider :: Int -> URL -> IO (Map.Map URL [URL])
+spider count url0 = go 0 Map.empty (Set.singleton url0)
+  where
+    go k seen queue0
+        | k >= count = return seen
+        | otherwise  =
+      case Set.minView queue0 of
+        Nothing -> return seen
+        Just (url, queue) -> do
+          page <- download url
+          let ls       = links url page
+              newSeen  = Map.insert url ls seen
+              notSeen  = Set.fromList .
+                         filter (`Map.notMember` newSeen) $ ls
+              newQueue = queue `Set.union` notSeen
+          go (k+1) newSeen newQueue
