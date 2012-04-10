@@ -8,4 +8,7 @@
 gen :: [forall a. a -> a]
 gen = [id]
 
-test1 = head gen 1
+-- broken
+-- test1 = head gen 1
+
+test2 = let hg = head gen in hg 1
