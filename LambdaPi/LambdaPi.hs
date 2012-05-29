@@ -1,5 +1,5 @@
 {-# LINE 149 "LP.lhs" #-}
-  module LP where
+  module Main where
 {-# LINE 152 "LP.lhs" #-}
   import Prelude hiding (print)
 {-# LINE 154 "LP.lhs" #-}
