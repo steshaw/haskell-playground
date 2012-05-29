@@ -437,10 +437,13 @@
                                    CompileFile f        -> compileFile int state f
                         return (Just state)
  
+  removeTrailingSpaces :: String -> String
+  removeTrailingSpaces = reverse . dropWhile isSpace . reverse
+
   compileFile :: Interpreter i c v t tinf inf -> State v inf -> String -> IO (State v inf)
   compileFile int state@(inter, out, ve, te) f =
     do
-      x <- readFile f
+      x <- readFile (removeTrailingSpaces f)
       stmts <- parseIO f (many (isparse int)) x
       maybe (return state) (foldM (handleStmt int) state) stmts
   
