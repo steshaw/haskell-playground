@@ -440,18 +440,15 @@
   removeTrailingSpaces :: String -> String
   removeTrailingSpaces = reverse . dropWhile isSpace . reverse
 
-  sq :: String -> String
-  sq s@[c]                     = s
-  sq ('"':s)  | last s == '"'  = init s
-              | otherwise      = s
-  sq ('\'':s) | last s == '\'' = init s
-              | otherwise      = s
-  sq s                         = s
+  stripQuotes :: String -> String
+  stripQuotes ('"' : s)  | last s == '"'  = init s
+  stripQuotes ('\'' : s) | last s == '\'' = init s
+  stripQuotes s                           = s
 
   compileFile :: Interpreter i c v t tinf inf -> State v inf -> String -> IO (State v inf)
   compileFile int state@(inter, out, ve, te) f =
     do
-      x <- readFile $ sq $ removeTrailingSpaces f
+      x <- readFile $ stripQuotes $ removeTrailingSpaces f
       stmts <- parseIO f (many (isparse int)) x
       maybe (return state) (foldM (handleStmt int) state) stmts
   
