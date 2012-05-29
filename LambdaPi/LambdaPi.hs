@@ -441,6 +441,7 @@
   removeTrailingSpaces = reverse . dropWhile isSpace . reverse
 
   stripQuotes :: String -> String
+  stripQuotes s@[_]                       = s
   stripQuotes ('"' : s)  | last s == '"'  = init s
   stripQuotes ('\'' : s) | last s == '\'' = init s
   stripQuotes s                           = s
