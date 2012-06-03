@@ -1,4 +1,6 @@
 
+type Sym = String
+
 data Expr
   = Var Sym
   | App Expr Expr
