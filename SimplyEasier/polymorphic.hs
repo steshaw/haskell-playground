@@ -11,7 +11,6 @@ data Expr
 
 data Type
   = Arrow Type Type
-  | Base
   | TVar Sym
   deriving (Eq, Read, Show)
 
