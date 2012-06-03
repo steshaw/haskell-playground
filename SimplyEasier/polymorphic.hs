@@ -16,6 +16,6 @@ data Type
   deriving (Eq, Read, Show)
 
 data Kind
-  = KArrow Kind Kind -- Looks wrong. Probably should be KArrow Kind Kind
+  = KArrow Kind Kind
   | Star
   deriving (Eq, Read, Show)
