@@ -10,11 +10,14 @@ data Expr
   deriving (Eq, Read, Show)
 
 data Type
-  = Arrow Type Type
-  | TVar Sym
+  = TVar Sym
+  | Arrow Type Type
+  | TLam Sym Kind Type
+  | TApp Type Type
   deriving (Eq, Read, Show)
 
 data Kind
-  = KArrow Kind Kind
-  | Star
+  = Star
+  | KArrow Kind Kind
   deriving (Eq, Read, Show)
+
