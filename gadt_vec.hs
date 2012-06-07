@@ -13,3 +13,6 @@ vhead (Cons x _) = x
 showVec :: Show a => Vec n a -> String
 showVec Nil = "Nil"
 showVec (Cons x xs) = (show x) ++ "::" ++ (showVec xs)
+
+wrong :: Vec Int Char
+wrong = undefined
