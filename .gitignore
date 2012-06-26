@@ -1,6 +1,7 @@
 #*[^.]*
 *.hi
 *.o
+crazy
 mean
 listToString
 repeatN
