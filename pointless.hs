@@ -1,7 +1,7 @@
 import Control.Arrow
+import Control.Monad
 
-dup f a = f a a
-average = uncurry (/) . foldr (uncurry (***) . ((+) *** (+) . const 1)) (0.0, 0.0) . dup zip
+average = uncurry (/) . foldr (uncurry (***) . ((+) *** (+) . const 1)) (0.0, 0.0) . join zip
 
 xs = [2.0, 5.0, 7.0]
 
