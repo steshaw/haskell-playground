@@ -19,7 +19,7 @@ sum xs = foldM f 0 xs
 averageBits :: Monad m => [Double] -> m (Double, Integer)
 averageBits xs = foldM f (0.0, 0) (map (id &&& (const 1)) xs)
   where 
---    f :: (Double, Integer) -> (Double, Integer) -> m (Double, Integer)
+    f :: Monad m => (Double, Integer) -> (Double, Integer) -> m (Double, Integer)
     f (accSum, accLen) (d, i) = do return $ (accSum + d, accLen + i)
 
 average xs = liftM (uncurry (/) . second fromInteger) (averageBits xs)
