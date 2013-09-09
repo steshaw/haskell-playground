@@ -20,9 +20,6 @@ digitToInt digit = case digit of
   '9' -> Just 9
   _   -> Nothing
 
--- foldM :: Monad m => (a   -> b     -> m a  ) -> a   -> [b]     -> m a
---          Monad m => (Int -> Digit -> m Int) -> Int -> [Digit] -> m Int
-
 type Digit = Char
 
 atoi' :: String -> Maybe Int
