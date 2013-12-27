@@ -3,13 +3,13 @@
  -}
 module Main where
 
-every3 = "" : "" : "Fizz" : every3
-every5 = "" : "" : "" : "" : "Buzz" : every5
+every3 = cycle ["", "", "Fizz"]
+every5 = cycle ["", "", "", "", "Buzz"]
 
 fizzBuzzes = zipWith (++) every3 every5
 
-numberedFizzBuzzes = zipWith f [1..100] fizzBuzzes
+numberedFizzBuzzes = zipWith f [1..] fizzBuzzes
   where
     f n fb = if null fb then show n else fb
 
-main = putStr (unlines numberedFizzBuzzes)
+main = putStr (unlines (take 100 numberedFizzBuzzes))
