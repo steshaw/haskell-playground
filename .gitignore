@@ -12,6 +12,7 @@ threadring
 mutableArraysBench
 Id
 FizzBuzz
+FizzBuzz2
 RecursiveInstances
 runLengthEncoding
 runLengthEncoding[23]
