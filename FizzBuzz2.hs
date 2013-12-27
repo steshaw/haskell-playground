@@ -3,8 +3,8 @@
  -}
 module Main where
 
-every3 = cycle ["", "", "Fizz"]
-every5 = cycle ["", "", "", "", "Buzz"]
+every3 = cycle $ replicate 2 "" ++ ["Fizz"]
+every5 = cycle $ replicate 4 "" ++ ["Buzz"]
 
 fizzBuzzes = zipWith (++) every3 every5
 
