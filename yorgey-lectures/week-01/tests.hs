@@ -1,3 +1,3 @@
 import Test.DocTest
 
-main = doctest ["Week01.hs"]
+main = doctest ["CreditCard.hs", "Hanoi.hs"]
