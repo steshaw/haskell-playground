@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wall #-}
 module Hanoi where
 
 type Peg = String
