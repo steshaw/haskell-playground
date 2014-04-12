@@ -36,7 +36,7 @@ doubleEveryOther :: [Integer] -> [Integer]
 doubleEveryOther = reverse . doubleEm . reverse
   where
     doubleEm :: [Integer] -> [Integer]
-    doubleEm (a:b:xs) = a : (b * 2) : (doubleEm xs)
+    doubleEm (a:b:xs) = a : (b * 2) : doubleEm xs
     doubleEm xs = xs
 
 -- |
@@ -63,3 +63,4 @@ validate n =
     |> sumDigits |> validSum
   where
     validSum m = m `mod` 10 == 0
+
