@@ -1,10 +1,8 @@
 {-# OPTIONS_GHC -Wall #-}
-module Week01 where
+module CreditCard where
 
 import Data.Char
-
-(|>) :: a -> (a -> b) -> b
-(|>) = flip ($)
+import Utils ((|>))
 
 -- |
 -- >>> toDigits 1234
@@ -63,4 +61,3 @@ validate n =
     |> sumDigits |> validSum
   where
     validSum m = m `mod` 10 == 0
-
