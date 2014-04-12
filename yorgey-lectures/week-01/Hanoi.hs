@@ -35,6 +35,8 @@ type Move = (Peg, Peg)
 -- [("a","b")]
 -- >>> hanoi 0 "a" "b" "c"
 -- []
+-- >>> (length $ hanoi 15 "a" "b" "c") == 2^15 - 1
+-- True
 --
 hanoi :: Integer -> Peg -> Peg -> Peg -> [Move]
 hanoi 0 _ _ _ = []
