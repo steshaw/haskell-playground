@@ -1,8 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 module CreditCard where
 
-import Utils ((|>))
-
 -- |
 -- >>> toDigitsRev 1234
 -- [4,3,2,1]
@@ -54,9 +52,6 @@ sumDigits xs = sum $ xs >>= toDigits
 -- False
 --
 validate :: Integer -> Bool
-validate n = 
-       toDigits n 
-    |> doubleEveryOther
-    |> sumDigits |> validSum
+validate = validSum . sumDigits . doubleEveryOther . toDigits
   where
     validSum m = m `mod` 10 == 0
