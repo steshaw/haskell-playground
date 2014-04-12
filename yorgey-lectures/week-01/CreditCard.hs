@@ -1,30 +1,29 @@
 {-# OPTIONS_GHC -Wall #-}
 module CreditCard where
 
-import Data.Char
 import Utils ((|>))
 
 -- |
--- >>> toDigits 1234
--- [1,2,3,4]
 -- >>> toDigitsRev 1234
 -- [4,3,2,1]
+-- >>> toDigits 1234
+-- [1,2,3,4]
 -- >>> toDigits 0
 -- []
 -- >>> toDigits (-17)
 -- []
 --
 toDigitsRev :: Integer -> [Integer]
-toDigitsRev = reverse . toDigits
+toDigitsRev n
+  | n <= 0    = []
+  | otherwise = if d == 0 then [m] else m : toDigitsRev d
+                  where
+                    (d, m) = n `divMod` 10
 
 toDigits :: Integer -> [Integer]
-toDigits n
-  | n <= 0    = []
-  | otherwise = show n |> map charToInteger
-                where
-                  charToInteger c = fromIntegral (ord c - ord '0')
+toDigits = reverse . toDigitsRev
 
--- | 
+-- |
 -- >>> doubleEveryOther [8, 7, 6, 5]
 -- [16,7,12,5]
 -- >>> doubleEveryOther [1, 2, 3]
