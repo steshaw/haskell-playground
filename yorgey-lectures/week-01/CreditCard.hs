@@ -14,7 +14,7 @@ module CreditCard where
 toDigitsRev :: Integer -> [Integer]
 toDigitsRev n
   | n <= 0    = []
-  | otherwise = if d == 0 then [m] else m : toDigitsRev d
+  | otherwise = m : toDigitsRev d
                   where
                     (d, m) = n `divMod` 10
 
