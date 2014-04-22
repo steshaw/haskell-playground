@@ -3,6 +3,10 @@ module LogAnalysis where
 
 import Log
 
+--
+-- lines, words, unwords, take, drop, and (.).
+--
+
 -- |
 -- >>> parseMessage "I 29 la la la"
 -- LogMessage Info 29 "la la la"
@@ -14,7 +18,15 @@ import Log
 -- Unknown "This is not in the right format"
 --
 parseMessage :: String -> LogMessage
-parseMessage _ = Unknown "muhahaha"
+parseMessage s = case (words s) of
+  "I":timestamp:ms -> LogMessage Info (toInt timestamp) (unwords ms)
+  "W":timestamp:ms -> LogMessage Warning (toInt timestamp) (unwords ms)
+  "E":errNum:timestamp:ms -> LogMessage (Error (toInt errNum)) (toInt timestamp) (unwords ms)
+  _ -> Unknown s
+
+toInt :: String -> Int
+toInt s = read s -- FIX handle error
+
 
 parse :: String -> [LogMessage]
 parse = map parseMessage . lines
@@ -22,5 +34,5 @@ parse = map parseMessage . lines
 poke :: IO [LogMessage]
 poke = testParse parse 10 "error.log"
 
-printPoke :: IO ()
-printPoke = poke >>= mapM_ (putStrLn . show)
+poke' :: IO ()
+poke' = poke >>= mapM_ (putStrLn . show)
