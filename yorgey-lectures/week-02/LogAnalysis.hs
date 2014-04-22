@@ -14,7 +14,13 @@ import Log
 -- Unknown "This is not in the right format"
 --
 parseMessage :: String -> LogMessage
-parseMessage = undefined
+parseMessage _ = Unknown "muhahaha"
 
 parse :: String -> [LogMessage]
-parse = undefined
+parse = map parseMessage . lines
+
+poke :: IO [LogMessage]
+poke = testParse parse 10 "error.log"
+
+printPoke :: IO ()
+printPoke = poke >>= mapM_ (putStrLn . show)
