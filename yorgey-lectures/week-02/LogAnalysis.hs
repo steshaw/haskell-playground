@@ -36,10 +36,7 @@ insert msg (Node left nmsg right) = case compare tmsg tnmsg of
                     									tnmsg = extractTimestamp nmsg
 
 build :: [LogMessage] -> MessageTree
-build ms = build0 ms Leaf
-  where
-     build0 [] t = t
-     build0 (m:ms') t = build0 ms' (insert m t)
+build = foldl (flip insert) Leaf
 
 inOrder :: MessageTree -> [LogMessage]
 inOrder t = inOrder0 t []
@@ -87,7 +84,7 @@ pokeSample :: IO ()
 pokeSample = pokeIt "sample.log"
 
 test :: Filename -> IO [String]
-test filename = testWhatWentWrong parse whatWentWrong filename
+test = testWhatWentWrong parse whatWentWrong
 
 testError :: IO [String]
 testError = test "error.log"
