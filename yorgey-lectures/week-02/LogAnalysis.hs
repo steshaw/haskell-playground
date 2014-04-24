@@ -19,10 +19,11 @@ import Log
 --
 parseMessage :: String -> LogMessage
 parseMessage s = case words s of
-  "I":timestamp:ms -> LogMessage Info (toInt timestamp) (unwords ms)
-  "W":timestamp:ms -> LogMessage Warning (toInt timestamp) (unwords ms)
-  "E":errNum:timestamp:ms -> LogMessage (Error (toInt errNum)) (toInt timestamp) (unwords ms)
-  _ -> Unknown s
+  "I":timestamp:ms | goodInt timestamp -> LogMessage Info (toInt timestamp) (unwords ms)
+  "W":timestamp:ms | goodInt timestamp -> LogMessage Warning (toInt timestamp) (unwords ms)
+  "E":errNum:timestamp:ms | goodInt errNum && goodInt timestamp 
+                                       -> LogMessage (Error (toInt errNum)) (toInt timestamp) (unwords ms)
+  _                                    -> Unknown s
 
 parseMessageType :: [String] -> Maybe (MessageType, [String])
 --parseMessageType ("I" : ts) -> Just (Info, ts)
@@ -83,7 +84,7 @@ parse = map parseMessage . lines
 type Filename = String
 
 poke :: Filename -> IO [LogMessage]
-poke filename = testParse parse 100 filename
+poke = testParse parse 100
 
 pokeIt :: Filename -> IO ()
 pokeIt filename = do
@@ -105,8 +106,11 @@ testError = test "error.log"
 testSample :: IO [String]
 testSample = test "sample.log"
 
+test' :: Show a => IO [a] -> IO ()
+test' x = x >>= mapM_ print
+
 testError' :: IO ()
-testError' = testError >>= mapM_ print
+testError' = test' testError
 
 testSample' :: IO ()
-testSample' = testError >>= mapM_ print
+testSample' = test' testSample
