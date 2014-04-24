@@ -3,6 +3,14 @@ module LogAnalysis where
 
 import Log
 
+goodInt :: String -> Bool
+goodInt s = case (reads s :: [(Int, String)]) of
+  [(_, "")] -> True
+  _         -> False
+
+toInt :: String -> Int
+toInt = read
+
 -- |
 -- >>> parseMessage "I 29 la la la"
 -- LogMessage Info 29 "la la la"
@@ -56,14 +64,6 @@ whatWentWrong :: [LogMessage] -> [String]
 whatWentWrong = map extractString . filter severeError . sort
   where sort = inOrder . build
 
-goodInt :: String -> Bool
-goodInt s = case (reads s :: [(Int, String)]) of
-  [(_, "")] -> True
-  _         -> False
-
-toInt :: String -> Int
-toInt = read
-
 parse :: String -> [LogMessage]
 parse = map parseMessage . lines
 
@@ -86,17 +86,21 @@ pokeSample = pokeIt "sample.log"
 test :: Filename -> IO [String]
 test = testWhatWentWrong parse whatWentWrong
 
-testError :: IO [String]
-testError = test "error.log"
-
+-- |
+-- >>> testSample
+-- ["Way too many pickles","Bad pickle-flange interaction detected","Flange failed!"]
+--
 testSample :: IO [String]
 testSample = test "sample.log"
+
+testError :: IO [String]
+testError = test "error.log"
 
 test' :: Show a => IO [a] -> IO ()
 test' x = x >>= mapM_ print
 
-testError' :: IO ()
-testError' = test' testError
-
 testSample' :: IO ()
 testSample' = test' testSample
+
+testError' :: IO ()
+testError' = test' testError
