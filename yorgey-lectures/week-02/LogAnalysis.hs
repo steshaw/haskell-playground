@@ -24,9 +24,15 @@ parseMessage s = case (words s) of
   "E":errNum:timestamp:ms -> LogMessage (Error (toInt errNum)) (toInt timestamp) (unwords ms)
   _ -> Unknown s
 
+parseMessageType :: [String] -> Maybe (MessageType, [String])
+--parseMessageType ("I" : ts) -> Just (Info, ts)
+--parseMessageType ("W" : ts) -> Just (Warning, ts)
+-- parseMessageType ("E" : ts) -> Just (Error, ts)
+--parseMessageType _ -> Nothing
+parseMessageType = undefined
+
 toInt :: String -> Int
 toInt s = read s -- FIX handle error
-
 
 parse :: String -> [LogMessage]
 parse = map parseMessage . lines
