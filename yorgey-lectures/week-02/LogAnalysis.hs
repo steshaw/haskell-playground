@@ -18,7 +18,7 @@ import Log
 -- Unknown "This is not in the right format"
 --
 parseMessage :: String -> LogMessage
-parseMessage s = case (words s) of
+parseMessage s = case words s of
   "I":timestamp:ms -> LogMessage Info (toInt timestamp) (unwords ms)
   "W":timestamp:ms -> LogMessage Warning (toInt timestamp) (unwords ms)
   "E":errNum:timestamp:ms -> LogMessage (Error (toInt errNum)) (toInt timestamp) (unwords ms)
@@ -31,8 +31,13 @@ parseMessageType :: [String] -> Maybe (MessageType, [String])
 --parseMessageType _ -> Nothing
 parseMessageType = undefined
 
+goodInt :: String -> Bool
+goodInt s = case (reads s :: [(Int, String)]) of
+  [(_, "")] -> True
+  _         -> False
+
 toInt :: String -> Int
-toInt s = read s -- FIX handle error
+toInt = read
 
 parse :: String -> [LogMessage]
 parse = map parseMessage . lines
@@ -41,4 +46,4 @@ poke :: IO [LogMessage]
 poke = testParse parse 10 "error.log"
 
 poke' :: IO ()
-poke' = poke >>= mapM_ (putStrLn . show)
+poke' = poke >>= mapM_ print
