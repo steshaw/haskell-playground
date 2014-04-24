@@ -3,10 +3,6 @@ module LogAnalysis where
 
 import Log
 
---
--- lines, words, unwords, take, drop, and (.).
---
-
 -- |
 -- >>> parseMessage "I 29 la la la"
 -- LogMessage Info 29 "la la la"
