@@ -29,11 +29,11 @@ insert :: LogMessage -> MessageTree -> MessageTree
 insert (Unknown _) tree           = tree
 insert msg Leaf                   = Node Leaf msg Leaf
 insert msg (Node left nmsg right) = case compare tmsg tnmsg of
-                  								  	LT -> Node (insert msg left) nmsg right
-                  								  	_  -> Node left nmsg (insert msg right)
-                  								  where
-                    									tmsg = extractTimestamp msg
-                    									tnmsg = extractTimestamp nmsg
+                                      LT -> Node (insert msg left) nmsg right
+                                      _  -> Node left nmsg (insert msg right)
+                                    where
+                                      tmsg = extractTimestamp msg
+                                      tnmsg = extractTimestamp nmsg
 
 build :: [LogMessage] -> MessageTree
 build = foldl (flip insert) Leaf
