@@ -1,0 +1,4 @@
+#!/bin/bash
+
+ghc -staticlib Foo.hs
+gcc -o foo -liconv -lgmp liba.a foo.c

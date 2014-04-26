@@ -1,0 +1,1 @@
+Trying out static linking technique care of http://maxs.io/ghc-78-static-lib-flag/.
