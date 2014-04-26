@@ -1,4 +1,12 @@
 #!/bin/bash
 
+GHC_HOME=~/.shelly/apps/ghc-7.8.2
+
 ghc -staticlib Foo.hs
-gcc -o foo -liconv -lgmp liba.a foo.c
+#gcc -o foo -liconv -lgmp liba.a foo.c
+gcc -o foo liba.a foo.c \
+  -I ${GHC_HOME}/lib/ghc-7.8.2/include \
+  -L ${GHC_HOME}/lib/ghc-7.8.2/ \
+  -liconv \
+  -lgmp
+
