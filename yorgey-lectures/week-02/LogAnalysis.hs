@@ -2,6 +2,7 @@
 module LogAnalysis where
 
 import Log
+import Data.List (foldl')
 
 goodInt :: String -> Bool
 goodInt s = case (reads s :: [(Int, String)]) of
@@ -44,7 +45,7 @@ insert msg (Node left nmsg right) = case compare tmsg tnmsg of
                                       tnmsg = extractTimestamp nmsg
 
 build :: [LogMessage] -> MessageTree
-build = foldl (flip insert) Leaf
+build = foldl' (flip insert) Leaf
 
 inOrder :: MessageTree -> [LogMessage]
 inOrder t = inOrder0 t []
