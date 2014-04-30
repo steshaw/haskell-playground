@@ -23,11 +23,13 @@ toInt = read
 --
 parseMessage :: String -> LogMessage
 parseMessage s = case words s of
-  "I":timestamp:ms | goodInt timestamp -> LogMessage Info (toInt timestamp) (unwords ms)
-  "W":timestamp:ms | goodInt timestamp -> LogMessage Warning (toInt timestamp) (unwords ms)
-  "E":errNum:timestamp:ms | goodInt errNum && goodInt timestamp 
-                                       -> LogMessage (Error (toInt errNum)) (toInt timestamp) (unwords ms)
+  "I":timestamp:ms | goodInt timestamp -> mkMessage Info timestamp ms
+  "W":timestamp:ms | goodInt timestamp -> mkMessage Warning timestamp ms
+  "E":errNum:timestamp:ms | goodInt errNum && goodInt timestamp
+                                       -> mkMessage (Error (toInt errNum)) timestamp ms
   _                                    -> Unknown s
+  where
+    mkMessage msgType timestamp ms = LogMessage msgType (toInt timestamp) (unwords ms)
 
 extractTimestamp :: LogMessage -> TimeStamp
 extractTimestamp (LogMessage _ timestamp _) = timestamp
