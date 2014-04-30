@@ -6,7 +6,7 @@ import Control.Applicative
 import Data.Maybe (fromMaybe)
 
 parseInt :: String -> Maybe Int
-parseInt s = case (reads s :: [(Int, String)]) of
+parseInt s = case reads s of
   [(n, "")] -> Just n
   _         -> Nothing
 
