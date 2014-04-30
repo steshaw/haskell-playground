@@ -62,8 +62,11 @@ severeError (LogMessage (Error severity) _ _) | severity >= 50 = True
 severeError _                                                  = False
 
 whatWentWrong :: [LogMessage] -> [String]
-whatWentWrong = map extractString . filter severeError . sort
-  where sort = inOrder . build
+whatWentWrong =
+  map extractString .
+    filter severeError .
+    inOrder .
+    build
 
 parse :: String -> [LogMessage]
 parse = map parseMessage . lines
