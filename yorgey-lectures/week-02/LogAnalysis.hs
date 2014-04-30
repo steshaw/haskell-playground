@@ -2,14 +2,13 @@
 module LogAnalysis where
 
 import Log
+import Control.Applicative
+import Data.Maybe (fromMaybe)
 
-goodInt :: String -> Bool
-goodInt s = case (reads s :: [(Int, String)]) of
-  [(_, "")] -> True
-  _         -> False
-
-toInt :: String -> Int
-toInt = read
+parseInt :: String -> Maybe Int
+parseInt s = case (reads s :: [(Int, String)]) of
+  [(n, "")] -> Just n
+  _         -> Nothing
 
 -- |
 -- >>> parseMessage "I 29 la la la"
@@ -22,14 +21,14 @@ toInt = read
 -- Unknown "This is not in the right format"
 --
 parseMessage :: String -> LogMessage
-parseMessage s = case words s of
-  "I":timestamp:ms | goodInt timestamp -> mkMessage Info timestamp ms
-  "W":timestamp:ms | goodInt timestamp -> mkMessage Warning timestamp ms
-  "E":errNum:timestamp:ms | goodInt errNum && goodInt timestamp
-                                       -> mkMessage (Error (toInt errNum)) timestamp ms
-  _                                    -> Unknown s
+parseMessage s = fromMaybe (Unknown s) $ case words s of
+  "I":timestamp:ms        -> mkMessage Info <$> parseInt timestamp <*> pure ms
+  "W":timestamp:ms        -> mkMessage Warning <$> parseInt timestamp <*> pure ms
+  "E":errNum:timestamp:ms -> mkMessage <$> mkError errNum <*> parseInt timestamp <*> pure ms
+  _                       -> Nothing
   where
-    mkMessage msgType timestamp ms = LogMessage msgType (toInt timestamp) (unwords ms)
+    mkMessage msgType timestamp ms = LogMessage msgType timestamp (unwords ms)
+    mkError errNum = Error <$> parseInt errNum
 
 extractTimestamp :: LogMessage -> TimeStamp
 extractTimestamp (LogMessage _ timestamp _) = timestamp
