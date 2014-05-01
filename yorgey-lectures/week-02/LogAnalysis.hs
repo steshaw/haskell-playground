@@ -10,6 +10,8 @@ parseInt s = case reads s of
   [(n, "")] -> Just n
   _         -> Nothing
 
+data Hole = Hole
+
 -- |
 -- >>> parseMessage "I 29 la la la"
 -- LogMessage Info 29 "la la la"
@@ -22,11 +24,16 @@ parseInt s = case reads s of
 --
 parseMessage :: String -> LogMessage
 parseMessage s = fromMaybe (Unknown s) $ case words s of
-  "I":timestamp:ms        -> mkMessage Info <$> parseInt timestamp <*> pure ms
+  "I":timestamp:ms        -> (mkMessage Info <$> parseInt timestamp) $> ms
   "W":timestamp:ms        -> mkMessage Warning <$> parseInt timestamp <*> pure ms
   "E":errNum:timestamp:ms -> mkMessage <$> mkError errNum <*> parseInt timestamp <*> pure ms
   _                       -> Nothing
   where
+    ($>) :: Maybe ([String] -> LogMessage) -> [String] -> Maybe LogMessage
+    ($>) maybeF ms = fmap (f ms) maybeF
+      where
+        f :: a -> (a -> b) -> b
+        f = flip ($)
     mkMessage msgType timestamp ms = LogMessage msgType timestamp (unwords ms)
     mkError errNum = Error <$> parseInt errNum
 
