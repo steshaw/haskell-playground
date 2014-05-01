@@ -10,9 +10,9 @@ parseInt s = case reads s of
   [(n, "")] -> Just n
   _         -> Nothing
 
-infixl 4 $>
-($>) :: Functor f => f (a -> b) -> a -> f b
-($>) maybeF ms = fmap ($ ms) maybeF
+infixl 4 >$
+(>$) :: Functor f => f (a -> b) -> a -> f b
+(>$) maybeF ms = fmap ($ ms) maybeF
 
 -- |
 -- >>> parseMessage "I 29 la la la"
@@ -26,9 +26,9 @@ infixl 4 $>
 --
 parseMessage :: String -> LogMessage
 parseMessage s = fromMaybe (Unknown s) $ case words s of
-  "I":timestamp:ms        -> mkMessage Info <$> parseInt timestamp $> ms
-  "W":timestamp:ms        -> mkMessage Warning <$> parseInt timestamp $> ms
-  "E":errNum:timestamp:ms -> mkMessage <$> mkError errNum <*> parseInt timestamp $> ms
+  "I":timestamp:ms        -> mkMessage Info <$> parseInt timestamp >$ ms
+  "W":timestamp:ms        -> mkMessage Warning <$> parseInt timestamp >$ ms
+  "E":errNum:timestamp:ms -> mkMessage <$> mkError errNum <*> parseInt timestamp >$ ms
   _                       -> Nothing
   where
     mkMessage msgType timestamp ms = LogMessage msgType timestamp (unwords ms)
