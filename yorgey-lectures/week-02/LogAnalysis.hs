@@ -10,7 +10,7 @@ parseInt s = case reads s of
   [(n, "")] -> Just n
   _         -> Nothing
 
-infixl 3 $>
+infixl 4 $>
 ($>) :: Functor f => f (a -> b) -> a -> f b
 ($>) maybeF ms = fmap ($ ms) maybeF
 
