@@ -21,6 +21,7 @@ RecursiveInstances
 runLengthEncoding
 sort
 hello
+hello-curlies
 hugsin
 wordCount
 simpleHttpd
