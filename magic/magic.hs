@@ -1,6 +1,9 @@
+-- 
+-- Pedagogical experiment in datatype-generic programming (without doing any datatype-generic programming).
+--
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Magic where
+module Main where
 
 data Colour = Red | Blue | Green
   deriving (Show)
@@ -72,17 +75,15 @@ optionEShow sa = eitherShow sa unitShow
 optionShow :: Show' a -> Show' (Option a)
 optionShow sa = Show' (\opt -> (gs (optionEShow sa)) (encodeOption opt))
 
---prettyColour = [(Red, "Red"), (Blue, "Blue"), (Green, "Green")]
-
---newtype ZipperList a = Z [a] a [a]
-
 colourS :: Colour -> String
 colourS = gs colourShow
 
---optionShow :: forall a. Show a => Show' (Option a)
-
 optionS :: Show' a -> (Option a -> String)
 optionS sa = (gs (optionShow sa))
+
+--prettyColour = [(Red, "Red"), (Blue, "Blue"), (Green, "Green")]
+
+--newtype ZipperList a = Z [a] a [a]
 
 
 printEm s1 f1 s2 f2 v = do
@@ -91,13 +92,14 @@ printEm s1 f1 s2 f2 v = do
 
 main :: IO ()
 main = do
-  -- mapM_ (printEm show colourS) [Red, Blue, Green]
+  putStrLn "Colours"
+  mapM_ (printEm "show  ==>> " show 
+                 "magic ==>> " colourS) [Red, Blue, Green]
 
-  putStrLn $ show               $ (None :: Option ())
-  putStrLn $ optionS unitShow   $ (None :: Option ())
-  putStrLn $ show               $ Some 1
-  putStrLn $ optionS intShow    $ Some 1
-  putStrLn $ show               $ Some "Hi"
-  putStrLn $ optionS stringShow $ Some "Hi"
-  putStrLn $ show               $ Some Red
-  putStrLn $ optionS colourShow $ Some Red
+  putStrLn "\nOptions"
+  mapM_ (printEm "show  ==>> " show 
+                 "magic ==>> " (optionS intShow)) [None, Some 1, Some 2]
+  mapM_ (printEm "show  ==>> " show 
+                 "magic ==>> " (optionS stringShow)) [None, Some "Hi", Some "There"]
+  mapM_ (printEm "show  ==>> " show 
+                 "magic ==>> " (optionS colourShow)) $ [None] ++ (map Some [Red, Blue, Green])
