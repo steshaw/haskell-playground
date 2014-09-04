@@ -108,6 +108,43 @@ showEnumA :: EnumA -> String
 showEnumA = gs enumAShow
 
 -----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+type EnumBE = Bool
+
+encodeEnumB :: EnumB -> EnumBE
+encodeEnumB B1 = False
+encodeEnumB B2 = True
+
+enumBEShow :: Show' EnumBE
+enumBEShow = boolShow
+
+enumBShow :: Show' EnumB
+enumBShow = Show' (\enumB -> (gs (enumBEShow)) (encodeEnumB enumB))
+
+showEnumB :: EnumB -> String
+showEnumB = gs enumBShow
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+type EnumCE = Either () Bool
+
+encodeEnumC :: EnumC -> EnumCE
+encodeEnumC C1 = Right False
+encodeEnumC C2 = Right True
+encodeEnumC C3 = Left ()
+
+enumCEShow :: Show' EnumCE
+enumCEShow = eitherShow unitShow boolShow
+
+enumCShow :: Show' EnumC
+enumCShow = Show' (\enumC -> (gs (enumCEShow)) (encodeEnumC enumC))
+
+showEnumC :: EnumC -> String
+showEnumC = gs enumCShow
+
+-----------------------------------------------------------------------
 
 -----------------------------------------------------------------------
 
@@ -123,11 +160,19 @@ printEm s1 f1 s2 f2 v = do
 
 main :: IO ()
 main = do
-  putStrLn "EnumA"
+  putStrLn "\nEnumA"
   mapM_ (printEm "show  ==>> " show 
                  "magic ==>> " showEnumA) [A]
 
-  putStrLn "Colours"
+  putStrLn "\nEnumB"
+  mapM_ (printEm "show  ==>> " show 
+                 "magic ==>> " showEnumB) [B1, B2]
+
+  putStrLn "\nEnumC"
+  mapM_ (printEm "show  ==>> " show 
+                 "magic ==>> " showEnumC) [C1, C2, C3]
+
+  putStrLn "\nColours"
   mapM_ (printEm "show  ==>> " show 
                  "magic ==>> " colourS) [Red, Blue, Green]
 
