@@ -5,6 +5,15 @@
 
 module Main where
 
+data EnumA = A
+  deriving (Show)
+
+data EnumB = B1 | B2
+  deriving (Show)
+
+data EnumC = C1 | C2 | C3
+  deriving (Show)
+
 data Colour = Red | Blue | Green
   deriving (Show)
 
@@ -63,6 +72,7 @@ colorEShow = eitherShow boolShow unitShow
 colourShow :: Show' Colour
 colourShow = Show' (\colour -> (gs colorEShow) (encodeColour colour))
 
+-----------------------------------------------------------------------
 type OptionE a = Either a ()
 
 encodeOption :: forall a. Option a -> OptionE a
@@ -79,12 +89,33 @@ colourS :: Colour -> String
 colourS = gs colourShow
 
 optionS :: Show' a -> (Option a -> String)
-optionS sa = (gs (optionShow sa))
+optionS sa = gs (optionShow sa)
+
+-----------------------------------------------------------------------
+
+type EnumAE = ()
+
+encodeEnumA :: EnumA -> EnumAE
+encodeEnumA = const ()
+
+enumAEShow :: Show' EnumAE
+enumAEShow = unitShow
+
+enumAShow :: Show' EnumA
+enumAShow = Show' (\enumA -> (gs (enumAEShow)) (encodeEnumA enumA))
+
+showEnumA :: EnumA -> String
+showEnumA = gs enumAShow
+
+-----------------------------------------------------------------------
+
+-----------------------------------------------------------------------
 
 --prettyColour = [(Red, "Red"), (Blue, "Blue"), (Green, "Green")]
 
 --newtype ZipperList a = Z [a] a [a]
 
+-----------------------------------------------------------------------
 
 printEm s1 f1 s2 f2 v = do
   putStrLn $ s1 ++ (f1 v)
@@ -92,6 +123,10 @@ printEm s1 f1 s2 f2 v = do
 
 main :: IO ()
 main = do
+  putStrLn "EnumA"
+  mapM_ (printEm "show  ==>> " show 
+                 "magic ==>> " showEnumA) [A]
+
   putStrLn "Colours"
   mapM_ (printEm "show  ==>> " show 
                  "magic ==>> " colourS) [Red, Blue, Green]
