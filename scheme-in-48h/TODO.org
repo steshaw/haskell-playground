@@ -1,2 +1,8 @@
 
+* Parsing
+
 - full numeric tower and number parsers.
+- backquote (quasiquote/unquote).
+- vectors.
+- left-factor grammar to remove `try`.
+
