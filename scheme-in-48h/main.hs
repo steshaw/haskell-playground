@@ -2,23 +2,45 @@ module Main where
 
 import Text.ParserCombinators.Parsec hiding (spaces)
 import System.Environment
-import Control.Monad (liftM)
+import Control.Applicative ((<**>))
+import Numeric
+import Data.Char
 
 data LispVal
   = Atom String
   | List [LispVal]
   | DottedList [LispVal] LispVal
   | Number Integer
+  | Float Float
+  | Char Char
   | String String
   | Bool Bool
   deriving (Show)
 
 dq = '"'
 
+caseInsensitiveChar :: Char -> Parser Char
+caseInsensitiveChar c = char (toLower c) <|> char (toUpper c)
+
+caseInsensitiveString :: String -> Parser String
+caseInsensitiveString s = try (mapM caseInsensitiveChar s) <?> show s
+
+parseChar :: Parser LispVal
+parseChar = try $ do
+  char '#'; char '\\'
+  named "space" ' '
+    <|> named "newline" '\n'
+    <|> otherChar
+  where
+    named :: String -> Char -> Parser LispVal
+    named s c = caseInsensitiveString s >> (return $ Char c)
+    otherChar :: Parser LispVal
+    otherChar = anyChar >>= \c -> (return $ Char c)
+
 parseString :: Parser LispVal
 parseString = do
   char dq
-  x <- many (noneOf [dq])
+  x <- many (noneOf [dq] <|> (char '\\' >> oneOf [dq, 'n', 'r', 't', '\\']))
   char dq
   return $ String x
 
@@ -32,14 +54,46 @@ parseAtom = do
     "#f" -> Bool False
     _    -> Atom atom
 
+radix :: Char -> String -> (String -> Integer) -> Parser Integer
+radix c validDigits convert = do
+  try $ do
+    char '#'
+    char c
+    ds <- many1 (oneOf validDigits)
+    return $ convert ds
+
+number :: Parser Integer
+number = do
+  ds <- many1 digit
+  return $ read ds
+
+float :: Parser Float
+float = try $ do
+  as <- many1 digit
+  char '.'
+  bs <- many1 digit
+  return $ read (as ++ "." ++ bs)
+
+extractNum [(num, "")] = num
+
+(===>) = flip fmap
+
 parseNumber :: Parser LispVal
-parseNumber = liftM (Number . read) $ many1 digit
+parseNumber = (
+      radix 'b' ['0'..'1'] error -- FIX
+  <|> radix 'o' ['0'..'7'] (extractNum . readOct)
+  <|> radix 'd' ['0'..'9'] (extractNum . readDec)
+  <|> radix 'x' (['0'..'9'] ++ ['A'..'F']) (extractNum . readHex)
+  <|> number
+  ) ===> Number
 
 parseExpr :: Parser LispVal
 parseExpr =
-      parseAtom
-  <|> parseString
+      (fmap Float float)
   <|> parseNumber
+  <|> parseChar
+  <|> parseString
+  <|> parseAtom
 
 symbol :: Parser Char
 symbol = oneOf "!#$%|*+-/:<=>?@^_~"
