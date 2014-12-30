@@ -87,6 +87,21 @@ parseNumber = (
   <|> number
   ) ===> Number
 
+parseList :: Parser LispVal
+parseList = fmap List $ sepBy parseExpr spaces
+
+parseDottedList :: Parser LispVal
+parseDottedList = do
+  head <- endBy parseExpr spaces
+  tail <- char '.' >> spaces >> parseExpr
+  return $ DottedList head tail
+
+parseQuoted :: Parser LispVal
+parseQuoted = do
+  char '\''
+  x <- parseExpr
+  return $ List [Atom "quote", x]
+
 parseExpr :: Parser LispVal
 parseExpr =
       (fmap Float float)
@@ -94,6 +109,11 @@ parseExpr =
   <|> parseChar
   <|> parseString
   <|> parseAtom
+  <|> parseQuoted
+  <|> do char '('
+         l <- try parseList <|> parseDottedList
+         char ')'
+         return l
 
 symbol :: Parser Char
 symbol = oneOf "!#$%|*+-/:<=>?@^_~"
