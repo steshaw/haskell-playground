@@ -11,6 +11,7 @@ import Control.Exception (
   AsyncException(..),
   catch, throw
   )
+import Control.Monad.Error
 import Data.List (foldl1')
 
 data Val
@@ -22,7 +23,42 @@ data Val
   | Char Char
   | String String
   | Boolean Bool
---  deriving (Show)
+
+instance Show Val where show = showVal
+
+data Err
+  = NumArgs Integer [Val]
+  | TypeMismatch String Val
+  | Parser ParseError
+  | BadSpecialForm String Val
+  | NotFunction String String
+  | UnboundVar String String
+  | Default String
+
+showErr :: Err -> String
+showErr (UnboundVar msg var) = msg ++ ": " ++ var
+showErr (BadSpecialForm msg form) = msg ++ ": " ++ show form
+showErr (NotFunction msg proc) = msg ++ ": " ++ show proc
+showErr (NumArgs expected found) = 
+  "Expected " ++ show expected ++ 
+  " args; found values " ++ unwordsList found
+showErr (TypeMismatch expected found) =
+  "Invalid type: expected " ++ expected ++ 
+  ", found " ++ show found
+showErr (Parser parseErr) = "Parse error at " ++ show parseErr
+
+instance Show Err where show = showErr
+
+instance Error Err where
+  noMsg = Default "An error has occurred"
+  strMsg = Default
+
+type ThrowsErr = Either Err
+
+trapError action = catchError action (return . show)
+
+extractValue :: ThrowsErr a -> a
+extractValue (Right v) = v
 
 dq :: Char
 dq = '"'
@@ -239,10 +275,13 @@ unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
 
 -- read+eval
-re :: String -> String
+re :: String -> ThrowsErr Val
 re input = case parse parseExpr "schemey" input of
-  Left err -> "No match: " ++ show err
-  Right val -> (showVal . eval) val
+  Left err -> throwError $ Parser err
+  Right val -> return $ eval val
+
+p (Left err) = putStrLn $ show err
+p (Right v)  = putStrLn $ show v
 
 -- read+eval+print
 rep :: IO Bool
@@ -255,7 +294,7 @@ rep = do
        expr <- getLine
        if null expr
           then return False
-          else putStrLn (re expr) >> return False
+          else p (re expr) >> return False
 
 -- read+eval+print+loop
 repl :: IO ()
@@ -274,5 +313,5 @@ main = do
   args <- getArgs
   case args of
     []     -> repl
-    [expr] -> putStrLn $ re expr
+    [expr] -> p $ re expr
     _      -> usage
