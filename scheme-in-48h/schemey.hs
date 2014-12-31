@@ -6,12 +6,10 @@ import Numeric
 import Data.Char (toUpper, toLower)
 import System.IO (isEOF, hFlush, stdout)
 import Control.Exception (
---  SomeException(..),
   AsyncException(..),
   catch, throw
   )
---import Control.Monad.Except
-import Control.Monad.Error
+import Control.Monad.Except
 import Data.List (foldl1')
 
 data Val
@@ -50,9 +48,9 @@ showErr (Default s) = "Error: " ++ s
 
 instance Show Err where show = showErr
 
-instance Error Err where
-  noMsg = Default "An error has occurred"
-  strMsg = Default
+-- instance Except Err where
+--  noMsg = Default "An error has occurred"
+--  strMsg = Default
 
 type ThrowsErr = Either Err
 
