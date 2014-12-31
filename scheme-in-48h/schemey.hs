@@ -174,7 +174,7 @@ showVal (Char c) = "#\\" ++ [c]
 showVal (Boolean True) = "#t"
 showVal (Boolean False) = "#f"
 showVal (List cs) = "(" ++ unwordsList cs ++ ")"
-showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ "." ++ showVal tl ++ ")"
+showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ " . " ++ showVal tl ++ ")"
 
 eval :: Val -> ThrowError Val
 eval val@(String _)               = return val
@@ -233,6 +233,7 @@ primitives =
   ,("string<=?", strBoolBinOp (<=))
   ,("string>=?", strBoolBinOp (>=))
   ,("car", f1e car)
+  ,("cdr", f1e cdr)
   ]
 
 type PrimF = [Val] -> ThrowError Val
@@ -328,6 +329,12 @@ car :: Val -> ThrowError Val
 car (List (x:_))         = return x
 car (DottedList (x:_) _) = return x
 car v                    = throwError $ TypeMismatch "pair" v
+
+cdr :: Val -> ThrowError Val
+cdr (List (_:xs))         = return $ List xs
+cdr (DottedList [_] x)    = return x
+cdr (DottedList (_:xs) x) = return $ DottedList xs x
+cdr v                     = throwError $ TypeMismatch "pair" v
 
 unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
