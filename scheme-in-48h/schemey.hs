@@ -4,13 +4,13 @@ import Text.ParserCombinators.Parsec hiding (spaces)
 import System.Environment
 import Numeric
 import Data.Char (toUpper, toLower)
-import Control.Monad (forever)
 import System.IO (isEOF, hFlush, stdout)
 import Control.Exception (
-  SomeException(..),
+--  SomeException(..),
   AsyncException(..),
   catch, throw
   )
+--import Control.Monad.Except
 import Control.Monad.Error
 import Data.List (foldl1')
 
@@ -46,6 +46,7 @@ showErr (TypeMismatch expected found) =
   "Invalid type: expected " ++ expected ++ 
   ", found " ++ show found
 showErr (Parser parseErr) = "Parse error at " ++ show parseErr
+showErr (Default s) = "Error: " ++ s
 
 instance Show Err where show = showErr
 
@@ -55,10 +56,12 @@ instance Error Err where
 
 type ThrowsErr = Either Err
 
+trapError :: (MonadError e m, Show e) => m String -> m String
 trapError action = catchError action (return . show)
 
 extractValue :: ThrowsErr a -> a
 extractValue (Right v) = v
+extractValue _         = error "should be unreachable"
 
 dq :: Char
 dq = '"'
@@ -71,7 +74,7 @@ caseInsensitiveString s = try (mapM caseInsensitiveChar s) <?> show s
 
 parseChar :: Parser Val
 parseChar = try $ do
-  char '#'; char '\\'
+  _ <- char '#' >> char '\\'
   named "space" ' '
     <|> named "newline" '\n'
     <|> otherChar
@@ -83,9 +86,9 @@ parseChar = try $ do
 
 parseString :: Parser Val
 parseString = do
-  char dq
+  _ <- char dq
   x <- many (noneOf [dq] <|> (char '\\' >> oneOf [dq, 'n', 'r', 't', '\\']))
-  char dq
+  _ <- char dq
   return $ String x
 
 parseSymbol :: Parser Val
@@ -101,8 +104,7 @@ parseSymbol = do
 radix :: Char -> String -> (String -> Integer) -> Parser Integer
 radix c validDigits convert = do
   try $ do
-    char '#'
-    char c
+    _ <- char '#' >> char c
     ds <- many1 (oneOf validDigits)
     return $ convert ds
 
@@ -114,13 +116,13 @@ number = do
 float :: Parser Float
 float = try $ do
   as <- many1 digit
-  char '.'
+  _ <- char '.'
   bs <- many1 digit
   return $ read (as ++ "." ++ bs)
 
+extractNum :: [(t, [Char])] -> t
 extractNum [(num, "")] = num
-
-(===>) = flip fmap
+extractNum _           = error "invalid number"
 
 parseNumber :: Parser Val
 parseNumber = (
@@ -130,19 +132,21 @@ parseNumber = (
   <|> radix 'x' (['0'..'9'] ++ ['A'..'F']) (extractNum . readHex)
   <|> number
   ) ===> Number
+    where
+      (===>) = flip fmap
 
 parseList :: Parser Val
 parseList = fmap List $ sepBy parseExpr spaces
 
 parseDottedList :: Parser Val
 parseDottedList = do
-  head <- endBy parseExpr spaces
-  tail <- char '.' >> spaces >> parseExpr
-  return $ DottedList head tail
+  hd <- endBy parseExpr spaces
+  tl <- char '.' >> spaces >> parseExpr
+  return $ DottedList hd tl
 
 parseQuoted :: Parser Val
 parseQuoted = do
-  char '\''
+  _ <- char '\''
   x <- parseExpr
   return $ List [Symbol "quote", x]
 
@@ -154,9 +158,9 @@ parseExpr =
   <|> parseString
   <|> parseSymbol
   <|> parseQuoted
-  <|> do char '('
+  <|> do _ <- char '('
          l <- try parseList <|> parseDottedList
-         char ')'
+         _ <- char ')'
          return l
 
 symbol :: Parser Char
@@ -187,6 +191,8 @@ eval val@(Boolean _) = val
 eval val@(Symbol _) = val
 eval (List [Symbol "quote", val]) = val
 eval (List (Symbol f : args)) = apply f $ map eval args
+eval (List _) = Boolean False -- FIX: error handling
+eval (DottedList _ _) = error "Implement eval on DottedList" -- FIX
 
 apply :: String -> [Val] -> Val
 apply f args = 
@@ -219,16 +225,17 @@ type Predicate = Val -> Bool
 
 f1 :: (Val -> Val) -> PrimF
 f1 f [obj] = f obj
+f1 _ _     = error "error handling for f1" -- FIX
 
 predicate :: Predicate -> PrimF
-predicate p [obj] = Boolean $ p obj
+predicate p = f1 (Boolean . p)
 
 isSymbol :: Predicate
-isSymbol (Symbol a) = True
+isSymbol (Symbol _) = True
 isSymbol _        = False
 
 isString :: Predicate
-isString (String a) = True
+isString (String _) = True
 isString _          = False
 
 -- FIX: Must inspect structure of list, ending with '().
@@ -243,6 +250,7 @@ isBoolean _           = False
 
 isNumber :: Predicate
 isNumber (Number _)  = True
+isNumber _           = False
 
 isReal :: Predicate
 isReal (Float _)   = True
@@ -275,33 +283,35 @@ unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
 
 -- read+eval
-re :: String -> ThrowsErr Val
-re input = case parse parseExpr "schemey" input of
+r_e :: String -> ThrowsErr Val
+r_e input = case parse parseExpr "schemey" input of
   Left err -> throwError $ Parser err
   Right val -> return $ eval val
 
-p (Left err) = putStrLn $ show err
-p (Right v)  = putStrLn $ show v
+prVal :: (Show a1, Show a) => Either a a1 -> IO ()
+prVal (Left err) = putStrLn $ show err
+prVal (Right v)  = putStrLn $ show v
 
 -- read+eval+print
-rep :: IO Bool
-rep = do
+r_e_p :: IO Bool
+r_e_p = do
   putStr "schemey> " >> hFlush stdout
-  eof <- isEOF
-  if eof
+  end <- isEOF
+  if end
      then putStrLn "" >> return True
      else do
        expr <- getLine
        if null expr
           then return False
-          else p (re expr) >> return False
+          else prVal (r_e expr) >> return False
 
 -- read+eval+print+loop
 repl :: IO ()
 repl = do
-  quit <- rep `catch` onUserInterrupt
+  quit <- r_e_p `catch` onUserInterrupt
   if quit then return () else repl
 
+onUserInterrupt :: AsyncException -> IO Bool
 onUserInterrupt UserInterrupt = putStrLn "\nquitting..." >> return True
 onUserInterrupt e = throw e
 
@@ -313,5 +323,5 @@ main = do
   args <- getArgs
   case args of
     []     -> repl
-    [expr] -> p $ re expr
+    [expr] -> prVal $ r_e expr
     _      -> usage
