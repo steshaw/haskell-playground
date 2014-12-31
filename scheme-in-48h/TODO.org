@@ -11,3 +11,7 @@ Evaluation
 - correct symbol handling 
   - by lowercasing
   - disallow mutations to symbols converted to strings
+
+Other
+
+- switch to the typical pair formulation for lists (remove List/DottedList)

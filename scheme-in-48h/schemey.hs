@@ -170,7 +170,7 @@ showVal (Number n) = show n
 showVal (Float f) = show f
 showVal (Char ' ') = "#\\space"
 showVal (Char '\n') = "#\\newline"
-showVal (Char c) = "#" ++ [c]
+showVal (Char c) = "#\\" ++ [c]
 showVal (Boolean True) = "#t"
 showVal (Boolean False) = "#f"
 showVal (List cs) = "(" ++ unwordsList cs ++ ")"
@@ -232,6 +232,7 @@ primitives =
   ,("string>?", strBoolBinOp (>))
   ,("string<=?", strBoolBinOp (<=))
   ,("string>=?", strBoolBinOp (>=))
+  ,("car", f1e car)
   ]
 
 type PrimF = [Val] -> ThrowError Val
@@ -322,6 +323,11 @@ symbolToString v        = throwError $ TypeMismatch "symbol" v
 stringToSymbol :: Val -> ThrowError Val
 stringToSymbol (String s) = return $ Symbol s
 stringToSymbol v          = throwError $ TypeMismatch "string" v
+
+car :: Val -> ThrowError Val
+car (List (x:_))         = return x
+car (DottedList (x:_) _) = return x
+car v                    = throwError $ TypeMismatch "pair" v
 
 unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
