@@ -183,6 +183,11 @@ eval val@(Float _)                = return val
 eval val@(Char _)                 = return val
 eval val@(Boolean _)              = return val
 eval val@(Symbol _)               = return val
+eval (List [Symbol "if", t, whenTrue, whenFalse]) = do
+  result <- eval t
+  case result of
+    Boolean True -> eval whenTrue
+    _            -> eval whenFalse
 eval (List [Symbol "quote", val]) = return val
 eval (List (Symbol f : args))     = mapM eval args >>= apply f
 -- TODO: eval DottedList
