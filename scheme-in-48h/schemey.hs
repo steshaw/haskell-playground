@@ -48,12 +48,12 @@ showErr (Default s) = "Error: " ++ s
 
 instance Show Err where show = showErr
 
-type ThrowsErr = Either Err
+type ThrowError = Either Err
 
 trapError :: (MonadError e m, Show e) => m String -> m String
 trapError action = catchError action (return . show)
 
-extractValue :: ThrowsErr a -> a
+extractValue :: ThrowError a -> a
 extractValue (Right v) = v
 extractValue _         = error "should be unreachable"
 
@@ -158,7 +158,7 @@ parseExpr =
          return l
 
 symbol :: Parser Char
-symbol = oneOf "!#$%|*+-/:<=>?@^_~"
+symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
 
 spaces :: Parser ()
 spaces = skipMany1 space
@@ -176,7 +176,7 @@ showVal (Boolean False) = "#f"
 showVal (List cs) = "(" ++ unwordsList cs ++ ")"
 showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ "." ++ showVal tl ++ ")"
 
-eval :: Val -> ThrowsErr Val
+eval :: Val -> ThrowError Val
 eval val@(String _)               = return val
 eval val@(Number _)               = return val
 eval val@(Float _)                = return val
@@ -189,13 +189,13 @@ eval (List (Symbol f : args))     = mapM eval args >>= apply f
 --eval (DottedList _ _) = error "Implement eval on DottedList" -- FIX
 eval badForm = throwError $ BadSpecialForm "Unrecognised special form" badForm
 
-apply :: String -> [Val] -> ThrowsErr Val
+apply :: String -> [Val] -> ThrowError Val
 apply f args =
   maybe e ($ args) $ lookup f primitives
   where
     e = throwError $ NotFunction "Unrecognised primitive" f
 
-primitives :: [(String, [Val] -> ThrowsErr Val)]
+primitives :: [(String, [Val] -> ThrowError Val)]
 primitives =
   [("+", numericBinop (+))
   ,("-", numericBinop (-))
@@ -214,13 +214,26 @@ primitives =
   ,("null?", predicate isNull)
   ,("symbol->string", f1e symbolToString)
   ,("string->symbol", f1e stringToSymbol)
+  ,("=", numBoolBinOp (==))
+  ,("<", numBoolBinOp (<))
+  ,(">", numBoolBinOp (>))
+  ,("/=", numBoolBinOp (/=))
+  ,(">=", numBoolBinOp (>=))
+  ,("<=", numBoolBinOp (<=))
+  ,("&&", boolBoolBinOp (&&))
+  ,("||", boolBoolBinOp (||))
+  ,("string=?", strBoolBinOp (==))
+  ,("string<?", strBoolBinOp (<))
+  ,("string>?", strBoolBinOp (>))
+  ,("string<=?", strBoolBinOp (<=))
+  ,("string>=?", strBoolBinOp (>=))
   ]
 
-type PrimF = [Val] -> ThrowsErr Val
+type PrimF = [Val] -> ThrowError Val
 
 type Predicate = Val -> Bool
 
-f1e :: (Val -> ThrowsErr Val) -> PrimF
+f1e :: (Val -> ThrowError Val) -> PrimF
 f1e f [obj] = f obj
 f1e _ args  = throwError $ NumArgs 1 args
 
@@ -265,19 +278,43 @@ isNull :: Predicate
 isNull (List []) = True
 isNull _         = False
 
+boolBinOp :: (Val -> ThrowError a) -> (a -> a -> Bool) -> PrimF
+boolBinOp unpacker op [l, r] = do
+  left  <- unpacker l
+  right <- unpacker r
+  return $ Boolean $ left `op` right
+boolBinOp _ _ args = throwError $ NumArgs 2 args
+
+numBoolBinOp :: (Integer -> Integer -> Bool) -> PrimF
+numBoolBinOp = boolBinOp unpackNum
+
+strBoolBinOp :: (String -> String -> Bool) -> PrimF
+strBoolBinOp = boolBinOp unpackStr
+
+boolBoolBinOp :: (Bool -> Bool -> Bool) -> PrimF
+boolBoolBinOp = boolBinOp unpackBool
+
 numericBinop :: (Integer -> Integer -> Integer) -> PrimF
 numericBinop _ args@[] = throwError $ NumArgs 1 args
 numericBinop op args = mapM unpackNum args >>= return . Number . foldl1' op
 
-unpackNum :: Val -> ThrowsErr Integer
+unpackNum :: Val -> ThrowError Integer
 unpackNum (Number n) = return n
 unpackNum v          = throwError $ TypeMismatch "number" v
 
-symbolToString :: Val -> ThrowsErr Val
+unpackStr :: Val -> ThrowError String
+unpackStr (String s) = return s
+unpackStr v          = throwError $ TypeMismatch "string" v
+
+unpackBool :: Val -> ThrowError Bool
+unpackBool (Boolean b) = return b
+unpackBool v          = throwError $ TypeMismatch "boolean" v
+
+symbolToString :: Val -> ThrowError Val
 symbolToString (Symbol a) = return $ String a
 symbolToString v        = throwError $ TypeMismatch "symbol" v
 
-stringToSymbol :: Val -> ThrowsErr Val
+stringToSymbol :: Val -> ThrowError Val
 stringToSymbol (String s) = return $ Symbol s
 stringToSymbol v          = throwError $ TypeMismatch "string" v
 
@@ -285,7 +322,7 @@ unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
 
 -- read+eval
-r_e :: String -> ThrowsErr Val
+r_e :: String -> ThrowError Val
 r_e input = case parse parseExpr "schemey" input of
   Left err -> throwError $ Parser err
   Right val -> eval val
