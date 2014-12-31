@@ -3,7 +3,7 @@ module Main where
 import Text.ParserCombinators.Parsec hiding (spaces)
 import System.Environment
 import Numeric
-import Data.Char
+import Data.Char (toUpper, toLower)
 import Control.Monad (forever)
 import System.IO (isEOF, hFlush, stdout)
 import Control.Exception (
@@ -14,14 +14,14 @@ import Control.Exception (
 import Data.List (foldl1')
 
 data LispVal
-  = Atom String
+  = Atom String -- XXX: Should this be Symbol?
   | List [LispVal]
   | DottedList [LispVal] LispVal
   | Number Integer
   | Float Float
   | Char Char
   | String String
-  | Bool Bool
+  | Boolean Bool
 --  deriving (Show)
 
 dq :: Char
@@ -58,8 +58,8 @@ parseAtom = do
   rest <- many (letter <|> digit <|> symbol)
   let atom = first:rest
   return $ case atom of
-    "#t" -> Bool True
-    "#f" -> Bool False
+    "#t" -> Boolean True
+    "#f" -> Boolean False
     _    -> Atom atom
 
 radix :: Char -> String -> (String -> Integer) -> Parser Integer
@@ -137,8 +137,8 @@ showVal (Float f) = show f
 showVal (Char ' ') = "#\\space"
 showVal (Char '\n') = "#\\newline"
 showVal (Char c) = "#" ++ [c]
-showVal (Bool True) = "#t"
-showVal (Bool False) = "#f"
+showVal (Boolean True) = "#t"
+showVal (Boolean False) = "#f"
 showVal (List cs) = "(" ++ unwordsList cs ++ ")"
 showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ "." ++ showVal tl ++ ")"
 
@@ -147,13 +147,14 @@ eval val@(String _) = val
 eval val@(Number _) = val
 eval val@(Float _) = val
 eval val@(Char _) = val
-eval val@(Bool _) = val
+eval val@(Boolean _) = val
+eval val@(Atom _) = val
 eval (List [Atom "quote", val]) = val
 eval (List (Atom f : args)) = apply f $ map eval args
 
 apply :: String -> [LispVal] -> LispVal
 apply f args = 
-  maybe (Bool False) ($ args) $ lookup f primitives -- TODO: error-handling
+  maybe (Boolean False) ($ args) $ lookup f primitives -- TODO: error-handling
 
 primitives :: [(String, [LispVal] -> LispVal)]
 primitives =
@@ -164,9 +165,57 @@ primitives =
   ,("mod", numericBinop mod)
   ,("quotient", numericBinop quot)
   ,("remainder", numericBinop rem)
+  ,("symbol?", predicate isSymbol)
+  ,("string?", predicate isString)
+  ,("list?", predicate isList)
+  ,("boolean?", predicate isBoolean)
+  ,("number?", predicate isNumber)
+  ,("real?", predicate isReal)
+  ,("char?", predicate isChar)
+  ,("null?", predicate isNull)
   ]
 
-numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> LispVal
+type PrimF = [LispVal] -> LispVal
+
+type Predicate = LispVal -> Bool
+
+predicate :: Predicate -> PrimF
+predicate p [obj] = Boolean $ p obj
+
+isSymbol :: Predicate
+isSymbol (Atom a) = True
+isSymbol _        = False
+
+isString :: Predicate
+isString (String a) = True
+isString _          = False
+
+-- FIX: Must inspect structure of list, ending with '().
+isList :: Predicate
+isList (List _)         = True
+--isList (DottedList _ _) = True
+isList _                = False
+
+isBoolean :: Predicate
+isBoolean (Boolean _) = True
+isBoolean _           = False
+
+isNumber :: Predicate
+isNumber (Number _)  = True
+
+isReal :: Predicate
+isReal (Float _)   = True
+isReal _           = False
+
+isChar :: Predicate
+isChar (Char _)   = True
+isChar _          = False
+
+isNull :: Predicate
+isNull (List []) = True
+isNull _         = False
+
+numericBinop :: (Integer -> Integer -> Integer) -> PrimF
 numericBinop op params = Number $ foldl1' op $ map unpackNum params
 
 unpackNum :: LispVal -> Integer
@@ -176,11 +225,13 @@ unpackNum _          = 0 -- FIX
 unwordsList :: [LispVal] -> String
 unwordsList = unwords . map showVal
 
+-- read+eval
 re :: String -> String
 re input = case parse parseExpr "schemey" input of
   Left err -> "No match: " ++ show err
-  Right val -> "Ok: " ++ ((showVal . eval) val)
+  Right val -> (showVal . eval) val
 
+-- read+eval+print
 rep :: IO Bool
 rep = do
   putStr "schemey> " >> hFlush stdout
@@ -193,6 +244,7 @@ rep = do
           then return False
           else putStrLn (re expr) >> return False
 
+-- read+eval+print+loop
 repl :: IO ()
 repl = do
   quit <- rep `catch` onUserInterrupt
