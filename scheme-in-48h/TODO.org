@@ -6,12 +6,19 @@
 - vectors.
 - left-factor grammar to remove `try`.
 
-Evaluation
+
+* Evaluation
 
 - correct symbol handling 
   - by lowercasing
   - disallow mutations to symbols converted to strings
 
-Other
+
+* Evaluation, Part 2
+
+- Implement cond and case
+
+
+* Other
 
 - switch to the typical pair formulation for lists (remove List/DottedList)

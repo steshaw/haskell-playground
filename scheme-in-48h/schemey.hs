@@ -10,7 +10,7 @@ import Control.Exception (
   catch, throw
   )
 import Control.Monad.Except
-import Data.List (foldl1')
+import Data.List (foldl1', genericLength)
 
 data Val
   = Symbol String
@@ -210,7 +210,6 @@ primitives =
   ,("quotient", numericBinop quot)
   ,("remainder", numericBinop rem)
   ,("symbol?", predicate isSymbol)
-  ,("string?", predicate isString)
   ,("list?", predicate isList)
   ,("boolean?", predicate isBoolean)
   ,("number?", predicate isNumber)
@@ -227,11 +226,15 @@ primitives =
   ,("<=", numBoolBinOp (<=))
   ,("&&", boolBoolBinOp (&&))
   ,("||", boolBoolBinOp (||))
+
+  ,("string?", predicate isString)
   ,("string=?", strBoolBinOp (==))
   ,("string<?", strBoolBinOp (<))
   ,("string>?", strBoolBinOp (>))
   ,("string<=?", strBoolBinOp (<=))
   ,("string>=?", strBoolBinOp (>=))
+  ,("string-ref", stringRef)
+
   ,("car", f1e car)
   ,("cdr", f1e cdr)
   ,("cons", f2e cons)
@@ -274,7 +277,6 @@ isString _          = False
 -- FIX: Must inspect structure of list, ending with '().
 isList :: Predicate
 isList (List _)         = True
---isList (DottedList _ _) = True
 isList _                = False
 
 isBoolean :: Predicate
@@ -353,6 +355,14 @@ cons x (List []) = return $ List [x]
 cons x (List xs) = return $ List $ x : xs
 cons x (DottedList xs l) = return $ DottedList (x : xs) l
 cons a b = return $ DottedList [a] b
+
+stringRef :: PrimF
+stringRef [(String s), (Number n)] = if n < 0 || n >= (genericLength s)
+                                        then throwError $ Default $ "string-ref: Index out of bounds, " ++ (show n) ++
+                                                                    " (length " ++ show (length s) ++ ")"
+                                        else return $ Char $ s !! (fromInteger n)
+stringRef args@[_, _]              = throwError $ Default $ "string-ref expects a string and an integer, got" ++ show args
+stringRef args                     = throwError $ NumArgs 2 args
 
 boolErr2False :: ThrowError Val -> Bool
 boolErr2False (Left _)            = False -- XXX: Pretty sure this can never happen.
