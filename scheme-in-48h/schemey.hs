@@ -14,7 +14,7 @@ import Control.Exception (
 import Data.List (foldl1')
 
 data LispVal
-  = Atom String -- XXX: Should this be Symbol?
+  = Symbol String
   | List [LispVal]
   | DottedList [LispVal] LispVal
   | Number Integer
@@ -52,15 +52,15 @@ parseString = do
   char dq
   return $ String x
 
-parseAtom :: Parser LispVal
-parseAtom = do
+parseSymbol :: Parser LispVal
+parseSymbol = do
   first <- letter <|> symbol
   rest <- many (letter <|> digit <|> symbol)
-  let atom = first:rest
-  return $ case atom of
+  let s = first:rest
+  return $ case s of
     "#t" -> Boolean True
     "#f" -> Boolean False
-    _    -> Atom atom
+    _    -> Symbol s
 
 radix :: Char -> String -> (String -> Integer) -> Parser Integer
 radix c validDigits convert = do
@@ -108,7 +108,7 @@ parseQuoted :: Parser LispVal
 parseQuoted = do
   char '\''
   x <- parseExpr
-  return $ List [Atom "quote", x]
+  return $ List [Symbol "quote", x]
 
 parseExpr :: Parser LispVal
 parseExpr =
@@ -116,7 +116,7 @@ parseExpr =
   <|> parseNumber
   <|> parseChar
   <|> parseString
-  <|> parseAtom
+  <|> parseSymbol
   <|> parseQuoted
   <|> do char '('
          l <- try parseList <|> parseDottedList
@@ -131,7 +131,7 @@ spaces = skipMany1 space
 
 showVal :: LispVal -> String
 showVal (String s) = show s --"\"" ++ contents ++ "\""
-showVal (Atom name) = name
+showVal (Symbol name) = name
 showVal (Number n) = show n
 showVal (Float f) = show f
 showVal (Char ' ') = "#\\space"
@@ -148,9 +148,9 @@ eval val@(Number _) = val
 eval val@(Float _) = val
 eval val@(Char _) = val
 eval val@(Boolean _) = val
-eval val@(Atom _) = val
-eval (List [Atom "quote", val]) = val
-eval (List (Atom f : args)) = apply f $ map eval args
+eval val@(Symbol _) = val
+eval (List [Symbol "quote", val]) = val
+eval (List (Symbol f : args)) = apply f $ map eval args
 
 apply :: String -> [LispVal] -> LispVal
 apply f args = 
@@ -173,17 +173,22 @@ primitives =
   ,("real?", predicate isReal)
   ,("char?", predicate isChar)
   ,("null?", predicate isNull)
+  ,("symbol->string", f1 symbolToString)
+  ,("string->symbol", f1 stringToSymbol)
   ]
 
 type PrimF = [LispVal] -> LispVal
 
 type Predicate = LispVal -> Bool
 
+f1 :: (LispVal -> LispVal) -> PrimF
+f1 f [obj] = f obj
+
 predicate :: Predicate -> PrimF
 predicate p [obj] = Boolean $ p obj
 
 isSymbol :: Predicate
-isSymbol (Atom a) = True
+isSymbol (Symbol a) = True
 isSymbol _        = False
 
 isString :: Predicate
@@ -221,6 +226,14 @@ numericBinop op params = Number $ foldl1' op $ map unpackNum params
 unpackNum :: LispVal -> Integer
 unpackNum (Number n) = n
 unpackNum _          = 0 -- FIX
+
+symbolToString :: LispVal -> LispVal
+symbolToString (Symbol a) = String a
+symbolToString _        = Boolean False -- FIX: raise exception
+
+stringToSymbol :: LispVal -> LispVal
+stringToSymbol (String s) = Symbol s
+stringToSymbol _          = Boolean False -- FIX: raise exception
 
 unwordsList :: [LispVal] -> String
 unwordsList = unwords . map showVal

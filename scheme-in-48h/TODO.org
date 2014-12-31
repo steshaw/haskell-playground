@@ -6,3 +6,8 @@
 - vectors.
 - left-factor grammar to remove `try`.
 
+Evaluation
+
+- correct symbol handling 
+  - by lowercasing
+  - disallow mutations to symbols converted to strings
