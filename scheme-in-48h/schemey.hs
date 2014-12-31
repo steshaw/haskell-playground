@@ -188,17 +188,19 @@ eval val@(Char _)                 = return val
 eval val@(Boolean _)              = return val
 eval val@(Symbol _)               = return val
 eval (List [Symbol "quote", val]) = return val
-eval (List (Symbol f : args))     = mapM eval args >>= \as -> return $ apply f as
+eval (List (Symbol f : args))     = mapM eval args >>= \as -> apply f as
 --eval (List _) = Boolean False -- FIX: error handling
 -- TODO: eval DottedList
 --eval (DottedList _ _) = error "Implement eval on DottedList" -- FIX
 eval badForm = throwError $ BadSpecialForm "Unrecognised special form" badForm
 
-apply :: String -> [Val] -> Val
-apply f args = 
-  maybe (Boolean False) ($ args) $ lookup f primitives -- TODO: error-handling
+apply :: String -> [Val] -> ThrowsErr Val
+apply f args =
+  maybe e ($ args) $ lookup f primitives
+  where
+    e = throwError $ Default $ "Primitive not found: " ++ f
 
-primitives :: [(String, [Val] -> Val)]
+primitives :: [(String, [Val] -> ThrowsErr Val)]
 primitives =
   [("+", numericBinop (+))
   ,("-", numericBinop (-))
@@ -219,13 +221,13 @@ primitives =
   ,("string->symbol", f1 stringToSymbol)
   ]
 
-type PrimF = [Val] -> Val
+type PrimF = [Val] -> ThrowsErr Val
 
 type Predicate = Val -> Bool
 
 f1 :: (Val -> Val) -> PrimF
-f1 f [obj] = f obj
-f1 _ _     = error "error handling for f1" -- FIX
+f1 f [obj] = return $ f obj
+f1 _ args  = throwError $  NumArgs 1 args
 
 predicate :: Predicate -> PrimF
 predicate p = f1 (Boolean . p)
@@ -264,8 +266,10 @@ isNull :: Predicate
 isNull (List []) = True
 isNull _         = False
 
+-- TODO: handle error for zero args.
 numericBinop :: (Integer -> Integer -> Integer) -> PrimF
-numericBinop op params = Number $ foldl1' op $ map unpackNum params
+numericBinop op args@[] = throwError $ NumArgs 1 args
+numericBinop op args = return $ Number $ foldl1' op $ map unpackNum args
 
 unpackNum :: Val -> Integer
 unpackNum (Number n) = n
