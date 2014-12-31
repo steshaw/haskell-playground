@@ -198,7 +198,7 @@ apply :: String -> [Val] -> ThrowsErr Val
 apply f args =
   maybe e ($ args) $ lookup f primitives
   where
-    e = throwError $ Default $ "Primitive not found: " ++ f
+    e = throwError $ NotFunction $ "Unrecognised primitive" f
 
 primitives :: [(String, [Val] -> ThrowsErr Val)]
 primitives =
