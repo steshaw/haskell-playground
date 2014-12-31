@@ -2,9 +2,15 @@ module Main where
 
 import Text.ParserCombinators.Parsec hiding (spaces)
 import System.Environment
-import Control.Applicative ((<**>))
 import Numeric
 import Data.Char
+import Control.Monad (forever)
+import System.IO (isEOF, hFlush, stdout)
+import Control.Exception (
+  SomeException(..),
+  AsyncException(..),
+  catch, throw
+  )
 
 data LispVal
   = Atom String
@@ -143,9 +149,33 @@ readExpr input = case parse parseExpr "schemey" input of
   Left err -> "No match: " ++ show err
   Right val -> "Ok: " ++ showVal val
 
+rep :: IO Bool
+rep = do
+  putStr "schemey> " >> hFlush stdout
+  eof <- isEOF
+  if eof
+     then putStrLn "" >> return True
+     else do
+       expr <- getLine
+       if null expr
+          then return False
+          else putStrLn (readExpr expr) >> return False
+
+repl :: IO ()
+repl = do
+  quit <- rep `catch` onUserInterrupt
+  if quit then return () else repl
+
+onUserInterrupt UserInterrupt = putStrLn "\nquitting..." >> return True
+onUserInterrupt e = throw e
+
+usage :: IO ()
+usage = putStrLn $ "usage: schemey [scheme-expression]"
+
 main :: IO ()
 main = do
   args <- getArgs
   case args of
+    []     -> repl
     [expr] -> putStrLn $ readExpr expr
-    _ -> putStrLn $ "usage: schemey scheme-expression"
+    _      -> usage
