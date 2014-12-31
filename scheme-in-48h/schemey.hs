@@ -21,7 +21,7 @@ data LispVal
   | Char Char
   | String String
   | Bool Bool
-  deriving (Show)
+--  deriving (Show)
 
 dq :: Char
 dq = '"'
@@ -141,13 +141,21 @@ showVal (Bool False) = "#f"
 showVal (List cs) = "(" ++ unwordsList cs ++ ")"
 showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ "." ++ showVal tl ++ ")"
 
+eval :: LispVal -> LispVal
+eval val@(String _) = val
+eval val@(Number _) = val
+eval val@(Float _) = val
+eval val@(Char _) = val
+eval val@(Bool _) = val
+eval (List [Atom "quote", val]) = val
+
 unwordsList :: [LispVal] -> String
 unwordsList = unwords . map showVal
 
-readExpr :: String -> String
-readExpr input = case parse parseExpr "schemey" input of
+re :: String -> String
+re input = case parse parseExpr "schemey" input of
   Left err -> "No match: " ++ show err
-  Right val -> "Ok: " ++ showVal val
+  Right val -> "Ok: " ++ ((showVal . eval) val)
 
 rep :: IO Bool
 rep = do
@@ -159,7 +167,7 @@ rep = do
        expr <- getLine
        if null expr
           then return False
-          else putStrLn (readExpr expr) >> return False
+          else putStrLn (re expr) >> return False
 
 repl :: IO ()
 repl = do
@@ -177,5 +185,5 @@ main = do
   args <- getArgs
   case args of
     []     -> repl
-    [expr] -> putStrLn $ readExpr expr
+    [expr] -> putStrLn $ re expr
     _      -> usage
