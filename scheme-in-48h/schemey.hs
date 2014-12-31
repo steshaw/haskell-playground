@@ -13,10 +13,10 @@ import Control.Exception (
   )
 import Data.List (foldl1')
 
-data LispVal
+data Val
   = Symbol String
-  | List [LispVal]
-  | DottedList [LispVal] LispVal
+  | List [Val]
+  | DottedList [Val] Val
   | Number Integer
   | Float Float
   | Char Char
@@ -33,26 +33,26 @@ caseInsensitiveChar c = char (toLower c) <|> char (toUpper c)
 caseInsensitiveString :: String -> Parser String
 caseInsensitiveString s = try (mapM caseInsensitiveChar s) <?> show s
 
-parseChar :: Parser LispVal
+parseChar :: Parser Val
 parseChar = try $ do
   char '#'; char '\\'
   named "space" ' '
     <|> named "newline" '\n'
     <|> otherChar
   where
-    named :: String -> Char -> Parser LispVal
+    named :: String -> Char -> Parser Val
     named s c = caseInsensitiveString s >> (return $ Char c)
-    otherChar :: Parser LispVal
+    otherChar :: Parser Val
     otherChar = anyChar >>= \c -> (return $ Char c)
 
-parseString :: Parser LispVal
+parseString :: Parser Val
 parseString = do
   char dq
   x <- many (noneOf [dq] <|> (char '\\' >> oneOf [dq, 'n', 'r', 't', '\\']))
   char dq
   return $ String x
 
-parseSymbol :: Parser LispVal
+parseSymbol :: Parser Val
 parseSymbol = do
   first <- letter <|> symbol
   rest <- many (letter <|> digit <|> symbol)
@@ -86,7 +86,7 @@ extractNum [(num, "")] = num
 
 (===>) = flip fmap
 
-parseNumber :: Parser LispVal
+parseNumber :: Parser Val
 parseNumber = (
       radix 'b' ['0'..'1'] error -- FIX
   <|> radix 'o' ['0'..'7'] (extractNum . readOct)
@@ -95,22 +95,22 @@ parseNumber = (
   <|> number
   ) ===> Number
 
-parseList :: Parser LispVal
+parseList :: Parser Val
 parseList = fmap List $ sepBy parseExpr spaces
 
-parseDottedList :: Parser LispVal
+parseDottedList :: Parser Val
 parseDottedList = do
   head <- endBy parseExpr spaces
   tail <- char '.' >> spaces >> parseExpr
   return $ DottedList head tail
 
-parseQuoted :: Parser LispVal
+parseQuoted :: Parser Val
 parseQuoted = do
   char '\''
   x <- parseExpr
   return $ List [Symbol "quote", x]
 
-parseExpr :: Parser LispVal
+parseExpr :: Parser Val
 parseExpr =
       (fmap Float float)
   <|> parseNumber
@@ -129,7 +129,7 @@ symbol = oneOf "!#$%|*+-/:<=>?@^_~"
 spaces :: Parser ()
 spaces = skipMany1 space
 
-showVal :: LispVal -> String
+showVal :: Val -> String
 showVal (String s) = show s --"\"" ++ contents ++ "\""
 showVal (Symbol name) = name
 showVal (Number n) = show n
@@ -142,7 +142,7 @@ showVal (Boolean False) = "#f"
 showVal (List cs) = "(" ++ unwordsList cs ++ ")"
 showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ "." ++ showVal tl ++ ")"
 
-eval :: LispVal -> LispVal
+eval :: Val -> Val
 eval val@(String _) = val
 eval val@(Number _) = val
 eval val@(Float _) = val
@@ -152,11 +152,11 @@ eval val@(Symbol _) = val
 eval (List [Symbol "quote", val]) = val
 eval (List (Symbol f : args)) = apply f $ map eval args
 
-apply :: String -> [LispVal] -> LispVal
+apply :: String -> [Val] -> Val
 apply f args = 
   maybe (Boolean False) ($ args) $ lookup f primitives -- TODO: error-handling
 
-primitives :: [(String, [LispVal] -> LispVal)]
+primitives :: [(String, [Val] -> Val)]
 primitives =
   [("+", numericBinop (+))
   ,("-", numericBinop (-))
@@ -177,11 +177,11 @@ primitives =
   ,("string->symbol", f1 stringToSymbol)
   ]
 
-type PrimF = [LispVal] -> LispVal
+type PrimF = [Val] -> Val
 
-type Predicate = LispVal -> Bool
+type Predicate = Val -> Bool
 
-f1 :: (LispVal -> LispVal) -> PrimF
+f1 :: (Val -> Val) -> PrimF
 f1 f [obj] = f obj
 
 predicate :: Predicate -> PrimF
@@ -223,19 +223,19 @@ isNull _         = False
 numericBinop :: (Integer -> Integer -> Integer) -> PrimF
 numericBinop op params = Number $ foldl1' op $ map unpackNum params
 
-unpackNum :: LispVal -> Integer
+unpackNum :: Val -> Integer
 unpackNum (Number n) = n
 unpackNum _          = 0 -- FIX
 
-symbolToString :: LispVal -> LispVal
+symbolToString :: Val -> Val
 symbolToString (Symbol a) = String a
 symbolToString _        = Boolean False -- FIX: raise exception
 
-stringToSymbol :: LispVal -> LispVal
+stringToSymbol :: Val -> Val
 stringToSymbol (String s) = Symbol s
 stringToSymbol _          = Boolean False -- FIX: raise exception
 
-unwordsList :: [LispVal] -> String
+unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
 
 -- read+eval
