@@ -235,6 +235,8 @@ primitives =
   ,("car", f1e car)
   ,("cdr", f1e cdr)
   ,("cons", f2e cons)
+  ,("eq?", f2b eqv)
+  ,("eqv?", f2b eqv)
   ]
 
 type PrimF = [Val] -> ThrowError Val
@@ -248,6 +250,10 @@ f1e _ args  = throwError $ NumArgs 1 args
 f2e :: (Val -> Val -> ThrowError Val) -> PrimF
 f2e f [obj1, obj2] = f obj1 obj2
 f2e _ args         = throwError $ NumArgs 2 args
+
+f2b :: (Val -> Val -> Bool) -> PrimF
+f2b f [obj1, obj2] = return $ Boolean $ f obj1 obj2
+f2b _ args         = throwError $ NumArgs 2 args
 
 f1 :: (Val -> Val) -> PrimF
 f1 f [obj] = return $ f obj
@@ -346,6 +352,27 @@ cons x (List []) = return $ List [x]
 cons x (List xs) = return $ List $ x : xs
 cons x (DottedList xs l) = return $ DottedList (x : xs) l
 cons a b = return $ DottedList [a] b
+
+boolErr2False :: ThrowError Val -> Bool
+boolErr2False (Left _)            = False -- XXX: Pretty sure this can never happen.
+boolErr2False (Right (Boolean v)) = v
+boolErr2False _                   = error "should not happen"
+
+eqList :: [Val] -> [Val] -> Bool
+eqList (a:as) (b:bs) = eqv a b && eqList as bs
+eqList [] []         = True
+eqList _ _           = False
+
+eqv :: Val -> Val -> Bool
+eqv (Symbol a1) (Symbol a2)               = a1 == a2
+eqv (Boolean a1) (Boolean a2)             = a1 == a2
+eqv (Number a1) (Number a2)               = a1 == a2
+eqv (Float a1) (Float a2)                 = a1 == a2
+eqv (String a1) (String a2)               = a1 == a2
+eqv (Char a1) (Char a2)                   = a1 == a2
+eqv (DottedList a1 l1) (DottedList a2 l2) = eqList a1 a2 && eqv l1 l2
+eqv (List a1) (List a2)                   = eqList a1 a2
+eqv _ _                                   = False
 
 unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
