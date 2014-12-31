@@ -17,6 +17,7 @@ data LispVal
   | Bool Bool
   deriving (Show)
 
+dq :: Char
 dq = '"'
 
 caseInsensitiveChar :: Char -> Parser Char
@@ -121,13 +122,30 @@ symbol = oneOf "!#$%|*+-/:<=>?@^_~"
 spaces :: Parser ()
 spaces = skipMany1 space
 
+showVal :: LispVal -> String
+showVal (String s) = show s --"\"" ++ contents ++ "\""
+showVal (Atom name) = name
+showVal (Number n) = show n
+showVal (Float f) = show f
+showVal (Char ' ') = "#\\space"
+showVal (Char '\n') = "#\\newline"
+showVal (Char c) = "#" ++ [c]
+showVal (Bool True) = "#t"
+showVal (Bool False) = "#f"
+showVal (List cs) = "(" ++ unwordsList cs ++ ")"
+showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ "." ++ showVal tl ++ ")"
+
+unwordsList :: [LispVal] -> String
+unwordsList = unwords . map showVal
+
 readExpr :: String -> String
-readExpr input = case parse parseExpr "lisp" input of
+readExpr input = case parse parseExpr "schemey" input of
   Left err -> "No match: " ++ show err
-  Right val -> "Ok: " ++ show val
+  Right val -> "Ok: " ++ showVal val
 
 main :: IO ()
 main = do
   args <- getArgs
   case args of
     [expr] -> putStrLn $ readExpr expr
+    _ -> putStrLn $ "usage: schemey scheme-expression"
