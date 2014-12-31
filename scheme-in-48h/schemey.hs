@@ -48,10 +48,6 @@ showErr (Default s) = "Error: " ++ s
 
 instance Show Err where show = showErr
 
--- instance Except Err where
---  noMsg = Default "An error has occurred"
---  strMsg = Default
-
 type ThrowsErr = Either Err
 
 trapError :: (MonadError e m, Show e) => m String -> m String
@@ -168,7 +164,7 @@ spaces :: Parser ()
 spaces = skipMany1 space
 
 showVal :: Val -> String
-showVal (String s) = show s --"\"" ++ contents ++ "\""
+showVal (String s) = show s
 showVal (Symbol name) = name
 showVal (Number n) = show n
 showVal (Float f) = show f
@@ -188,7 +184,7 @@ eval val@(Char _)                 = return val
 eval val@(Boolean _)              = return val
 eval val@(Symbol _)               = return val
 eval (List [Symbol "quote", val]) = return val
-eval (List (Symbol f : args))     = mapM eval args >>= \as -> apply f as
+eval (List (Symbol f : args))     = mapM eval args >>= apply f
 -- TODO: eval DottedList
 --eval (DottedList _ _) = error "Implement eval on DottedList" -- FIX
 eval badForm = throwError $ BadSpecialForm "Unrecognised special form" badForm
