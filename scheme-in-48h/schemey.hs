@@ -180,17 +180,19 @@ showVal (Boolean False) = "#f"
 showVal (List cs) = "(" ++ unwordsList cs ++ ")"
 showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ "." ++ showVal tl ++ ")"
 
-eval :: Val -> Val
-eval val@(String _) = val
-eval val@(Number _) = val
-eval val@(Float _) = val
-eval val@(Char _) = val
-eval val@(Boolean _) = val
-eval val@(Symbol _) = val
-eval (List [Symbol "quote", val]) = val
-eval (List (Symbol f : args)) = apply f $ map eval args
-eval (List _) = Boolean False -- FIX: error handling
-eval (DottedList _ _) = error "Implement eval on DottedList" -- FIX
+eval :: Val -> ThrowsErr Val
+eval val@(String _)               = return val
+eval val@(Number _)               = return val
+eval val@(Float _)                = return val
+eval val@(Char _)                 = return val
+eval val@(Boolean _)              = return val
+eval val@(Symbol _)               = return val
+eval (List [Symbol "quote", val]) = return val
+eval (List (Symbol f : args))     = mapM eval args >>= \as -> return $ apply f as
+--eval (List _) = Boolean False -- FIX: error handling
+-- TODO: eval DottedList
+--eval (DottedList _ _) = error "Implement eval on DottedList" -- FIX
+eval badForm = throwError $ BadSpecialForm "Unrecognised special form" badForm
 
 apply :: String -> [Val] -> Val
 apply f args = 
@@ -284,7 +286,7 @@ unwordsList = unwords . map showVal
 r_e :: String -> ThrowsErr Val
 r_e input = case parse parseExpr "schemey" input of
   Left err -> throwError $ Parser err
-  Right val -> return $ eval val
+  Right val -> eval val
 
 prVal :: (Show a1, Show a) => Either a a1 -> IO ()
 prVal (Left err) = putStrLn $ show err
