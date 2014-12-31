@@ -235,8 +235,9 @@ primitives =
   ,("car", f1e car)
   ,("cdr", f1e cdr)
   ,("cons", f2e cons)
-  ,("eq?", f2b eqv)
-  ,("eqv?", f2b eqv)
+  ,("eq?", f2b equal)
+  ,("eqv?", f2b equal)
+  ,("equal?", f2b equal)
   ]
 
 type PrimF = [Val] -> ThrowError Val
@@ -358,21 +359,21 @@ boolErr2False (Left _)            = False -- XXX: Pretty sure this can never hap
 boolErr2False (Right (Boolean v)) = v
 boolErr2False _                   = error "should not happen"
 
-eqList :: [Val] -> [Val] -> Bool
-eqList (a:as) (b:bs) = eqv a b && eqList as bs
-eqList [] []         = True
-eqList _ _           = False
+equalList :: [Val] -> [Val] -> Bool
+equalList (a:as) (b:bs) = equal a b && equalList as bs
+equalList [] []         = True
+equalList _ _           = False
 
-eqv :: Val -> Val -> Bool
-eqv (Symbol a1) (Symbol a2)               = a1 == a2
-eqv (Boolean a1) (Boolean a2)             = a1 == a2
-eqv (Number a1) (Number a2)               = a1 == a2
-eqv (Float a1) (Float a2)                 = a1 == a2
-eqv (String a1) (String a2)               = a1 == a2
-eqv (Char a1) (Char a2)                   = a1 == a2
-eqv (DottedList a1 l1) (DottedList a2 l2) = eqList a1 a2 && eqv l1 l2
-eqv (List a1) (List a2)                   = eqList a1 a2
-eqv _ _                                   = False
+equal :: Val -> Val -> Bool
+equal (Symbol a1) (Symbol a2)               = a1 == a2
+equal (Boolean a1) (Boolean a2)             = a1 == a2
+equal (Number a1) (Number a2)               = a1 == a2
+equal (Float a1) (Float a2)                 = a1 == a2
+equal (String a1) (String a2)               = a1 == a2
+equal (Char a1) (Char a2)                   = a1 == a2
+equal (DottedList a1 l1) (DottedList a2 l2) = equalList a1 a2 && equal l1 l2
+equal (List a1) (List a2)                   = equalList a1 a2
+equal _ _                                   = False
 
 unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
