@@ -189,7 +189,6 @@ eval val@(Boolean _)              = return val
 eval val@(Symbol _)               = return val
 eval (List [Symbol "quote", val]) = return val
 eval (List (Symbol f : args))     = mapM eval args >>= \as -> apply f as
---eval (List _) = Boolean False -- FIX: error handling
 -- TODO: eval DottedList
 --eval (DottedList _ _) = error "Implement eval on DottedList" -- FIX
 eval badForm = throwError $ BadSpecialForm "Unrecognised special form" badForm
@@ -198,7 +197,7 @@ apply :: String -> [Val] -> ThrowsErr Val
 apply f args =
   maybe e ($ args) $ lookup f primitives
   where
-    e = throwError $ NotFunction $ "Unrecognised primitive" f
+    e = throwError $ NotFunction "Unrecognised primitive" f
 
 primitives :: [(String, [Val] -> ThrowsErr Val)]
 primitives =
@@ -217,13 +216,17 @@ primitives =
   ,("real?", predicate isReal)
   ,("char?", predicate isChar)
   ,("null?", predicate isNull)
-  ,("symbol->string", f1 symbolToString)
-  ,("string->symbol", f1 stringToSymbol)
+  ,("symbol->string", f1' symbolToString')
+  ,("string->symbol", f1' stringToSymbol')
   ]
 
 type PrimF = [Val] -> ThrowsErr Val
 
 type Predicate = Val -> Bool
+
+f1' :: (Val -> ThrowsErr Val) -> PrimF
+f1' f [obj] = f obj
+f1' _ args  = throwError $ NumArgs 1 args
 
 f1 :: (Val -> Val) -> PrimF
 f1 f [obj] = return $ f obj
@@ -266,18 +269,25 @@ isNull :: Predicate
 isNull (List []) = True
 isNull _         = False
 
--- TODO: handle error for zero args.
 numericBinop :: (Integer -> Integer -> Integer) -> PrimF
-numericBinop op args@[] = throwError $ NumArgs 1 args
-numericBinop op args = return $ Number $ foldl1' op $ map unpackNum args
+numericBinop _ args@[] = throwError $ NumArgs 1 args
+numericBinop op args = mapM unpackNum args >>= return . Number . foldl1' op
 
-unpackNum :: Val -> Integer
-unpackNum (Number n) = n
-unpackNum _          = 0 -- FIX
+unpackNum :: Val -> ThrowsErr Integer
+unpackNum (Number n) = return n
+unpackNum v          = throwError $ TypeMismatch "number" v
+
+symbolToString' :: Val -> ThrowsErr Val
+symbolToString' (Symbol a) = return $ String a
+symbolToString' v        = throwError $ TypeMismatch "symbol" v
 
 symbolToString :: Val -> Val
 symbolToString (Symbol a) = String a
 symbolToString _        = Boolean False -- FIX: raise exception
+
+stringToSymbol' :: Val -> ThrowsErr Val
+stringToSymbol' (String s) = return $ Symbol s
+stringToSymbol' v          = throwError $ TypeMismatch "string" v
 
 stringToSymbol :: Val -> Val
 stringToSymbol (String s) = Symbol s
