@@ -216,17 +216,17 @@ primitives =
   ,("real?", predicate isReal)
   ,("char?", predicate isChar)
   ,("null?", predicate isNull)
-  ,("symbol->string", f1' symbolToString')
-  ,("string->symbol", f1' stringToSymbol')
+  ,("symbol->string", f1e symbolToString)
+  ,("string->symbol", f1e stringToSymbol)
   ]
 
 type PrimF = [Val] -> ThrowsErr Val
 
 type Predicate = Val -> Bool
 
-f1' :: (Val -> ThrowsErr Val) -> PrimF
-f1' f [obj] = f obj
-f1' _ args  = throwError $ NumArgs 1 args
+f1e :: (Val -> ThrowsErr Val) -> PrimF
+f1e f [obj] = f obj
+f1e _ args  = throwError $ NumArgs 1 args
 
 f1 :: (Val -> Val) -> PrimF
 f1 f [obj] = return $ f obj
@@ -277,21 +277,13 @@ unpackNum :: Val -> ThrowsErr Integer
 unpackNum (Number n) = return n
 unpackNum v          = throwError $ TypeMismatch "number" v
 
-symbolToString' :: Val -> ThrowsErr Val
-symbolToString' (Symbol a) = return $ String a
-symbolToString' v        = throwError $ TypeMismatch "symbol" v
+symbolToString :: Val -> ThrowsErr Val
+symbolToString (Symbol a) = return $ String a
+symbolToString v        = throwError $ TypeMismatch "symbol" v
 
-symbolToString :: Val -> Val
-symbolToString (Symbol a) = String a
-symbolToString _        = Boolean False -- FIX: raise exception
-
-stringToSymbol' :: Val -> ThrowsErr Val
-stringToSymbol' (String s) = return $ Symbol s
-stringToSymbol' v          = throwError $ TypeMismatch "string" v
-
-stringToSymbol :: Val -> Val
-stringToSymbol (String s) = Symbol s
-stringToSymbol _          = Boolean False -- FIX: raise exception
+stringToSymbol :: Val -> ThrowsErr Val
+stringToSymbol (String s) = return $ Symbol s
+stringToSymbol v          = throwError $ TypeMismatch "string" v
 
 unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
