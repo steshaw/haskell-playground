@@ -234,6 +234,7 @@ primitives =
   ,("string>=?", strBoolBinOp (>=))
   ,("car", f1e car)
   ,("cdr", f1e cdr)
+  ,("cons", f2e cons)
   ]
 
 type PrimF = [Val] -> ThrowError Val
@@ -243,6 +244,10 @@ type Predicate = Val -> Bool
 f1e :: (Val -> ThrowError Val) -> PrimF
 f1e f [obj] = f obj
 f1e _ args  = throwError $ NumArgs 1 args
+
+f2e :: (Val -> Val -> ThrowError Val) -> PrimF
+f2e f [obj1, obj2] = f obj1 obj2
+f2e _ args         = throwError $ NumArgs 2 args
 
 f1 :: (Val -> Val) -> PrimF
 f1 f [obj] = return $ f obj
@@ -326,15 +331,21 @@ stringToSymbol (String s) = return $ Symbol s
 stringToSymbol v          = throwError $ TypeMismatch "string" v
 
 car :: Val -> ThrowError Val
-car (List (x:_))         = return x
-car (DottedList (x:_) _) = return x
-car v                    = throwError $ TypeMismatch "pair" v
+car (List (x : _))         = return x
+car (DottedList (x : _) _) = return x
+car v                      = throwError $ TypeMismatch "pair" v
 
 cdr :: Val -> ThrowError Val
-cdr (List (_:xs))         = return $ List xs
-cdr (DottedList [_] x)    = return x
-cdr (DottedList (_:xs) x) = return $ DottedList xs x
-cdr v                     = throwError $ TypeMismatch "pair" v
+cdr (List (_:xs))           = return $ List xs
+cdr (DottedList [_] x)      = return x
+cdr (DottedList (_ : xs) x) = return $ DottedList xs x
+cdr v                       = throwError $ TypeMismatch "pair" v
+
+cons :: Val -> Val -> ThrowError Val
+cons x (List []) = return $ List [x]
+cons x (List xs) = return $ List $ x : xs
+cons x (DottedList xs l) = return $ DottedList (x : xs) l
+cons a b = return $ DottedList [a] b
 
 unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
