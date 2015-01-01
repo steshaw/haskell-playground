@@ -1,19 +1,15 @@
 module Main where
 
-import Data.IORef
-
-import Text.ParserCombinators.Parsec hiding (spaces)
-import System.Environment
-import Numeric
-import Data.Char (toUpper, toLower)
+import System.Environment (getArgs)
 import System.IO (isEOF, hFlush, stdout)
-import Control.Exception (
-  AsyncException(..),
-  catch, throw
-  )
-import Control.Monad.Except
-import Control.Monad.Trans.Either
+import Text.ParserCombinators.Parsec hiding (spaces)
 import Data.List (foldl1', genericLength)
+import Numeric (readOct, readDec, readHex)
+import Data.Char (toUpper, toLower)
+import Control.Exception (AsyncException(..), catch, throw)
+import Control.Monad.Except (throwError)
+import Control.Monad.Trans.Either
+import Data.IORef (IORef, newIORef)
 
 -- =============================================================================
 -- AST
@@ -167,9 +163,6 @@ showErr (Default s) = "Error: " ++ s
 
 instance Show Err where show = showErr
 
-trapError :: (MonadError e m, Show e) => m String -> m String
-trapError action = catchError action (return . show)
-
 type Env = IORef [(String, IORef Val)]
 
 newEnv :: IO Env
@@ -306,9 +299,9 @@ isNull _         = False
 
 boolBinOp :: (Val -> ThrowError a) -> (a -> a -> Bool) -> PrimF
 boolBinOp unpacker op [l, r] = do
-  left  <- unpacker l
-  right <- unpacker r
-  return $ Boolean $ left `op` right
+  ul <- unpacker l
+  ur <- unpacker r
+  return $ Boolean $ ul `op` ur
 boolBinOp _ _ args = throwError $ NumArgs 2 args
 
 numBoolBinOp :: (Integer -> Integer -> Bool) -> PrimF
@@ -414,6 +407,7 @@ r_e input = case parse parseExpr "schemey" input of
   Right val -> eval val
 
 --prVal :: (Show a1, Show a) => Either a a1 -> IO ()
+prVal :: EitherT Err IO Val -> IO ()
 prVal et = do
   e <- runEitherT et
   case e of
