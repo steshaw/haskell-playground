@@ -9,7 +9,9 @@ import Data.Char (toUpper, toLower)
 import Control.Exception (AsyncException(..), catch, throw)
 import Control.Monad.Except (throwError)
 import Control.Monad.Trans.Either
-import Data.IORef (IORef, newIORef)
+import Data.IORef (IORef, newIORef, readIORef, writeIORef)
+import Control.Monad.Trans (liftIO)
+import Control.Monad (liftM)
 
 -- =============================================================================
 -- AST
@@ -169,6 +171,53 @@ newEnv :: IO Env
 newEnv = newIORef []
 
 type ThrowError = EitherT Err IO
+
+isBound :: Env -> String -> ThrowError Bool
+isBound envRef var = do 
+  env <- liftIO $ readIORef envRef
+  case lookup var env of
+    Nothing -> return False
+    Just _  -> return True
+
+getVar :: Env -> String -> ThrowError Val
+getVar envRef var = do
+  env <- liftIO $ readIORef envRef
+  case lookup var env of
+    Nothing -> throwError $ UnboundVar "Getting an unbound variable" var
+    Just v  -> liftIO $ readIORef v
+
+setVar :: Env -> String -> Val -> ThrowError Val
+setVar envRef var val = do
+  env <- liftIO $ readIORef envRef
+  case lookup var env of
+    Nothing      -> throwError $ UnboundVar "Setting an unbound variable" var
+    Just valRef  -> liftIO $ writeIORef valRef val
+  return val
+
+newBinding :: String -> Val -> IO (String, IORef Val)
+newBinding var val = do
+  valRef <- newIORef val
+  return (var, valRef)
+
+createVar :: Env -> String -> Val -> ThrowError Val
+createVar envRef var val = liftIO $ do
+  env <- readIORef envRef
+  binding <- newBinding var val
+  writeIORef envRef (binding : env)
+  return val
+
+defineVar :: Env -> String -> Val -> ThrowError Val
+defineVar envRef var val = do
+  alreadyDefined <- isBound envRef var
+  if alreadyDefined
+     then setVar envRef var val
+     else createVar envRef var val
+
+bindVars :: Env -> [(String, Val)] -> ThrowError Env
+bindVars envRef bindings = liftIO $ do
+  env <- readIORef envRef
+  env' <- liftM (++ env) $ mapM (uncurry newBinding) bindings
+  newIORef env'
 
 eval :: Val -> ThrowError Val
 eval val@(String _)               = return val
