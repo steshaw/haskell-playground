@@ -163,19 +163,6 @@ symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
 spaces :: Parser ()
 spaces = skipMany1 space
 
-showVal :: Val -> String
-showVal (String s) = show s
-showVal (Symbol name) = name
-showVal (Number n) = show n
-showVal (Float f) = show f
-showVal (Char ' ') = "#\\space"
-showVal (Char '\n') = "#\\newline"
-showVal (Char c) = "#\\" ++ [c]
-showVal (Boolean True) = "#t"
-showVal (Boolean False) = "#f"
-showVal (List cs) = "(" ++ unwordsList cs ++ ")"
-showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ " . " ++ showVal tl ++ ")"
-
 eval :: Val -> ThrowError Val
 eval val@(String _)               = return val
 eval val@(Number _)               = return val
@@ -384,6 +371,19 @@ equal (Char a1) (Char a2)                   = a1 == a2
 equal (DottedList a1 l1) (DottedList a2 l2) = equalList a1 a2 && equal l1 l2
 equal (List a1) (List a2)                   = equalList a1 a2
 equal _ _                                   = False
+
+showVal :: Val -> String
+showVal (String s) = show s
+showVal (Symbol name) = name
+showVal (Number n) = show n
+showVal (Float f) = show f
+showVal (Char ' ') = "#\\space"
+showVal (Char '\n') = "#\\newline"
+showVal (Char c) = "#\\" ++ [c]
+showVal (Boolean True) = "#t"
+showVal (Boolean False) = "#f"
+showVal (List cs) = "(" ++ unwordsList cs ++ ")"
+showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ " . " ++ showVal tl ++ ")"
 
 unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
