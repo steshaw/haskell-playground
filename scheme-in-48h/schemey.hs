@@ -535,14 +535,20 @@ instance Show Val where show = showVal
 unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
 
+--
+-- read
+--
+
 readExprP :: Parser a -> String -> ThrowError a
 readExprP parser input = case parse parser "schemey" input of
   Left err -> throwError $ Parser err
   Right val -> return val
 
--- read
 readExpr :: String -> ThrowError Val
 readExpr = readExprP parseExpr
+
+readExprs :: String -> ThrowError [Val]
+readExprs = readExprP (endBy parseExpr spaces)
 
 -- read+eval
 r_e :: Env -> String -> ThrowError Val
