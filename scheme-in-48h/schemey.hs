@@ -228,6 +228,11 @@ bindVars envRef bindings = do
   env' <- liftM (++ env) $ mapM (uncurry newBinding) bindings
   newIORef env'
 
+-- FIX: (map showVal params)? Instead check they are symbols
+makeFunc varargs env params body = return $ Func (map showVal params) varargs body env
+makeNormalFunc = makeFunc Nothing
+makeVarArgsFunc varargs = makeFunc (Just (showVal varargs))
+
 eval :: Env -> Val -> ThrowError Val
 eval _ val@(String _)               = return val
 eval _ val@(Number _)               = return val
@@ -247,6 +252,12 @@ eval env (List [Symbol "set!", Symbol var, expr]) = do
 eval env (List [Symbol "define", Symbol var, expr]) = do
   val <- eval env expr
   defineVar env var val
+
+eval env (List (Symbol "define" : List (Symbol id : params) : body)) =
+ makeNormalFunc env params body >>= defineVar env id
+eval env (List (Symbol "define" : DottedList (Symbol id : params) varargs : body)) =
+ makeVarArgsFunc varargs env params body >>= defineVar env id
+
 eval env (List (f@(Symbol _) : args))     = do
   ef <- eval env f
   eArgs <- mapM (eval env) args 
@@ -257,6 +268,20 @@ eval _ badForm = throwError $ BadSpecialForm "Unrecognised special form" badForm
 
 apply :: Val -> [Val] -> ThrowError Val
 apply (PrimitiveFunc func) args = func args
+apply (Func params' varArg' body' closure) args =
+  if num params' /= num args && varArg' == Nothing
+    then throwError $ NumArgs (num params') args
+    else do
+      env <- liftIO $ bindVars closure $ zip params' args
+      env' <- bindVarArgs varArg' env
+      evalBody env'
+  where
+    num xs = genericLength xs :: Integer
+    remainingArgs = drop (length params') args
+    bindVarArgs arg env = case arg of
+      Just argName -> liftIO $ bindVars env [(argName, List $ remainingArgs)]
+      Nothing -> return env
+    evalBody env = liftM last $ mapM (eval env) body'
 apply _ _                       = throwError $ Default "Illegal application"
 
 -- =============================================================================
@@ -300,6 +325,7 @@ primitives =
 
   ,("car", f1e car)
   ,("cdr", f1e cdr)
+  ,("length", f1e pLength)
   ,("cons", f2e cons)
   ,("eq?", f2b equal)
   ,("eqv?", f2b equal)
@@ -410,6 +436,10 @@ cdr (List (_:xs))           = return $ List xs
 cdr (DottedList [_] x)      = return x
 cdr (DottedList (_ : xs) x) = return $ DottedList xs x
 cdr v                       = throwError $ TypeMismatch "pair" v
+
+pLength :: Val -> ThrowError Val
+pLength (List xs) = return $ Number $ genericLength xs
+pLength v         = throwError $ TypeMismatch "list" v
 
 cons :: Val -> Val -> ThrowError Val
 cons x (List []) = return $ List [x]
