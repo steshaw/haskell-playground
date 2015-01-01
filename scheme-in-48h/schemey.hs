@@ -219,23 +219,29 @@ bindVars envRef bindings = liftIO $ do
   env' <- liftM (++ env) $ mapM (uncurry newBinding) bindings
   newIORef env'
 
-eval :: Val -> ThrowError Val
-eval val@(String _)               = return val
-eval val@(Number _)               = return val
-eval val@(Float _)                = return val
-eval val@(Char _)                 = return val
-eval val@(Boolean _)              = return val
-eval val@(Symbol _)               = return val
-eval (List [Symbol "if", t, whenTrue, whenFalse]) = do
-  result <- eval t
+eval :: Env -> Val -> ThrowError Val
+eval _ val@(String _)               = return val
+eval _ val@(Number _)               = return val
+eval _ val@(Float _)                = return val
+eval _ val@(Char _)                 = return val
+eval _ val@(Boolean _)              = return val
+eval env (Symbol var)               = getVar env var
+eval env (List [Symbol "if", t, whenTrue, whenFalse]) = do
+  result <- eval env t
   case result of
-    Boolean True -> eval whenTrue
-    _            -> eval whenFalse
-eval (List [Symbol "quote", val]) = return val
-eval (List (Symbol f : args))     = mapM eval args >>= apply f
+    Boolean True -> eval env whenTrue
+    _            -> eval env whenFalse
+eval _ (List [Symbol "quote", val]) = return val
+eval env (List [Symbol "set!", Symbol var, expr]) = do
+  val <- eval env expr
+  setVar env var val
+eval env (List [Symbol "define", Symbol var, expr]) = do
+  val <- eval env expr
+  defineVar env var val
+eval env (List (Symbol f : args))     = mapM (eval env) args >>= apply f
 -- TODO: eval DottedList
---eval (DottedList _ _) = error "Implement eval on DottedList" -- FIX
-eval badForm = throwError $ BadSpecialForm "Unrecognised special form" badForm
+--eval env (DottedList _ _) = error "Implement eval on DottedList" -- FIX
+eval _ badForm = throwError $ BadSpecialForm "Unrecognised special form" badForm
 
 apply :: String -> [Val] -> ThrowError Val
 apply f args =
@@ -450,12 +456,11 @@ unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
 
 -- read+eval
-r_e :: String -> ThrowError Val
-r_e input = case parse parseExpr "schemey" input of
+r_e :: Env -> String -> ThrowError Val
+r_e env input = case parse parseExpr "schemey" input of
   Left err -> throwError $ Parser err
-  Right val -> eval val
+  Right val -> eval env val
 
---prVal :: (Show a1, Show a) => Either a a1 -> IO ()
 prVal :: EitherT Err IO Val -> IO ()
 prVal et = do
   e <- runEitherT et
@@ -464,8 +469,8 @@ prVal et = do
     Right v  -> putStrLn $ show v
 
 -- read+eval+print
-r_e_p :: IO Bool
-r_e_p = do
+r_e_p :: Env -> IO Bool
+r_e_p env = do
   putStr "schemey> " >> hFlush stdout
   end <- isEOF
   if end
@@ -474,13 +479,13 @@ r_e_p = do
        expr <- getLine
        if null expr
           then return False
-          else prVal (r_e expr) >> return False
+          else prVal (r_e env expr) >> return False
 
 -- read+eval+print+loop
-repl :: IO ()
-repl = do
-  quit <- r_e_p `catch` onUserInterrupt
-  if quit then return () else repl
+repl :: Env -> IO ()
+repl env = do
+  quit <- r_e_p env `catch` onUserInterrupt
+  if quit then return () else repl env
 
 onUserInterrupt :: AsyncException -> IO Bool
 onUserInterrupt UserInterrupt = putStrLn "\nquitting..." >> return True
@@ -492,7 +497,8 @@ usage = putStrLn $ "usage: schemey [scheme-expression]"
 main :: IO ()
 main = do
   args <- getArgs
+  env <- newEnv
   case args of
-    []     -> repl
-    [expr] -> prVal $ r_e expr
+    []     -> repl env
+    [expr] -> prVal $ r_e env expr
     _      -> usage

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-exec rlwrap dist/build/schemey/schemey
+exec rlwrap cabal run
