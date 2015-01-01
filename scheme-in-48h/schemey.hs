@@ -1,5 +1,7 @@
 module Main where
 
+import Data.IORef
+
 import Text.ParserCombinators.Parsec hiding (spaces)
 import System.Environment
 import Numeric
@@ -10,11 +12,12 @@ import Control.Exception (
   catch, throw
   )
 import Control.Monad.Except
+import Control.Monad.Trans.Either
 import Data.List (foldl1', genericLength)
 
-// =============================================================================
-// AST
-// =============================================================================
+-- =============================================================================
+-- AST
+-- =============================================================================
 
 data Val
   = Symbol String
@@ -26,9 +29,9 @@ data Val
   | String String
   | Boolean Bool
 
-// =============================================================================
-// Parser
-// =============================================================================
+-- =============================================================================
+-- Parser
+-- =============================================================================
 
 dq :: Char
 dq = '"'
@@ -136,9 +139,9 @@ symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
 spaces :: Parser ()
 spaces = skipMany1 space
 
-// =============================================================================
-// Evaluator
-// =============================================================================
+-- =============================================================================
+-- Evaluator
+-- =============================================================================
 
 data Err
   = NumArgs Integer [Val]
@@ -164,14 +167,21 @@ showErr (Default s) = "Error: " ++ s
 
 instance Show Err where show = showErr
 
-type ThrowError = Either Err
-
 trapError :: (MonadError e m, Show e) => m String -> m String
 trapError action = catchError action (return . show)
 
+{-
 extractValue :: ThrowError a -> a
 extractValue (Right v) = v
 extractValue _         = error "should be unreachable"
+-}
+
+type Env = IORef [(String, IORef Val)]
+
+newEnv :: IO Env
+newEnv = newIORef []
+
+type ThrowError = EitherT Err IO
 
 eval :: Val -> ThrowError Val
 eval val@(String _)               = return val
@@ -197,9 +207,9 @@ apply f args =
   where
     e = throwError $ NotFunction "Unrecognised primitive" f
 
-// =============================================================================
-// Primitives
-// =============================================================================
+-- =============================================================================
+-- Primitives
+-- =============================================================================
 
 primitives :: [(String, [Val] -> ThrowError Val)]
 primitives =
@@ -365,10 +375,12 @@ stringRef [(String s), (Number n)] = if n < 0 || n >= (genericLength s)
 stringRef args@[_, _]              = throwError $ Default $ "string-ref expects a string and an integer, got" ++ show args
 stringRef args                     = throwError $ NumArgs 2 args
 
+{-
 boolErr2False :: ThrowError Val -> Bool
 boolErr2False (Left _)            = False -- XXX: Pretty sure this can never happen.
 boolErr2False (Right (Boolean v)) = v
 boolErr2False _                   = error "should not happen"
+-}
 
 equalList :: [Val] -> [Val] -> Bool
 equalList (a:as) (b:bs) = equal a b && equalList as bs
@@ -386,9 +398,9 @@ equal (DottedList a1 l1) (DottedList a2 l2) = equalList a1 a2 && equal l1 l2
 equal (List a1) (List a2)                   = equalList a1 a2
 equal _ _                                   = False
 
-// =============================================================================
-// REPL
-// =============================================================================
+-- =============================================================================
+-- REPL
+-- =============================================================================
 
 showVal :: Val -> String
 showVal (String s) = show s
@@ -414,9 +426,12 @@ r_e input = case parse parseExpr "schemey" input of
   Left err -> throwError $ Parser err
   Right val -> eval val
 
-prVal :: (Show a1, Show a) => Either a a1 -> IO ()
-prVal (Left err) = putStrLn $ show err
-prVal (Right v)  = putStrLn $ show v
+--prVal :: (Show a1, Show a) => Either a a1 -> IO ()
+prVal et = do
+  e <- runEitherT et
+  case e of
+    Left err -> putStrLn $ show err
+    Right v  -> putStrLn $ show v
 
 -- read+eval+print
 r_e_p :: IO Bool

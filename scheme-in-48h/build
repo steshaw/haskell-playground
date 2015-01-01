@@ -1,1 +1,3 @@
-ghc -Wall --make schemey.hs 
+#!/bin/bash
+
+exec cabal build
