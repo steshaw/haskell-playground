@@ -12,6 +12,7 @@ import Control.Monad.Trans.Either
 import Data.IORef (IORef, newIORef, readIORef, writeIORef)
 import Control.Monad.Trans (liftIO)
 import Control.Monad (liftM)
+import Control.Concurrent (threadDelay)
 
 -- =============================================================================
 -- AST
@@ -253,7 +254,7 @@ eval env (List [Symbol "if", t, whenTrue, whenFalse]) = do
     Boolean True -> eval env whenTrue
     _            -> eval env whenFalse
 eval env (List [Symbol "load", String fileName]) = do
-  exprs <- load fileName 
+  exprs <- readExprsFile fileName 
   vals <- mapM (eval env) exprs
   return $ last vals
 eval _ (List [Symbol "quote", val]) = return val
@@ -352,6 +353,8 @@ primitives =
   ,("apply", sApply)
 
   ,("print", f1e sPrint)
+
+  ,("sleep", f1e sSleep)
   ]
 
 type Predicate = Val -> Bool
@@ -498,15 +501,30 @@ equal (DottedList a1 l1) (DottedList a2 l2) = equalList a1 a2 && equal l1 l2
 equal (List a1) (List a2)                   = equalList a1 a2
 equal _ _                                   = False
 
+unit :: Val
+unit = List []
+
 sPrint :: Val -> ThrowError Val
 sPrint v = do
   _ <- liftIO $ putStrLn $ show v
-  return $ List []
+  return $ unit
 
-load :: String -> ThrowError [Val]
-load fileName = do
+sSleep :: Val -> ThrowError Val
+sSleep (Number n) = do
+  _ <- liftIO $ threadDelay ((fromInteger n) * 1000 * 1000)
+  return $ unit
+
+readExprsFile :: String -> ThrowError [Val]
+readExprsFile fileName = do
   contents <- liftIO $ readFile fileName
   readExprs contents
+
+runFile :: Env -> String -> EitherT Err IO Val
+runFile env fileName = do
+  contents <- liftIO $ readFile fileName
+  exprs <- readExprs contents
+  vals <- mapM (eval env) exprs
+  return $ last vals
 
 primitiveEnv :: IO Env
 primitiveEnv = do
@@ -602,6 +620,9 @@ main = do
   args <- getArgs
   env <- primitiveEnv
   case args of
-    []     -> repl env
-    [expr] -> prVal $ r_e env expr
-    _      -> usage
+    []              -> repl env
+    ["-e", expr]    -> prVal $ r_e env expr
+    fileName : args -> do
+                         env' <- bindVars env [("args", List $ map String $ args)]
+                         prVal $ runFile env' fileName
+    _               -> usage

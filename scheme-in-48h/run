@@ -1,3 +1,3 @@
 #!/bin/bash
 
-exec rlwrap cabal run
+exec rlwrap cabal run "$@"
