@@ -338,6 +338,8 @@ primitives =
   ,("eqv?", f2b equal)
   ,("equal?", f2b equal)
 
+  ,("apply", sApply)
+
   ,("print", f1e sPrint)
   ]
 
@@ -361,6 +363,11 @@ f1 _ args  = throwError $  NumArgs 1 args
 
 predicate :: Predicate -> PrimF
 predicate p = f1 (Boolean . p)
+
+sApply :: PrimF
+sApply [f, List args] = apply f args
+sApply (f: args)      = apply f args
+sApply args           = throwError $ NumArgs 1 args
 
 isSymbol :: Predicate
 isSymbol (Symbol _) = True
