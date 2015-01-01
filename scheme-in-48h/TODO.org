@@ -22,3 +22,4 @@
 * Other
 
 - switch to the typical pair formulation for lists (remove List/DottedList)
+  - Implement set-car! and set-cdr!
