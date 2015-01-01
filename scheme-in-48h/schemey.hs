@@ -332,11 +332,13 @@ primitives =
 
   ,("car", f1e car)
   ,("cdr", f1e cdr)
-  ,("length", f1e pLength)
+  ,("length", f1e sLength)
   ,("cons", f2e cons)
   ,("eq?", f2b equal)
   ,("eqv?", f2b equal)
   ,("equal?", f2b equal)
+
+  ,("print", f1e sPrint)
   ]
 
 type Predicate = Val -> Bool
@@ -444,9 +446,9 @@ cdr (DottedList [_] x)      = return x
 cdr (DottedList (_ : xs) x) = return $ DottedList xs x
 cdr v                       = throwError $ TypeMismatch "pair" v
 
-pLength :: Val -> ThrowError Val
-pLength (List xs) = return $ Number $ genericLength xs
-pLength v         = throwError $ TypeMismatch "list" v
+sLength :: Val -> ThrowError Val
+sLength (List xs) = return $ Number $ genericLength xs
+sLength v         = throwError $ TypeMismatch "list" v
 
 cons :: Val -> Val -> ThrowError Val
 cons x (List []) = return $ List [x]
@@ -477,6 +479,11 @@ equal (Char a1) (Char a2)                   = a1 == a2
 equal (DottedList a1 l1) (DottedList a2 l2) = equalList a1 a2 && equal l1 l2
 equal (List a1) (List a2)                   = equalList a1 a2
 equal _ _                                   = False
+
+sPrint :: Val -> ThrowError Val
+sPrint v = do
+  _ <- liftIO $ putStrLn $ show v
+  return $ List []
 
 primitiveEnv :: IO Env
 primitiveEnv = do
@@ -523,8 +530,9 @@ prVal :: EitherT Err IO Val -> IO ()
 prVal et = do
   e <- runEitherT et
   case e of
-    Left err -> putStrLn $ show err
-    Right v  -> putStrLn $ show v
+    Left err         -> putStrLn $ show err
+    Right (List [])  -> putStr "" -- avoid printing '()
+    Right v          -> putStrLn $ show v
 
 -- read+eval+print
 r_e_p :: Env -> IO Bool
