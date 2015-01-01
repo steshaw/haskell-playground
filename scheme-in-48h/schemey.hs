@@ -258,7 +258,14 @@ eval env (List (Symbol "define" : List (Symbol id : params) : body)) =
 eval env (List (Symbol "define" : DottedList (Symbol id : params) varargs : body)) =
  makeVarArgsFunc varargs env params body >>= defineVar env id
 
-eval env (List (f@(Symbol _) : args))     = do
+eval env (List (Symbol "lambda" : List params : body)) =
+ makeNormalFunc env params body
+eval env (List (Symbol "lambda" : DottedList params varargs : body)) =
+ makeVarArgsFunc varargs env params body
+eval env (List (Symbol "lambda" : vararg : body)) =
+ makeVarArgsFunc vararg env [] body
+
+eval env (List (f : args)) = do
   ef <- eval env f
   eArgs <- mapM (eval env) args 
   apply ef eArgs
