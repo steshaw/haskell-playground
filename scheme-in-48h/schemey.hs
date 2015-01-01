@@ -12,6 +12,10 @@ import Control.Exception (
 import Control.Monad.Except
 import Data.List (foldl1', genericLength)
 
+// =============================================================================
+// AST
+// =============================================================================
+
 data Val
   = Symbol String
   | List [Val]
@@ -22,40 +26,9 @@ data Val
   | String String
   | Boolean Bool
 
-instance Show Val where show = showVal
-
-data Err
-  = NumArgs Integer [Val]
-  | TypeMismatch String Val
-  | Parser ParseError
-  | BadSpecialForm String Val
-  | NotFunction String String
-  | UnboundVar String String
-  | Default String
-
-showErr :: Err -> String
-showErr (UnboundVar msg var) = msg ++ ": " ++ var
-showErr (BadSpecialForm msg form) = msg ++ ": " ++ show form
-showErr (NotFunction msg proc) = msg ++ ": " ++ show proc
-showErr (NumArgs expected found) = 
-  "Expected " ++ show expected ++ 
-  " args; found values " ++ unwordsList found
-showErr (TypeMismatch expected found) =
-  "Invalid type: expected " ++ expected ++ 
-  ", found " ++ show found
-showErr (Parser parseErr) = "Parse error at " ++ show parseErr
-showErr (Default s) = "Error: " ++ s
-
-instance Show Err where show = showErr
-
-type ThrowError = Either Err
-
-trapError :: (MonadError e m, Show e) => m String -> m String
-trapError action = catchError action (return . show)
-
-extractValue :: ThrowError a -> a
-extractValue (Right v) = v
-extractValue _         = error "should be unreachable"
+// =============================================================================
+// Parser
+// =============================================================================
 
 dq :: Char
 dq = '"'
@@ -163,6 +136,43 @@ symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
 spaces :: Parser ()
 spaces = skipMany1 space
 
+// =============================================================================
+// Evaluator
+// =============================================================================
+
+data Err
+  = NumArgs Integer [Val]
+  | TypeMismatch String Val
+  | Parser ParseError
+  | BadSpecialForm String Val
+  | NotFunction String String
+  | UnboundVar String String
+  | Default String
+
+showErr :: Err -> String
+showErr (UnboundVar msg var) = msg ++ ": " ++ var
+showErr (BadSpecialForm msg form) = msg ++ ": " ++ show form
+showErr (NotFunction msg proc) = msg ++ ": " ++ show proc
+showErr (NumArgs expected found) = 
+  "Expected " ++ show expected ++ 
+  " args; found values " ++ unwordsList found
+showErr (TypeMismatch expected found) =
+  "Invalid type: expected " ++ expected ++ 
+  ", found " ++ show found
+showErr (Parser parseErr) = "Parse error at " ++ show parseErr
+showErr (Default s) = "Error: " ++ s
+
+instance Show Err where show = showErr
+
+type ThrowError = Either Err
+
+trapError :: (MonadError e m, Show e) => m String -> m String
+trapError action = catchError action (return . show)
+
+extractValue :: ThrowError a -> a
+extractValue (Right v) = v
+extractValue _         = error "should be unreachable"
+
 eval :: Val -> ThrowError Val
 eval val@(String _)               = return val
 eval val@(Number _)               = return val
@@ -186,6 +196,10 @@ apply f args =
   maybe e ($ args) $ lookup f primitives
   where
     e = throwError $ NotFunction "Unrecognised primitive" f
+
+// =============================================================================
+// Primitives
+// =============================================================================
 
 primitives :: [(String, [Val] -> ThrowError Val)]
 primitives =
@@ -372,6 +386,10 @@ equal (DottedList a1 l1) (DottedList a2 l2) = equalList a1 a2 && equal l1 l2
 equal (List a1) (List a2)                   = equalList a1 a2
 equal _ _                                   = False
 
+// =============================================================================
+// REPL
+// =============================================================================
+
 showVal :: Val -> String
 showVal (String s) = show s
 showVal (Symbol name) = name
@@ -384,6 +402,8 @@ showVal (Boolean True) = "#t"
 showVal (Boolean False) = "#f"
 showVal (List cs) = "(" ++ unwordsList cs ++ ")"
 showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ " . " ++ showVal tl ++ ")"
+
+instance Show Val where show = showVal
 
 unwordsList :: [Val] -> String
 unwordsList = unwords . map showVal
