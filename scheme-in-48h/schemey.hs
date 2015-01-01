@@ -252,6 +252,10 @@ eval env (List [Symbol "if", t, whenTrue, whenFalse]) = do
   case result of
     Boolean True -> eval env whenTrue
     _            -> eval env whenFalse
+eval env (List [Symbol "load", String fileName]) = do
+  exprs <- load fileName 
+  vals <- mapM (eval env) exprs
+  return $ last vals
 eval _ (List [Symbol "quote", val]) = return val
 eval env (List [Symbol "set!", Symbol var, expr]) = do
   val <- eval env expr
@@ -498,6 +502,11 @@ sPrint :: Val -> ThrowError Val
 sPrint v = do
   _ <- liftIO $ putStrLn $ show v
   return $ List []
+
+load :: String -> ThrowError [Val]
+load fileName = do
+  contents <- liftIO $ readFile fileName
+  readExprs contents
 
 primitiveEnv :: IO Env
 primitiveEnv = do
