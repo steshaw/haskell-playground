@@ -1,7 +1,7 @@
 module Main where
 
 import System.Environment (getArgs)
-import System.IO (isEOF, hFlush, stdout)
+import System.IO (isEOF, hFlush, stdout, Handle)
 import Text.ParserCombinators.Parsec hiding (spaces)
 import Data.List (foldl1', genericLength)
 import Numeric (readOct, readDec, readHex)
@@ -54,12 +54,13 @@ data Val
   | Char Char
   | String String
   | Boolean Bool
+  | Port Handle
   | PrimitiveFunc PrimF
   | Func 
-      {params     :: [String]
-      ,varArg     :: (Maybe String)
-      ,body       :: [Val]
-      ,closureEnv :: Env
+      {funcParams :: [String]
+      ,funcVarArg :: (Maybe String)
+      ,funcBody   :: [Val]
+      ,funcEnv    :: Env
       }
 
 -- =============================================================================
@@ -229,9 +230,15 @@ bindVars envRef bindings = do
   newIORef env'
 
 -- FIX: (map showVal params)? Instead check they are symbols
-makeFunc varargs env params body = return $ Func (map showVal params) varargs body env
+makeFunc :: Maybe String -> Env -> [Val] -> PrimF
+makeFunc varArg_ env params_ body_ = return $ Func (map showVal params_) varArg_ body_ env
+
+makeNormalFunc :: Env -> [Val] -> PrimF
 makeNormalFunc = makeFunc Nothing
-makeVarArgsFunc varargs = makeFunc (Just (showVal varargs))
+
+-- FIX: remove showVal hack
+makeVarArgsFunc :: Val -> Env -> [Val] -> PrimF
+makeVarArgsFunc varArg_ = makeFunc (Just (showVal varArg_))
 
 eval :: Env -> Val -> ThrowError Val
 eval _ val@(String _)               = return val
@@ -253,17 +260,17 @@ eval env (List [Symbol "define", Symbol var, expr]) = do
   val <- eval env expr
   defineVar env var val
 
-eval env (List (Symbol "define" : List (Symbol id : params) : body)) =
- makeNormalFunc env params body >>= defineVar env id
-eval env (List (Symbol "define" : DottedList (Symbol id : params) varargs : body)) =
- makeVarArgsFunc varargs env params body >>= defineVar env id
+eval env (List (Symbol "define" : List (Symbol sym : params_) : body_)) =
+ makeNormalFunc env params_ body_ >>= defineVar env sym
+eval env (List (Symbol "define" : DottedList (Symbol sym : params_) varargs : body_)) =
+ makeVarArgsFunc varargs env params_ body_ >>= defineVar env sym
 
-eval env (List (Symbol "lambda" : List params : body)) =
- makeNormalFunc env params body
-eval env (List (Symbol "lambda" : DottedList params varargs : body)) =
- makeVarArgsFunc varargs env params body
-eval env (List (Symbol "lambda" : vararg : body)) =
- makeVarArgsFunc vararg env [] body
+eval env (List (Symbol "lambda" : List params_ : body_)) =
+ makeNormalFunc env params_ body_
+eval env (List (Symbol "lambda" : DottedList params_ varargs : body_)) =
+ makeVarArgsFunc varargs env params_ body_
+eval env (List (Symbol "lambda" : vararg : body_)) =
+ makeVarArgsFunc vararg env [] body_
 
 eval env (List (f : args)) = do
   ef <- eval env f
@@ -514,11 +521,12 @@ showVal (Char c) = "#\\" ++ [c]
 showVal (Boolean True) = "#t"
 showVal (Boolean False) = "#f"
 showVal (List cs) = "(" ++ unwordsList cs ++ ")"
+showVal (Port _)  = "<IO port>"
 showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ " . " ++ showVal tl ++ ")"
 showVal (PrimitiveFunc _) = "<primitive>"
-showVal (Func {params = params', varArg = varArg'}) =
-  "(lambda (" ++ unwords (map show params') ++
-    (case varArg' of
+showVal (Func {funcParams = params, funcVarArg = varArg}) =
+  "(lambda (" ++ unwords (map show params) ++
+    (case varArg of
       Nothing -> ""
       Just arg -> " . " ++ arg) ++ ") ...)"
 
