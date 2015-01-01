@@ -170,12 +170,6 @@ instance Show Err where show = showErr
 trapError :: (MonadError e m, Show e) => m String -> m String
 trapError action = catchError action (return . show)
 
-{-
-extractValue :: ThrowError a -> a
-extractValue (Right v) = v
-extractValue _         = error "should be unreachable"
--}
-
 type Env = IORef [(String, IORef Val)]
 
 newEnv :: IO Env
@@ -374,13 +368,6 @@ stringRef [(String s), (Number n)] = if n < 0 || n >= (genericLength s)
                                         else return $ Char $ s !! (fromInteger n)
 stringRef args@[_, _]              = throwError $ Default $ "string-ref expects a string and an integer, got" ++ show args
 stringRef args                     = throwError $ NumArgs 2 args
-
-{-
-boolErr2False :: ThrowError Val -> Bool
-boolErr2False (Left _)            = False -- XXX: Pretty sure this can never happen.
-boolErr2False (Right (Boolean v)) = v
-boolErr2False _                   = error "should not happen"
--}
 
 equalList :: [Val] -> [Val] -> Bool
 equalList (a:as) (b:bs) = equal a b && equalList as bs
