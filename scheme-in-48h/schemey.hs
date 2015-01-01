@@ -17,6 +17,34 @@ import Control.Monad (liftM)
 -- AST
 -- =============================================================================
 
+data Err
+  = NumArgs Integer [Val]
+  | TypeMismatch String Val
+  | Parser ParseError
+  | BadSpecialForm String Val
+  | NotFunction String String
+  | UnboundVar String String
+  | Default String
+
+showErr :: Err -> String
+showErr (UnboundVar msg var) = msg ++ ": " ++ var
+showErr (BadSpecialForm msg form) = msg ++ ": " ++ show form
+showErr (NotFunction msg proc) = msg ++ ": " ++ show proc
+showErr (NumArgs expected found) = 
+  "Expected " ++ show expected ++ 
+  " args; found values " ++ unwordsList found
+showErr (TypeMismatch expected found) =
+  "Invalid type: expected " ++ expected ++ 
+  ", found " ++ show found
+showErr (Parser parseErr) = "Parse error at " ++ show parseErr
+showErr (Default s) = "Error: " ++ s
+
+instance Show Err where show = showErr
+
+type ThrowError = EitherT Err IO
+
+type PrimF = [Val] -> ThrowError Val
+
 data Val
   = Symbol String
   | List [Val]
@@ -26,6 +54,13 @@ data Val
   | Char Char
   | String String
   | Boolean Bool
+  | PrimitiveFunc PrimF
+  | Func 
+      {params     :: [String]
+      ,varArg     :: (Maybe String)
+      ,body       :: [Val]
+      ,closureEnv :: Env
+      }
 
 -- =============================================================================
 -- Parser
@@ -141,36 +176,10 @@ spaces = skipMany1 space
 -- Evaluator
 -- =============================================================================
 
-data Err
-  = NumArgs Integer [Val]
-  | TypeMismatch String Val
-  | Parser ParseError
-  | BadSpecialForm String Val
-  | NotFunction String String
-  | UnboundVar String String
-  | Default String
-
-showErr :: Err -> String
-showErr (UnboundVar msg var) = msg ++ ": " ++ var
-showErr (BadSpecialForm msg form) = msg ++ ": " ++ show form
-showErr (NotFunction msg proc) = msg ++ ": " ++ show proc
-showErr (NumArgs expected found) = 
-  "Expected " ++ show expected ++ 
-  " args; found values " ++ unwordsList found
-showErr (TypeMismatch expected found) =
-  "Invalid type: expected " ++ expected ++ 
-  ", found " ++ show found
-showErr (Parser parseErr) = "Parse error at " ++ show parseErr
-showErr (Default s) = "Error: " ++ s
-
-instance Show Err where show = showErr
-
 type Env = IORef [(String, IORef Val)]
 
 newEnv :: IO Env
 newEnv = newIORef []
-
-type ThrowError = EitherT Err IO
 
 isBound :: Env -> String -> ThrowError Bool
 isBound envRef var = do 
@@ -213,8 +222,8 @@ defineVar envRef var val = do
      then setVar envRef var val
      else createVar envRef var val
 
-bindVars :: Env -> [(String, Val)] -> ThrowError Env
-bindVars envRef bindings = liftIO $ do
+bindVars :: Env -> [(String, Val)] -> IO Env
+bindVars envRef bindings = do
   env <- readIORef envRef
   env' <- liftM (++ env) $ mapM (uncurry newBinding) bindings
   newIORef env'
@@ -238,22 +247,23 @@ eval env (List [Symbol "set!", Symbol var, expr]) = do
 eval env (List [Symbol "define", Symbol var, expr]) = do
   val <- eval env expr
   defineVar env var val
-eval env (List (Symbol f : args))     = mapM (eval env) args >>= apply f
+eval env (List (f@(Symbol _) : args))     = do
+  ef <- eval env f
+  eArgs <- mapM (eval env) args 
+  apply ef eArgs
 -- TODO: eval DottedList
 --eval env (DottedList _ _) = error "Implement eval on DottedList" -- FIX
 eval _ badForm = throwError $ BadSpecialForm "Unrecognised special form" badForm
 
-apply :: String -> [Val] -> ThrowError Val
-apply f args =
-  maybe e ($ args) $ lookup f primitives
-  where
-    e = throwError $ NotFunction "Unrecognised primitive" f
+apply :: Val -> [Val] -> ThrowError Val
+apply (PrimitiveFunc func) args = func args
+apply _ _                       = throwError $ Default "Illegal application"
 
 -- =============================================================================
 -- Primitives
 -- =============================================================================
 
-primitives :: [(String, [Val] -> ThrowError Val)]
+primitives :: [(String, PrimF)]
 primitives =
   [("+", numericBinop (+))
   ,("-", numericBinop (-))
@@ -295,8 +305,6 @@ primitives =
   ,("eqv?", f2b equal)
   ,("equal?", f2b equal)
   ]
-
-type PrimF = [Val] -> ThrowError Val
 
 type Predicate = Val -> Bool
 
@@ -433,6 +441,13 @@ equal (DottedList a1 l1) (DottedList a2 l2) = equalList a1 a2 && equal l1 l2
 equal (List a1) (List a2)                   = equalList a1 a2
 equal _ _                                   = False
 
+primitiveEnv :: IO Env
+primitiveEnv = do
+  env <- newEnv
+  bindVars env (map t primitives)
+    where
+      t (name, f) = (name, PrimitiveFunc f)
+
 -- =============================================================================
 -- REPL
 -- =============================================================================
@@ -449,6 +464,12 @@ showVal (Boolean True) = "#t"
 showVal (Boolean False) = "#f"
 showVal (List cs) = "(" ++ unwordsList cs ++ ")"
 showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ " . " ++ showVal tl ++ ")"
+showVal (PrimitiveFunc _) = "<primitive>"
+showVal (Func {params = params', varArg = varArg'}) =
+  "(lambda (" ++ unwords (map show params') ++
+    (case varArg' of
+      Nothing -> ""
+      Just arg -> " . " ++ arg) ++ ") ...)"
 
 instance Show Val where show = showVal
 
@@ -497,7 +518,7 @@ usage = putStrLn $ "usage: schemey [scheme-expression]"
 main :: IO ()
 main = do
   args <- getArgs
-  env <- newEnv
+  env <- primitiveEnv
   case args of
     []     -> repl env
     [expr] -> prVal $ r_e env expr
