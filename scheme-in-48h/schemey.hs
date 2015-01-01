@@ -22,7 +22,7 @@ data Err
   | TypeMismatch String Val
   | Parser ParseError
   | BadSpecialForm String Val
-  | NotFunction String String
+  | NotFunction String Val
   | UnboundVar String String
   | Default String
 
@@ -289,7 +289,7 @@ apply (Func params' varArg' body' closure) args =
       Just argName -> liftIO $ bindVars env [(argName, List $ remainingArgs)]
       Nothing -> return env
     evalBody env = liftM last $ mapM (eval env) body'
-apply _ _                       = throwError $ Default "Illegal application"
+apply notF _                    = throwError $ NotFunction "Not a function" notF
 
 -- =============================================================================
 -- Primitives
