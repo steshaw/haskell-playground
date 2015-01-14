@@ -9,11 +9,11 @@ import Control.Arrow
 --
 
 skips :: [a] -> [[a]]
-skips xs = [everyNth n xs | n <- [1 .. length xs]]
+skips xs = map (everyNth xs) [1 .. length xs]
   where
-    everyNth :: Int -> [a] -> [a]
-    everyNth n as
-      | n <= length as = (last $ take n as) : everyNth n (drop n as)
+    everyNth :: [a] -> Int -> [a]
+    everyNth as n
+      | n <= length as = last (take n as) : everyNth (drop n as) n
       | otherwise      = []
 
 -- tests
