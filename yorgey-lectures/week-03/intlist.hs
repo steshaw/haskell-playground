@@ -1,9 +1,11 @@
-
 data IntList = Empty | Cons Int IntList
   deriving Show
 
-eg :: IntList
-eg = Cons (-2) $ Cons (-1) $ Cons (0) $ Cons 1 $ Cons 2 $ Empty
+eg0 :: IntList
+eg0 = Cons 1 $ Cons 2 $ Cons 3 $ Cons 4 $ Empty
+
+eg1 :: IntList
+eg1 = Cons (-2) $ Cons (-1) $ Cons (0) $ Cons 1 $ Cons 2 $ Cons 3 $ Empty
 
 addOneToAll :: IntList -> IntList
 addOneToAll Empty       = Empty
@@ -53,3 +55,21 @@ keepOnlyEven_ = keep even
 
 keepLessThan2_ :: IntList -> IntList
 keepLessThan2_ = keep (< 2)
+
+summarisePlus :: IntList -> Int
+summarisePlus Empty       = 0
+summarisePlus (Cons n ns) = n + (summarisePlus ns)
+
+summariseMul :: IntList -> Int
+summariseMul Empty       = 1
+summariseMul (Cons n ns) = n * (summariseMul ns)
+
+summarise :: t  -> (Int -> t -> t) -> IntList -> t
+summarise empty _    Empty       = empty
+summarise empty join (Cons n ns) = join n (summarise empty join ns)
+
+summarisePlus_ :: IntList -> Int
+summarisePlus_ = summarise 0 (+)
+
+summariseMul_ :: IntList -> Int
+summariseMul_  = summarise 1 (*)
