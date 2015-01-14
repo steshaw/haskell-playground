@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 
 xor :: [Bool] -> Bool
 xor = foldr f False
@@ -26,30 +27,17 @@ foldl_ :: (a -> b -> a) -> a -> [b] -> a
 foldl_ _ a [] = a
 foldl_ f a (b:bs) = foldl_ f (f a b) bs
 
-type L a = [a]
+foldLeft :: forall a b. (b -> a -> b) -> b -> [a] -> b
+foldLeft f i as = foldr ff id as i
+  where
+    ff :: a -> (b -> t) -> (b -> t)
+    ff a bf = bf . (`f` a)
 
-type FL a = L a -> L a
+-- foldr :: (a -> b -> b) -> b -> [a] -> b
+-- foldl :: (b -> a -> b) -> b -> [a] -> b
 
-{- -}
 rev :: [a] -> [a]
-rev xs = foldr f boot xs []
-  where
-    f :: a -> FL a -> FL a
-    f a bf = bf . (\ys -> a : ys)
-    boot :: FL a
-    boot = id
-
-foldLeft :: (a -> b -> a) -> a -> [b] -> a
-foldLeft f start bs = foldr (flip f) start (rev bs)
-{- -}
-
-{-
-foldLeft :: (a -> b -> a) -> a -> [b] -> a
-foldLeft f i bs = (foldr1 ff boot bs) i
-  where
-    ff a bf = bf . (\t -> f a t)
-    boot = id
--}
+rev = foldLeft (flip (:)) []
 
 fr :: Integer -> Exp -> Exp
 fr n e = Op (Lit n) e
