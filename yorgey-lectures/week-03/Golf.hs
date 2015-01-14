@@ -1,5 +1,9 @@
 module Golf where
 
+import Data.List
+import qualified Data.Map as M
+import Control.Arrow
+
 --
 -- Exercise 1 Hopscotch
 --
@@ -26,7 +30,8 @@ skips5 = skips ([] :: [Int]) == []
 skipsTests :: [Bool]
 skipsTests = [skips1, skips2, skips3, skips4, skips5]
 skipsAll :: Bool
-skipsAll = all (==True) skipsTests
+skipsAll = all (== True) skipsTests
+
 
 --
 -- Exercise 2 Local maxima
@@ -47,4 +52,52 @@ localMaxima3 = localMaxima [1,2,3,4,5] == []
 localMaximaTests :: [Bool]
 localMaximaTests = [localMaxima1, localMaxima2, localMaxima3]
 localMaximaAll :: Bool
-localMaximaAll = all (==True) localMaximaTests
+localMaximaAll = all (== True) localMaximaTests
+
+
+--
+-- Exercise 3 Histogram
+--
+
+histogram :: [Integer] -> String
+histogram ns = unlines $ r ++ key
+  where
+    r = [concat [ go i count (M.lookup i m) | i <- [0 .. 9]] | count <- reverse [1 .. greatestOccurrence]]
+      where
+        counts = map ((!! 0) &&& length) $ group $ sort $ ns
+        m = M.fromList counts
+        greatestOccurrence = maximum (map snd counts)
+        go _ _ Nothing = " "
+        go _ count (Just occurrence)
+          | count <= occurrence = "*"
+          | otherwise          = " "
+    key = [ "=========="
+          , "0123456789"]
+
+r1 :: [String]
+r1 =
+  [" *        "
+  ," *        "
+  ," *   *    "
+  ,"=========="
+  ,"0123456789"
+  ]
+histogram1 :: Bool
+histogram1 = histogram [1,1,1,5] == unlines r1
+r2 :: [String]
+r2 =
+  ["    *     "
+  ,"    *     "
+  ,"    * *   "
+  ," ******  *"
+  ,"=========="
+  ,"0123456789"
+  ]
+histogram2 :: Bool
+histogram2 = histogram [1,4,5,4,6,6,3,4,2,4,9] == unlines r2
+histogram3 :: Bool
+histogram3 = histogram [3,5] == "   * *    \n==========\n0123456789\n"
+histogramTests :: [Bool]
+histogramTests = [histogram1, histogram2, histogram3]
+histogramAll :: Bool
+histogramAll = all (== True) histogramTests
