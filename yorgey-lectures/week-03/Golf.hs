@@ -27,3 +27,24 @@ skipsTests :: [Bool]
 skipsTests = [skips1, skips2, skips3, skips4, skips5]
 skipsAll :: Bool
 skipsAll = all (==True) skipsTests
+
+--
+-- Exercise 2 Local maxima
+--
+
+localMaxima :: [Integer] -> [Integer]
+localMaxima (a : b : c : ns)
+  | a < b && b > c = b : localMaxima (b:c:ns)
+  | otherwise      = localMaxima (b:c:ns)
+localMaxima _ = []
+
+localMaxima1 :: Bool
+localMaxima1 = localMaxima [2, 9, 5, 6, 1] == [9, 6]
+localMaxima2 :: Bool
+localMaxima2 = localMaxima [2, 3, 4, 1, 5] == [4]
+localMaxima3 :: Bool
+localMaxima3 = localMaxima [1,2,3,4,5] == []
+localMaximaTests :: [Bool]
+localMaximaTests = [localMaxima1, localMaxima2, localMaxima3]
+localMaximaAll :: Bool
+localMaximaAll = all (==True) localMaximaTests
