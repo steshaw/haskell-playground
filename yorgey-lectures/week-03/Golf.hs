@@ -25,18 +25,18 @@ skips0 xs = map (everyNth xs) [1 .. length xs]
       | otherwise      = []
 
 -- tests
-skips1 :: Bool
-skips1 = skips "ABCD" == ["ABCD", "BD", "C", "D"]
-skips2 :: Bool
-skips2 = skips "hello!" == ["hello!", "el!", "l!", "l", "o", "!"]
-skips3 :: Bool
-skips3 = skips [1 :: Int] == [[1]]
-skips4 :: Bool
-skips4 = skips [True, False] == [[True, False], [False]]
-skips5 :: Bool
-skips5 = null $ skips ([] :: [Int])
+skipsT1 :: Bool
+skipsT1 = skips "ABCD" == ["ABCD", "BD", "C", "D"]
+skipsT2 :: Bool
+skipsT2 = skips "hello!" == ["hello!", "el!", "l!", "l", "o", "!"]
+skipsT3 :: Bool
+skipsT3 = skips [1 :: Int] == [[1]]
+skipsT4 :: Bool
+skipsT4 = skips [True, False] == [[True, False], [False]]
+skipsT5 :: Bool
+skipsT5 = null $ skips ([] :: [Int])
 skipsTests :: [Bool]
-skipsTests = [skips1, skips2, skips3, skips4, skips5]
+skipsTests = [skipsT1, skipsT2, skipsT3, skipsT4, skipsT5]
 skipsAll :: Bool
 skipsAll = all (== True) skipsTests
 
