@@ -13,7 +13,7 @@ skips xs = map (map snd . f . fst) ps
   where
     f i = filter (m i) ps
     m i (n, _) = mod n i == 0
-    ps = zip [1..] xs
+    ps = zip [1 :: Integer ..] xs
 
 -- original skips
 skips0 :: [a] -> [[a]]
@@ -70,7 +70,7 @@ localMaximaAll = all (== True) localMaximaTests
 histogram :: [Integer] -> String
 histogram ns = unlines $ grid ++ key
   where
-    grid = [[ c count (M.lookup i m) | i <- [0 .. 9]] | count <- reverse [1 .. maxOcc]]
+    grid = [[ c occ $ M.lookup i m | i <- [0 .. 9]] | occ <- reverse [1 .. maxOcc]]
       where
         ps = map ((!! 0) &&& length) $ group $ sort ns
         m = M.fromList ps
