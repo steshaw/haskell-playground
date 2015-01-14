@@ -51,6 +51,8 @@ localMaxima (a : b : c : ns)
   | otherwise      = localMaxima (b:c:ns)
 localMaxima _ = []
 
+-- tests
+
 localMaxima1 :: Bool
 localMaxima1 = localMaxima [2, 9, 5, 6, 1] == [9, 6]
 localMaxima2 :: Bool
@@ -79,6 +81,8 @@ histogram ns = unlines $ grid ++ key
         c _ _                                          = ' '
     key = [ "=========="
           , "0123456789"]
+
+-- tests
 
 r1 :: [String]
 r1 =
