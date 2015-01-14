@@ -60,17 +60,15 @@ localMaximaAll = all (== True) localMaximaTests
 --
 
 histogram :: [Integer] -> String
-histogram ns = unlines $ r ++ key
+histogram ns = unlines $ result ++ key
   where
-    r = [concat [ go i count (M.lookup i m) | i <- [0 .. 9]] | count <- reverse [1 .. greatestOccurrence]]
+    result = [[ c count (M.lookup i m) | i <- [0 .. 9]] | count <- reverse [1 .. greatestOccurrence]]
       where
         counts = map ((!! 0) &&& length) $ group $ sort $ ns
         m = M.fromList counts
-        greatestOccurrence = maximum (map snd counts)
-        go _ _ Nothing = " "
-        go _ count (Just occurrence)
-          | count <= occurrence = "*"
-          | otherwise          = " "
+        greatestOccurrence = maximum $ map snd counts
+        c count (Just occurrence) | count <= occurrence = '*'
+        c _ _                                          = ' '
     key = [ "=========="
           , "0123456789"]
 
