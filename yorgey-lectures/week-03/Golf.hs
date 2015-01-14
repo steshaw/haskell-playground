@@ -9,7 +9,15 @@ import Control.Arrow
 --
 
 skips :: [a] -> [[a]]
-skips xs = map (everyNth xs) [1 .. length xs]
+skips xs = map (map snd . f . fst) ps
+  where
+    f i = filter (m i) ps
+    m i (n, _) = mod n i == 0
+    ps = zip [1..] xs
+
+-- original skips
+skips0 :: [a] -> [[a]]
+skips0 xs = map (everyNth xs) [1 .. length xs]
   where
     everyNth :: [a] -> Int -> [a]
     everyNth as n
@@ -26,7 +34,7 @@ skips3 = skips [1 :: Int] == [[1]]
 skips4 :: Bool
 skips4 = skips [True, False] == [[True, False], [False]]
 skips5 :: Bool
-skips5 = skips ([] :: [Int]) == []
+skips5 = null $ skips ([] :: [Int])
 skipsTests :: [Bool]
 skipsTests = [skips1, skips2, skips3, skips4, skips5]
 skipsAll :: Bool
@@ -48,7 +56,7 @@ localMaxima1 = localMaxima [2, 9, 5, 6, 1] == [9, 6]
 localMaxima2 :: Bool
 localMaxima2 = localMaxima [2, 3, 4, 1, 5] == [4]
 localMaxima3 :: Bool
-localMaxima3 = localMaxima [1,2,3,4,5] == []
+localMaxima3 = null $ localMaxima [1,2,3,4,5]
 localMaximaTests :: [Bool]
 localMaximaTests = [localMaxima1, localMaxima2, localMaxima3]
 localMaximaAll :: Bool
@@ -64,7 +72,7 @@ histogram ns = unlines $ result ++ key
   where
     result = [[ c count (M.lookup i m) | i <- [0 .. 9]] | count <- reverse [1 .. greatestOccurrence]]
       where
-        counts = map ((!! 0) &&& length) $ group $ sort $ ns
+        counts = map ((!! 0) &&& length) $ group $ sort ns
         m = M.fromList counts
         greatestOccurrence = maximum $ map snd counts
         c count (Just occurrence) | count <= occurrence = '*'
