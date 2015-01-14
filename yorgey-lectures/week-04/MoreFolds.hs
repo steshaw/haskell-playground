@@ -26,8 +26,20 @@ foldl_ :: (a -> b -> a) -> a -> [b] -> a
 foldl_ _ a [] = a
 foldl_ f a (b:bs) = foldl_ f (f a b) bs
 
+type L a = [a]
+
+type FL a = L a -> L a
+
+rev :: [a] -> [a]
+rev xs = (foldr f boot xs) []
+  where
+    f :: a -> FL a -> FL a
+    f a bf = bf . (\aa -> a : aa)
+    boot :: FL a
+    boot = id
+
 foldLeft :: (a -> b -> a) -> a -> [b] -> a
-foldLeft f start bs = foldr (flip f) start (reverse bs)
+foldLeft f start bs = foldr (flip f) start (rev bs)
 
 fr :: Integer -> Exp -> Exp
 fr n e = Op (Lit n) e
@@ -55,3 +67,6 @@ want3 = foldl_   left (Lit 1) [4, 2]
 
 want4 :: Exp
 want4 = foldLeft left (Lit 1) [4, 2]
+
+tests :: [Bool]
+tests = [want1 == want2, want2 == want3, want3 == want4]
