@@ -68,13 +68,13 @@ localMaximaAll = all (== True) localMaximaTests
 --
 
 histogram :: [Integer] -> String
-histogram ns = unlines $ result ++ key
+histogram ns = unlines $ grid ++ key
   where
-    result = [[ c count (M.lookup i m) | i <- [0 .. 9]] | count <- reverse [1 .. greatestOccurrence]]
+    grid = [[ c count (M.lookup i m) | i <- [0 .. 9]] | count <- reverse [1 .. maxOcc]]
       where
-        counts = map ((!! 0) &&& length) $ group $ sort ns
-        m = M.fromList counts
-        greatestOccurrence = maximum $ map snd counts
+        ps = map ((!! 0) &&& length) $ group $ sort ns
+        m = M.fromList ps
+        maxOcc = maximum $ map snd ps
         c count (Just occurrence) | count <= occurrence = '*'
         c _ _                                          = ' '
     key = [ "=========="
