@@ -27,7 +27,7 @@ foldl_ _ a [] = a
 foldl_ f a (b:bs) = foldl_ f (f a b) bs
 
 foldLeft :: (a -> b -> a) -> a -> [b] -> a
-foldLeft f start bs = foldr (flip f) start bs
+foldLeft f start bs = foldr (flip f) start (reverse bs)
 
 fr :: Integer -> Exp -> Exp
 fr n e = Op (Lit n) e
