@@ -30,16 +30,26 @@ type L a = [a]
 
 type FL a = L a -> L a
 
+{- -}
 rev :: [a] -> [a]
-rev xs = (foldr f boot xs) []
+rev xs = foldr f boot xs []
   where
     f :: a -> FL a -> FL a
-    f a bf = bf . (\aa -> a : aa)
+    f a bf = bf . (\ys -> a : ys)
     boot :: FL a
     boot = id
 
 foldLeft :: (a -> b -> a) -> a -> [b] -> a
 foldLeft f start bs = foldr (flip f) start (rev bs)
+{- -}
+
+{-
+foldLeft :: (a -> b -> a) -> a -> [b] -> a
+foldLeft f i bs = (foldr1 ff boot bs) i
+  where
+    ff a bf = bf . (\t -> f a t)
+    boot = id
+-}
 
 fr :: Integer -> Exp -> Exp
 fr n e = Op (Lit n) e
