@@ -1,5 +1,9 @@
+{-# language TypeSynonymInstances #-}
+{-# language FlexibleInstances #-}
+
 import ExprT
 import Parser
+import qualified StackVM as VM
 import Control.Applicative
 
 eval :: ExprT -> Integer
@@ -54,3 +58,11 @@ testInteger = testExp :: Maybe Integer
 testBool = testExp :: Maybe Bool
 testMM = testExp :: Maybe MinMax
 testSat = testExp :: Maybe Mod7
+
+instance Expr VM.Program where
+  lit n = [VM.PushI n]
+  add a b = a ++ b ++ [VM.Add]
+  mul a b = a ++ b ++ [VM.Mul]
+
+compile :: String -> Maybe VM.Program
+compile s = parseExp lit add mul s
