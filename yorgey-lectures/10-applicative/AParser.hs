@@ -1,3 +1,5 @@
+{-# language InstanceSigs #-}
+
 {- CIS 194 HW 10
    due Monday, 1 April
 -}
@@ -7,6 +9,7 @@ module AParser where
 import           Control.Applicative
 
 import           Data.Char
+import Control.Arrow (first)
 
 -- A parser for a value of type a is a function which takes a String
 -- represnting the input to be parsed, and succeeds or fails; if it
@@ -44,8 +47,7 @@ Just ('x',"yz")
 
 -}
 
--- For convenience, we've also provided a parser for positive
--- integers.
+-- For convenience, we've also provided a parser for positive integers.
 posInt :: Parser Integer
 posInt = Parser f
   where
@@ -57,3 +59,56 @@ posInt = Parser f
 ------------------------------------------------------------
 -- Your code goes below here
 ------------------------------------------------------------
+
+instance Functor Parser where
+  fmap f p = Parser (\s -> first f <$> runParser p s)
+
+instance Applicative Parser where
+  pure a = Parser (\s -> Just (a, s))
+  (<*>) :: Parser (a -> b) -> Parser a -> Parser b
+  p1 <*> p2 = Parser (\s -> case runParser p1 s of
+                   Nothing -> Nothing
+                   Just (f, s2) -> case runParser p2 s2 of
+                                       Nothing -> Nothing
+                                       Just (a, s3) -> Just (f a, s3))
+
+newtype Name  = Name String
+newtype Phone = Phone String
+
+data Employee = Employee {name :: Name, phone :: Phone}
+
+parseName :: Parser Name
+parseName = undefined
+
+parsePhone :: Parser Phone
+parsePhone = undefined
+
+parseEmployee :: Parser Employee
+parseEmployee = Employee <$> parseName <*> parsePhone
+
+abParser :: Parser (Char, Char)
+abParser = (,) <$> char 'a' <*> char 'b'
+
+abParser_ :: Parser ()
+abParser_ = const () <$> abParser
+
+intPair :: Parser (Integer, Integer)
+intPair = f <$> posInt <*> char ' ' <*> posInt
+  where
+    f i1 _ i2 = (i1, i2)
+
+{-
+class Applicative f => Alternative f where
+  empty :: f a
+  (<|>) :: f a -> f b -> f c
+-}
+
+instance Alternative Parser where
+  empty = Parser (const Nothing)
+  p1 <|> p2 = Parser (\s -> case runParser p1 s of
+    Nothing -> runParser p2 s
+    r       -> r)
+
+intOrUppercase :: Parser ()
+intOrUppercase = const () <$> posInt <|> const () <$> satisfy isUpper
+
