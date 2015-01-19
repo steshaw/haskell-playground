@@ -1,0 +1,6 @@
+
+* Patterns in Functional Programming
+
+A course by Jeremy Gibbons
+
+http://www.prg.nii.ac.jp/course/2013/springCourse/springcourse.html
