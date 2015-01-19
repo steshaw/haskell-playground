@@ -2,7 +2,7 @@
 {-# language DeriveFunctor #-}
 {-# language InstanceSigs #-}
 
-import Control.Applicative
+import Control.Applicative hiding ((*>))
 import Control.Monad (forM_)
 
 newtype Name = Name String deriving (Show)
@@ -86,3 +86,22 @@ getEmp = Employee <$> getName <*> getPhone
 
 emp1 :: Employee
 emp1 = getEmp big1
+
+--
+-- Applicative API
+--
+
+pair :: Applicative f => f a -> f b -> f (a, b)
+pair = liftA2 (,)
+
+(*>) :: Applicative f => f a -> f b -> f b
+(*>) = liftA2 (curry snd)
+
+mapA :: Applicative f => (a -> f b) -> ([a] -> f [b])
+mapA f = \as -> sequenceA $ map f as
+
+sequenceA  :: Applicative f => [f a] -> f [a]
+sequenceA = foldr (liftA2 (:)) (pure [])
+
+replicateA :: Applicative f => Int -> f a -> f [a]
+replicateA num fas = sequenceA $ replicate num fas
