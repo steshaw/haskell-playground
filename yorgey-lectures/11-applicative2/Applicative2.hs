@@ -24,8 +24,11 @@ phones = Phone <$> ["555-5555", "123-456-7890"]
 emps1 :: [Employee]
 emps1 = Employee <$> names <*> phones
 
+printAll :: Show a => [a] -> IO ()
+printAll a = a `forM_` print
+
 printEmps1 :: IO ()
-printEmps1 = emps1 `forM_` print
+printEmps1 = printAll emps1
 
 type BinOp = Applicative f => f Integer -> f Integer -> f Integer
 
@@ -54,3 +57,32 @@ instance Applicative Zippy where
   pure a = Zippy $ repeat a
   (<*>) :: Zippy (a -> b) -> Zippy a -> Zippy b
   Zippy fs <*> Zippy as = Zippy (zipWith ($) fs as)
+
+emps2 :: [Employee]
+emps2 = getZippy $ Employee <$> Zippy names <*> Zippy phones
+
+printEmps2 :: IO ()
+printEmps2 = printAll emps2
+
+--
+-- Reader/environment
+--
+
+data Big = Big
+  { getName         :: Name
+  , getSSN          :: String
+  , getSalary       :: Integer
+  , getPhone        :: Phone
+  , getLicensePlate :: String
+  , getNumSickDays  :: Int
+  }
+  deriving (Show)
+
+big1 :: Big
+big1 = Big (Name "Brent") "XXX-XX-XXX4" 600000000 (Phone "555-1234") "JGX-55T3" 2
+
+getEmp :: Big -> Employee
+getEmp = Employee <$> getName <*> getPhone
+
+emp1 :: Employee
+emp1 = getEmp big1
