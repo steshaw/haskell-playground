@@ -1,4 +1,6 @@
 {-# language Rank2Types #-}
+{-# language DeriveFunctor #-}
+{-# language InstanceSigs #-}
 
 import Control.Applicative
 import Control.Monad (forM_)
@@ -43,3 +45,12 @@ m1 = Just 3 .+ Just 5 .* Just 8
 
 m2 :: FailingArith
 m2 = ((Just 3) .+ Nothing) .* (Just 8)
+
+newtype Zippy a = Zippy { getZippy :: [a] }
+  deriving (Eq, Show, Functor)
+
+-- (+1) [1,2,3]
+instance Applicative Zippy where
+  pure a = Zippy $ repeat a
+  (<*>) :: Zippy (a -> b) -> Zippy a -> Zippy b
+  Zippy fs <*> Zippy as = Zippy (zipWith ($) fs as)
