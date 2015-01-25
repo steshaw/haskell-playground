@@ -4,6 +4,7 @@
 
 import Control.Monad.Random
 import Control.Arrow (first)
+import Control.Monad (replicateM)
 import Data.List (partition, sortBy)
 
 ------------------------------------------------------------
@@ -11,11 +12,6 @@ import Data.List (partition, sortBy)
 
 newtype DieValue = DV { unDV :: Int }
   deriving (Eq, Ord, Show, Num)
-
-{-
-first :: (a -> b) -> (a, c) -> (b, c)
-first f (a, c) = (f a, c)
--}
 
 instance Random DieValue where
   random           = first DV . randomR (1,6)
@@ -49,7 +45,7 @@ battle (Battlefield attackers defenders) =
     where
       numAttackers = min attackers 3
       numDefenders = min defenders 2
-      dies = fmap revSort . sequence . flip replicate die
+      dies = fmap revSort . flip replicateM die
       revSort = sortBy (flip compare)
       attackDie = dies numAttackers
       defendDie = dies numDefenders
@@ -69,7 +65,7 @@ successProbN n battlefield =
       where
         numSuccess = length . filter totalDestruction
         frac a b = (fromIntegral a) / (fromIntegral b)
-    invasions = sequence . flip replicate (invade battlefield)
+    invasions = flip replicateM $ invade battlefield
     totalDestruction bf = bfDefenders bf == 0
 
 successProb :: Battlefield -> R Double
