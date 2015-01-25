@@ -32,8 +32,10 @@ type Army = Int
 data Battlefield = Battlefield { bfAttackers :: Army, bfDefenders :: Army }
   deriving (Show)
 
-battle :: Battlefield -> Rand StdGen Battlefield
-battle bf@(Battlefield {bfAttackers = 0}) = return bf
+type R = Rand StdGen
+
+battle :: Battlefield -> R Battlefield
+battle bf@(Battlefield {bfAttackers = a}) | a < 2 = return bf
 battle bf@(Battlefield {bfDefenders = 0}) = return bf
 battle (Battlefield attackers defenders) =
   do
@@ -43,7 +45,7 @@ battle (Battlefield attackers defenders) =
         losses = partition (==True) results
         aLosses = length $ fst $ losses
         dLosses = length $ snd $ losses
-      in battle $ Battlefield (attackers - aLosses) (defenders - dLosses)
+      in return $ Battlefield (attackers - aLosses) (defenders - dLosses)
     where
       numAttackers = min attackers 3
       numDefenders = min defenders 2
@@ -51,3 +53,24 @@ battle (Battlefield attackers defenders) =
       revSort = sortBy (flip compare)
       attackDie = dies numAttackers
       defendDie = dies numDefenders
+
+invade :: Battlefield -> R Battlefield
+invade battlefield = battle battlefield >>= f
+  where
+    f bf@(Battlefield {bfAttackers = a}) | a < 2 = return bf
+    f bf@(Battlefield {bfDefenders = 0})         = return bf
+    f bf                                         = invade bf
+
+successProbN :: Int -> Battlefield -> R Double
+successProbN n battlefield =
+  invasions n >>= return . f
+  where
+    f bfs = numSuccess bfs `frac` n
+      where
+        numSuccess = length . filter totalDestruction
+        frac a b = (fromIntegral a) / (fromIntegral b)
+    invasions = sequence . flip replicate (invade battlefield)
+    totalDestruction bf = bfDefenders bf == 0
+
+successProb :: Battlefield -> R Double
+successProb = successProbN 1000
