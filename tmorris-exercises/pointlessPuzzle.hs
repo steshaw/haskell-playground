@@ -17,4 +17,4 @@ average = sum &&& genericLength >>> uncurry (/)
 average' :: Fractional n => [n] -> n
 average' = foldMap (Sum &&& Sum . const 1) >>> join (***) getSum >>> uncurry (/)
 
-eg1 = average' $ map fromIntegral [1..5]
+eg1 = average' [1..5]
