@@ -5,6 +5,7 @@
 
 import Control.Arrow ((&&&), (***))
 import Control.Category ((>>>))
+import Control.Monad (join)
 import Data.List (genericLength)
 import Data.Monoid (Sum(..), getSum)
 import Data.Foldable (foldMap)
@@ -14,6 +15,6 @@ average = sum &&& genericLength >>> uncurry (/)
 
 -- Using monoids.
 average' :: Fractional n => [n] -> n
-average' = foldMap (Sum &&& Sum . const 1) >>> getSum *** getSum >>> uncurry (/)
+average' = foldMap (Sum &&& Sum . const 1) >>> join (***) getSum >>> uncurry (/)
 
 eg1 = average' $ map fromIntegral [1..5]
