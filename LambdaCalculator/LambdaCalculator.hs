@@ -11,8 +11,8 @@ import Text.ParserCombinators.Parsec  -- This for defining parsers
 import qualified Text.PrettyPrint.HughesPJ as PP
 import Text.PrettyPrint.HughesPJ(Doc,text,int,(<>),(<+>),($$),($+$)
                                 ,render,Style(..), renderStyle,Mode(..))
-import List(union,(\\))
-import Char(digitToInt)
+import Data.List(union,(\\))
+import Data.Char(digitToInt)
 
 ------------------------------------------------
 
