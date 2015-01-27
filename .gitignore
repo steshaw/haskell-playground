@@ -5,6 +5,7 @@ cabal.sandbox.config
 *.hi
 *.o
 
+factorial
 crazy
 mean
 listToString
