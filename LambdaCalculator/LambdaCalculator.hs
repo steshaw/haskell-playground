@@ -5,7 +5,7 @@
 -- Lambda Calculator: version 1.0
 
 
-module LambdaCalculator where
+module Main where
 
 import Text.ParserCombinators.Parsec  -- This for defining parsers
 import qualified Text.PrettyPrint.HughesPJ as PP
