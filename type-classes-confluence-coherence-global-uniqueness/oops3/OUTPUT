@@ -1,0 +1,8 @@
+rwbarton@morphism:/tmp/3854294$ ghc -Wall -XSafe -fforce-recomp --make D.hs
+[1 of 4] Compiling A                ( A.hs, A.o )
+[2 of 4] Compiling B                ( B.hs, B.o )
+[3 of 4] Compiling C                ( C.hs, C.o )
+[4 of 4] Compiling Main             ( D.hs, D.o )
+Linking D ...
+rwbarton@morphism:/tmp/3854294$ ./D
+fromList [T X MB MC,T Y MB MC,T X MB MC]

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ghc -Wall -XSafe -fforce-recomp --make D.hs
