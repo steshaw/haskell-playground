@@ -1,0 +1,5 @@
+* Functional Systems in Haskell
+
+Standford CS240H Spring 2014
+
+http://www.scs.stanford.edu/14sp-cs240h/
