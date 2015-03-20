@@ -2,20 +2,19 @@ import Data.Char (isSpace)
 import Data.Maybe (catMaybes)
 import Data.Function (on)
 import Data.List (groupBy)
-import Control.Arrow
+import Control.Arrow ((&&&))
 
-dup :: a -> (a, a)
-dup a = (a, a)
-
-groupBySpace :: String -> [(Bool, String)]
-groupBySpace xs = map (fst . head &&& map snd) $ groupBy ((==) `on` fst) $ map (first isSpace . dup) xs
-
-reverseWord :: (Bool, String) -> String
-reverseWord (True, s)  = s
-reverseWord (False, s) = reverse s
+groupOnX :: Eq b => (a -> b) -> [a] -> [(b, [a])]
+groupOnX f = tidy . groupOn . pairWith
+  where
+    tidy = map $ fst . head &&& map snd
+    groupOn = groupBy ((==) `on` fst)
+    pairWith = map (f &&& id)
 
 reverseSentence :: String -> String
-reverseSentence = concat . map reverseWord . groupBySpace
+reverseSentence = concat . map reverseWord . groupOnX isSpace
+  where
+    reverseWord (spaces, s) = if spaces then s else reverse s
 
 tests :: [(String, String)]
 tests =
