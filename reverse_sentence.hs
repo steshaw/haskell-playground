@@ -1,21 +1,21 @@
 import Data.Char (isSpace)
 import Data.Maybe (catMaybes)
+import Data.Function (on)
+import Data.List (groupBy)
+import Control.Arrow
 
-data S = Spaces String | Word String
+dup :: a -> (a, a)
+dup a = (a, a)
 
-myWords :: String -> [S]
-myWords [] = []
-myWords s = Spaces e1 : Word e2 : myWords s2
-  where
-    (e1, s1) = span isSpace s
-    (e2, s2) = break isSpace s1
+groupBySpace :: String -> [(Bool, String)]
+groupBySpace xs = map (fst . head &&& map snd) $ groupBy ((==) `on` fst) $ map (first isSpace . dup) xs
 
-reverseWord :: S -> String
-reverseWord (Spaces s) = s
-reverseWord (Word s)   = reverse s
+reverseWord :: (Bool, String) -> String
+reverseWord (True, s)  = s
+reverseWord (False, s) = reverse s
 
 reverseSentence :: String -> String
-reverseSentence = concat . map reverseWord . myWords
+reverseSentence = concat . map reverseWord . groupBySpace
 
 tests :: [(String, String)]
 tests =
