@@ -1,20 +1,18 @@
 import Data.Char (isSpace)
 import Data.Maybe (catMaybes)
 
-newtype Spaces = Spaces String
-newtype Word = Word String
-
-type S = Either Spaces Word
+data S = Spaces String | Word String
 
 myWords :: String -> [S]
 myWords [] = []
-myWords s =
-  let (e1, s1) = span isSpace s in
-  let (e2, s2) = break isSpace s1 in Left (Spaces e1) : Right (Word e2) : myWords s2
+myWords s = Spaces e1 : Word e2 : myWords s2
+  where
+    (e1, s1) = span isSpace s
+    (e2, s2) = break isSpace s1
 
 reverseWord :: S -> String
-reverseWord (Left (Spaces s)) = s
-reverseWord (Right (Word s))  = reverse s
+reverseWord (Spaces s) = s
+reverseWord (Word s)   = reverse s
 
 reverseSentence :: String -> String
 reverseSentence = concat . map reverseWord . myWords
