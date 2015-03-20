@@ -10,7 +10,7 @@ myWords :: String -> [S]
 myWords [] = []
 myWords s =
   let (e1, s1) = span isSpace s in
-  let (e2, s2) = span (not . isSpace) s1 in Left (Spaces e1) : Right (Word e2) : myWords s2
+  let (e2, s2) = break isSpace s1 in Left (Spaces e1) : Right (Word e2) : myWords s2
 
 reverseWord :: S -> String
 reverseWord (Left (Spaces s)) = s
