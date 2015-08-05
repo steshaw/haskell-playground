@@ -10,7 +10,7 @@ subs :: [a] -> [[a]]
 subs = filter (not . null) . concat . map suffixes . prefixes
 
 negativeSubs :: (Num a, Ord a) => [a] -> [[a]]
-negativeSubs as = filter (\bs -> (sum bs) < 0) $ subs as
+negativeSubs = filter (\bs -> (sum bs) < 0) . subs
 
 sumNegSubs :: (Num a, Ord a) => [a] -> Int
-sumNegSubs as = length $ negativeSubs as
+sumNegSubs = length . negativeSubs
