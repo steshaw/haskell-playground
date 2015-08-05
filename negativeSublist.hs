@@ -6,11 +6,11 @@ suffixes :: [a] -> [[a]]
 suffixes [] = [[]]
 suffixes xs = [xs] ++ suffixes (tail xs)
 
-subs :: [a] -> [[a]]
-subs = filter (not . null) . concat . map suffixes . prefixes
+contiguousSubs :: [a] -> [[a]]
+contiguousSubs = filter (not . null) . concat . map suffixes . prefixes
 
 negativeSubs :: (Num a, Ord a) => [a] -> [[a]]
-negativeSubs = filter (\bs -> (sum bs) < 0) . subs
+negativeSubs = filter (\bs -> (sum bs) < 0) . contiguousSubs
 
 sumNegSubs :: (Num a, Ord a) => [a] -> Int
 sumNegSubs = length . negativeSubs
