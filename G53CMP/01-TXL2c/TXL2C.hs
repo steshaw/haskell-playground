@@ -2,14 +2,14 @@
 -- *
 -- * Trivial eXpression Language (TXL) to C compiler
 -- *
--- * Example for G53CMP, lectures 2 and 3, October 2011
+-- * Example for G53CMP, lecture 2, October 2014
 -- *
 -- *************************************************************
 
 module Main where
 
-import Char
-import System
+import Data.Char
+import System.Environment
 
 type Id = String
 
@@ -43,6 +43,7 @@ data Exp = LitInt   Int
          | Let      Id Exp Exp
          deriving Show
 
+
 ----------------------------------------------------------------
 -- Scanner
 ----------------------------------------------------------------
@@ -76,6 +77,7 @@ scanner (c : cs) | isDigit c =
         mkIdOrKwd "in"  = T_In
         mkIdOrKwd cs    = T_Id cs
 
+
 ----------------------------------------------------------------
 -- Parser
 ----------------------------------------------------------------
@@ -187,6 +189,7 @@ ppExpAux n (Let i e1 e2) =
     . ppExpAux (n+1) e1
     . ppExpAux (n+1) e2
 
+
 ----------------------------------------------------------------
 -- Contextual analysis
 ----------------------------------------------------------------
@@ -299,10 +302,9 @@ printAsC (ds, e) = printAsCAux ""
     where
         printAsCAux = printPreamble
 		      . printCDecls ds
-		      . indent 1 . showString "printf(\"%d\\n\", "
+		      . showString "printf(\"%d\\n\", "
                       . printCExp e
                       . showString ");" . nl
-                      . indent 1 . showString "return 0;" . nl
                       . printEpilogue
 
 printPreamble :: ShowS
@@ -310,7 +312,7 @@ printPreamble = showString "#include <stdio.h>" . nl
                 . nl
                 . showString "int main(int argc, char* argv[]) {"
                 . nl
-
+
 printEpilogue :: ShowS
 printEpilogue = showString "}" . nl
 
@@ -331,8 +333,7 @@ printCExp (Let _ _ _) =
 printCDecls :: [(Id, Exp)] -> ShowS
 printCDecls [] = id
 printCDecls ((i, e) : ds) =
-    indent 1
-    . showString "int "
+    showString "int "
     . printCVar i
     . spc
     . showChar '='
@@ -343,7 +344,7 @@ printCDecls ((i, e) : ds) =
     . printCDecls ds
 
 printCVar :: Id -> ShowS
-printCVar i = showChar 'v' . showString i
+printCVar i = showString ("v" ++ i)
 
 printCOp :: BinOp -> ShowS
 printCOp Plus   = showChar '+'
@@ -356,12 +357,13 @@ printCOp Divide = showChar '/'
 -- Utilities
 ----------------------------------------------------------------
 
+indent n = showString (take (2 * n) (repeat ' '))
+
 nl  = showChar '\n'
 
 spc = showChar ' '
 
-indent n s = iterate spc s !! (n * 2)
-
+
 ----------------------------------------------------------------
 -- Main
 ----------------------------------------------------------------
