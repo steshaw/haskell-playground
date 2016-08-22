@@ -31,11 +31,11 @@ showErr :: Err -> String
 showErr (UnboundVar msg var) = msg ++ ": " ++ var
 showErr (BadSpecialForm msg form) = msg ++ ": " ++ show form
 showErr (NotFunction msg proc) = msg ++ ": " ++ show proc
-showErr (NumArgs expected found) = 
-  "Expected " ++ show expected ++ 
+showErr (NumArgs expected found) =
+  "Expected " ++ show expected ++
   " args; found values " ++ unwordsList found
 showErr (TypeMismatch expected found) =
-  "Invalid type: expected " ++ expected ++ 
+  "Invalid type: expected " ++ expected ++
   ", found " ++ show found
 showErr (Parser parseErr) = "Parse error at " ++ show parseErr
 showErr (Default s) = "Error: " ++ s
@@ -57,7 +57,7 @@ data Val
   | Boolean Bool
   | Port Handle
   | PrimitiveFunc PrimF
-  | Func 
+  | Func
       {funcParams :: [String]
       ,funcVarArg :: (Maybe String)
       ,funcBody   :: [Val]
@@ -89,12 +89,18 @@ parseChar = try $ do
     otherChar :: Parser Val
     otherChar = anyChar >>= \c -> (return $ Char c)
 
-parseString :: Parser Val
-parseString = do
-  _ <- char dq
-  x <- many (noneOf [dq] <|> (char '\\' >> oneOf [dq, 'n', 'r', 't', '\\']))
-  _ <- char dq
-  return $ String x
+    parseString :: Parser Val
+    parseString = do
+      _ <- char dq
+      x <- many ((char '\\' >> escapes) <|> noneOf [dq])
+      _ <- char dq
+      return $ String x
+        where
+          escapes = (char dq >> return dq)
+                <|> (char 'n' >> return '\n')
+                <|> (char 'r' >> return '\r')
+                <|> (char 't' >> return '\t')
+                <|> (char '\\' >> return '\\')
 
 parseSymbol :: Parser Val
 parseSymbol = do
@@ -184,7 +190,7 @@ newEnv :: IO Env
 newEnv = newIORef []
 
 isBound :: Env -> String -> ThrowError Bool
-isBound envRef var = do 
+isBound envRef var = do
   env <- liftIO $ readIORef envRef
   case lookup var env of
     Nothing -> return False
@@ -254,7 +260,7 @@ eval env (List [Symbol "if", t, whenTrue, whenFalse]) = do
     Boolean True -> eval env whenTrue
     _            -> eval env whenFalse
 eval env (List [Symbol "load", String fileName]) = do
-  exprs <- readExprsFile fileName 
+  exprs <- readExprsFile fileName
   vals <- mapM (eval env) exprs
   return $ last vals
 eval _ (List [Symbol "quote", val]) = return val
@@ -279,7 +285,7 @@ eval env (List (Symbol "lambda" : vararg : body_)) =
 
 eval env (List (f : args)) = do
   ef <- eval env f
-  eArgs <- mapM (eval env) args 
+  eArgs <- mapM (eval env) args
   apply ef eArgs
 -- TODO: eval DottedList
 --eval env (DottedList _ _) = error "Implement eval on DottedList" -- FIX

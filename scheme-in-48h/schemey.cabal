@@ -20,7 +20,7 @@ executable schemey
   main-is:             schemey.hs
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base >=4.7 && <4.8, either, parsec, mtl ==2.2.1
+  build-depends:       base >=4.7, either, parsec, mtl ==2.2.1
   -- hs-source-dirs:      
   default-language:    Haskell2010
   ghc-options:         -Wall
