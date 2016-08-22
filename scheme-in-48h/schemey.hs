@@ -89,18 +89,18 @@ parseChar = try $ do
     otherChar :: Parser Val
     otherChar = anyChar >>= \c -> (return $ Char c)
 
-    parseString :: Parser Val
-    parseString = do
-      _ <- char dq
-      x <- many ((char '\\' >> escapes) <|> noneOf [dq])
-      _ <- char dq
-      return $ String x
-        where
-          escapes = (char dq >> return dq)
-                <|> (char 'n' >> return '\n')
-                <|> (char 'r' >> return '\r')
-                <|> (char 't' >> return '\t')
-                <|> (char '\\' >> return '\\')
+parseString :: Parser Val
+parseString = do
+  _ <- char dq
+  x <- many ((char '\\' >> escapes) <|> noneOf [dq])
+  _ <- char dq
+  return $ String x
+    where
+      escapes = dq <$ char dq
+            <|> '\n' <$ char 'n'
+            <|> '\r' <$ char 'r'
+            <|> '\t' <$ char 't'
+            <|> '\\' <$ char '\\'
 
 parseSymbol :: Parser Val
 parseSymbol = do
