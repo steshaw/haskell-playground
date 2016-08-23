@@ -6,12 +6,13 @@ import Text.ParserCombinators.Parsec hiding (spaces)
 import Data.List (foldl1', genericLength)
 import Numeric (readOct, readDec, readHex)
 import Data.Char (toUpper, toLower)
+import Data.Maybe (isNothing)
 import Control.Exception (AsyncException(..), catch, throw)
 import Control.Monad.Except (throwError)
 import Control.Monad.Trans.Either
 import Data.IORef (IORef, newIORef, readIORef, writeIORef)
 import Control.Monad.Trans (liftIO)
-import Control.Monad (liftM)
+import Control.Monad (unless)
 import Control.Concurrent (threadDelay)
 
 -- =============================================================================
@@ -58,10 +59,10 @@ data Val
   | Port Handle
   | PrimitiveFunc PrimF
   | Func
-      {funcParams :: [String]
-      ,funcVarArg :: (Maybe String)
-      ,funcBody   :: [Val]
-      ,funcEnv    :: Env
+      { funcParams :: [String]
+      , funcVarArg :: Maybe String
+      , funcBody   :: [Val]
+      , funcEnv    :: Env
       }
 
 -- =============================================================================
@@ -85,9 +86,9 @@ parseChar = try $ do
     <|> otherChar
   where
     named :: String -> Char -> Parser Val
-    named s c = caseInsensitiveString s >> (return $ Char c)
+    named s c = caseInsensitiveString s >> return (Char c)
     otherChar :: Parser Val
-    otherChar = anyChar >>= \c -> (return $ Char c)
+    otherChar = anyChar >>= \c -> return $ Char c
 
 parseString :: Parser Val
 parseString = do
@@ -113,11 +114,10 @@ parseSymbol = do
     _    -> Symbol s
 
 radix :: Char -> String -> (String -> Integer) -> Parser Integer
-radix c validDigits convert = do
-  try $ do
-    _ <- char '#' >> char c
-    ds <- many1 (oneOf validDigits)
-    return $ convert ds
+radix c validDigits convert = try $ do
+  _ <- char '#' >> char c
+  ds <- many1 (oneOf validDigits)
+  return $ convert ds
 
 number :: Parser Integer
 number = do
@@ -131,7 +131,7 @@ float = try $ do
   bs <- many1 digit
   return $ read (as ++ "." ++ bs)
 
-extractNum :: [(t, [Char])] -> t
+extractNum :: [(t, String)] -> t
 extractNum [(num, "")] = num
 extractNum _           = error "invalid number"
 
@@ -147,7 +147,7 @@ parseNumber = (
       (===>) = flip fmap
 
 parseList :: Parser Val
-parseList = fmap List $ sepBy parseExpr spaces
+parseList = List <$> sepBy parseExpr spaces
 
 parseDottedList :: Parser Val
 parseDottedList = do
@@ -163,7 +163,7 @@ parseQuoted = do
 
 parseExpr :: Parser Val
 parseExpr =
-      (fmap Float float)
+      fmap Float float
   <|> parseNumber
   <|> parseChar
   <|> parseString
@@ -233,7 +233,7 @@ defineVar envRef var val = do
 bindVars :: Env -> [(String, Val)] -> IO Env
 bindVars envRef bindings = do
   env <- readIORef envRef
-  env' <- liftM (++ env) $ mapM (uncurry newBinding) bindings
+  env' <- (++ env) <$> mapM (uncurry newBinding) bindings
   newIORef env'
 
 -- FIX: (map showVal params)? Instead check they are symbols
@@ -294,7 +294,7 @@ eval _ badForm = throwError $ BadSpecialForm "Unrecognised special form" badForm
 apply :: Val -> [Val] -> ThrowError Val
 apply (PrimitiveFunc func) args = func args
 apply (Func params' varArg' body' closure) args =
-  if num params' /= num args && varArg' == Nothing
+  if num params' /= num args && isNothing varArg'
     then throwError $ NumArgs (num params') args
     else do
       env <- liftIO $ bindVars closure $ zip params' args
@@ -304,9 +304,9 @@ apply (Func params' varArg' body' closure) args =
     num xs = genericLength xs :: Integer
     remainingArgs = drop (length params') args
     bindVarArgs arg env = case arg of
-      Just argName -> liftIO $ bindVars env [(argName, List $ remainingArgs)]
+      Just argName -> liftIO $ bindVars env [(argName, List remainingArgs)]
       Nothing -> return env
-    evalBody env = liftM last $ mapM (eval env) body'
+    evalBody env = last <$> mapM (eval env) body'
 apply notF _                    = throwError $ NotFunction "Not a function" notF
 
 -- =============================================================================
@@ -318,7 +318,7 @@ primitives =
   [("+", numericBinop (+))
   ,("-", numericBinop (-))
   ,("*", numericBinop (*))
-  ,("/", numericBinop (div))
+  ,("/", numericBinop div)
   ,("mod", numericBinop mod)
   ,("quotient", numericBinop quot)
   ,("remainder", numericBinop rem)
@@ -440,7 +440,7 @@ boolBoolBinOp = boolBinOp unpackBool
 
 numericBinop :: (Integer -> Integer -> Integer) -> PrimF
 numericBinop _ args@[] = throwError $ NumArgs 1 args
-numericBinop op args = mapM unpackNum args >>= return . Number . foldl1' op
+numericBinop op args = (Number . foldl1' op) <$> mapM unpackNum args
 
 unpackNum :: Val -> ThrowError Integer
 unpackNum (Number n) = return n
@@ -484,12 +484,12 @@ cons x (DottedList xs l) = return $ DottedList (x : xs) l
 cons a b = return $ DottedList [a] b
 
 stringRef :: PrimF
-stringRef [(String s), (Number n)] = if n < 0 || n >= (genericLength s)
-                                        then throwError $ Default $ "string-ref: Index out of bounds, " ++ (show n) ++
+stringRef [String s, Number n] = if n < 0 || n >= genericLength s
+                                 then throwError $ Default $ "string-ref: Index out of bounds, " ++ show n ++
                                                                     " (length " ++ show (length s) ++ ")"
-                                        else return $ Char $ s !! (fromInteger n)
-stringRef args@[_, _]              = throwError $ Default $ "string-ref expects a string and an integer, got" ++ show args
-stringRef args                     = throwError $ NumArgs 2 args
+                                 else return $ Char $ s !! fromInteger n
+stringRef args@[_, _]          = throwError $ Default $ "string-ref expects a string and an integer, got" ++ show args
+stringRef args                 = throwError $ NumArgs 2 args
 
 equalList :: [Val] -> [Val] -> Bool
 equalList (a:as) (b:bs) = equal a b && equalList as bs
@@ -512,13 +512,14 @@ unit = List []
 
 sPrint :: Val -> ThrowError Val
 sPrint v = do
-  _ <- liftIO $ putStrLn $ show v
-  return $ unit
+  _ <- liftIO $ print v
+  return unit
 
 sSleep :: Val -> ThrowError Val
 sSleep (Number n) = do
-  _ <- liftIO $ threadDelay ((fromInteger n) * 1000 * 1000)
-  return $ unit
+  _ <- liftIO $ threadDelay (fromInteger n * 1000 * 1000)
+  return unit
+sSleep x = throwError $ TypeMismatch "Expected Number in argument to sleep" x
 
 readExprsFile :: String -> ThrowError [Val]
 readExprsFile fileName = do
@@ -557,7 +558,7 @@ showVal (List cs) = "(" ++ unwordsList cs ++ ")"
 showVal (Port _)  = "<IO port>"
 showVal (DottedList hd tl) = "(" ++ unwordsList hd ++ " . " ++ showVal tl ++ ")"
 showVal (PrimitiveFunc _) = "<primitive>"
-showVal (Func {funcParams = params, funcVarArg = varArg}) =
+showVal Func {funcParams = params, funcVarArg = varArg} =
   "(lambda (" ++ unwords (map show params) ++
     (case varArg of
       Nothing -> ""
@@ -583,21 +584,19 @@ readExpr = readExprP parseExpr
 readExprs :: String -> ThrowError [Val]
 readExprs = readExprP (endBy parseExpr spaces)
 
--- read+eval
-r_e :: Env -> String -> ThrowError Val
-r_e env s = readExpr s >>= eval env
+readEval :: Env -> String -> ThrowError Val
+readEval env s = readExpr s >>= eval env
 
 prVal :: EitherT Err IO Val -> IO ()
 prVal et = do
   e <- runEitherT et
   case e of
-    Left err         -> putStrLn $ show err
+    Left err         -> print err
     Right (List [])  -> putStr "" -- avoid printing '()
-    Right v          -> putStrLn $ show v
+    Right v          -> print v
 
--- read+eval+print
-r_e_p :: Env -> IO Bool
-r_e_p env = do
+readEvalPrint :: Env -> IO Bool
+readEvalPrint env = do
   putStr "schemey> " >> hFlush stdout
   end <- isEOF
   if end
@@ -606,20 +605,20 @@ r_e_p env = do
        expr <- getLine
        if null expr
           then return False
-          else prVal (r_e env expr) >> return False
+          else prVal (readEval env expr) >> return False
 
 -- read+eval+print+loop
 repl :: Env -> IO ()
 repl env = do
-  quit <- r_e_p env `catch` onUserInterrupt
-  if quit then return () else repl env
+  quit <- readEvalPrint env `catch` onUserInterrupt
+  unless quit $ repl env
 
 onUserInterrupt :: AsyncException -> IO Bool
 onUserInterrupt UserInterrupt = putStrLn "\nquitting..." >> return True
 onUserInterrupt e = throw e
 
 usage :: IO ()
-usage = putStrLn $ "usage: schemey [scheme-expression]"
+usage = putStrLn "usage: schemey [-h] [-e scheme-expression] [filename args...]"
 
 main :: IO ()
 main = do
@@ -627,8 +626,8 @@ main = do
   env <- primitiveEnv
   case args of
     []              -> repl env
-    ["-e", expr]    -> prVal $ r_e env expr
-    fileName : args -> do
-                         env' <- bindVars env [("args", List $ map String $ args)]
+    ["-e", expr]    -> prVal $ readEval env expr
+    ["-h"]          -> usage
+    fileName : args' -> do
+                         env' <- bindVars env [("args", List $ map String args')]
                          prVal $ runFile env' fileName
-    _               -> usage
