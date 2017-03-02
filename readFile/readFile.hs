@@ -5,15 +5,24 @@
 module Main where
 
 import qualified Control.Exception as Ex
-import Prelude hiding (readFile)
+import qualified Text.Printf as Text
+import qualified Data.Text as Text
+import qualified Data.Text.IO as TextIO
+import Prelude hiding (readFile, FilePath)
 import qualified System.Environment as Env
-import qualified System.IO as IO
 import qualified System.IO.Error as IO
+
+type FilePath = Text.Text
 
 readFile
     :: Ex.Exception ex
-    => IO.FilePath -> IO (Either ex String)
-readFile fileName = Ex.try (IO.readFile fileName)
+    => FilePath -> IO (Either ex Text.Text)
+readFile fileName = Ex.try (TextIO.readFile (Text.unpack fileName))
+
+getArgs :: IO [Text.Text]
+getArgs = do
+    args <- Env.getArgs
+    pure $ map Text.pack args
 
 readHandler :: IO.IOError -> IO ()
 readHandler e
@@ -24,10 +33,10 @@ readHandler e
 
 main :: IO ()
 main = do
-    [fileName] <- Env.getArgs
+    [fileName] <- getArgs
     x <- readFile fileName
     case x of
         Left e -> readHandler e
         Right contents -> do
-            putStrLn (fileName ++ ":")
-            putStrLn contents
+            Text.printf "%s:\n" fileName
+            TextIO.putStrLn contents
