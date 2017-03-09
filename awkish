@@ -1,0 +1,11 @@
+#!/usr/bin/env runhaskell
+
+module Main where
+
+eachLine :: String -> String
+eachLine line = "::: " ++ line
+
+go :: String -> String
+go input = unlines (map eachLine (lines input))
+
+main = interact go
