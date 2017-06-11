@@ -40,12 +40,12 @@ closeTCChan (TCChan _ var) = atomically $ writeTVar var True
 
 writeTCChan :: TCChan a -> a -> STM ()
 writeTCChan (TCChan chan var) val = do
-    closed <- readTVar var
-    if closed
-      -- Could use nicer exception types, or return a Bool to
-      -- indicate if writing failed.
-      then error "Wrote to a closed TCChan"
-      else writeTChan chan val
+  closed <- readTVar var
+  if closed
+    -- Could use nicer exception types, or return a Bool
+    -- to indicate if writing failed.
+    then error "Wrote to a closed TCChan"
+    else writeTChan chan val
 
 readTCChan :: TCChan a -> STM (Maybe a)
 readTCChan (TCChan chan var) =
