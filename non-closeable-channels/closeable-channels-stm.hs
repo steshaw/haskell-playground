@@ -22,8 +22,8 @@ say :: Text -> IO ()
 say = S8.putStrLn . encodeUtf8
 
 data TCChan a = TCChan
-  { channel :: TChan a
-  , isClosed :: TVar Bool
+  { _channel :: TChan a
+  , _isClosed :: TVar Bool
   } deriving (Show)
 
 instance Show (TChan a) where
