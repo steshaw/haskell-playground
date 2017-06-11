@@ -1,12 +1,13 @@
 name: non-closeable-channels
 
-dependencies:
-  - async
-  - base
-  - bytestring
-  - stm
-  - text
+ghc-options: -Wall -fwarn-tabs
 
 executables:
   closeable-channels-stm:
     main: closeable-channels-stm.hs
+    dependencies:
+      - async
+      - base
+      - bytestring
+      - stm
+      - text
