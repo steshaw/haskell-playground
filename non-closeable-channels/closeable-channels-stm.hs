@@ -38,9 +38,8 @@ newTCChan = atomically $ TCChan <$> newTChan <*> newTVar False
 closeTCChan :: TCChan a -> IO ()
 closeTCChan (TCChan _ var) = atomically $ writeTVar var True
 
-writeTCChan :: TCChan a -> a -> IO ()
-writeTCChan (TCChan chan var) val =
-  atomically $ do
+writeTCChan :: TCChan a -> a -> STM ()
+writeTCChan (TCChan chan var) val = do
     closed <- readTVar var
     if closed
       -- Could use nicer exception types, or return a Bool to
@@ -48,9 +47,8 @@ writeTCChan (TCChan chan var) val =
       then error "Wrote to a closed TCChan"
       else writeTChan chan val
 
-readTCChan :: TCChan a -> IO (Maybe a)
+readTCChan :: TCChan a -> STM (Maybe a)
 readTCChan (TCChan chan var) =
-  atomically $
   (Just <$> readTChan chan) <|>
   (do closed <- readTVar var
       check closed
@@ -60,7 +58,7 @@ worker :: TCChan Int -> Int -> IO ()
 worker chan num = loop
   where
     loop = do
-      mi <- readTCChan chan
+      mi <- atomically $ readTCChan chan
       case mi of
         Nothing -> pure ()
         Just i -> do
@@ -72,5 +70,5 @@ main = do
   chan <- newTCChan
   putStrLn $ "channel = " ++ show chan
   mapConcurrently (worker chan) [1 .. 5] `concurrently_` do
-    mapM_ (writeTCChan chan) [1 .. 10]
+    mapM_ (atomically . writeTCChan chan) [1 .. 10]
     closeTCChan chan
