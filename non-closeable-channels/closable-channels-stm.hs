@@ -68,4 +68,3 @@ main = do
     mapConcurrently (worker chan) [1..5] `concurrently_` do
         mapM_ (writeTCChan chan) [1..10]
         closeTCChan chan
-    return ()
