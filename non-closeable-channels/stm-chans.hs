@@ -1,6 +1,17 @@
 #!/usr/bin/env stack
--- stack --resolver lts-6.23 --install-ghc runghc --package async --package text --package stm-chans
+{-
+  stack --resolver lts-8.17 script
+    --package async
+    --package bytestring
+    --package stm
+    --package stm-chans
+    --package text
+    --
+    -Wall -fwarn-tabs
+-}
+
 {-# LANGUAGE OverloadedStrings #-}
+
 import Control.Concurrent.Async
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TMQueue
@@ -31,7 +42,6 @@ worker q num =
 main :: IO ()
 main = do
     q <- newTMQueueIO
-    mapConcurrently (worker q) [1..5] `concurrently` do
+    mapConcurrently (worker q) [1..5] `concurrently_` do
         mapM_ (atomically . writeTMQueue q) [1..10]
         atomically $ closeTMQueue q
-    return ()
