@@ -62,7 +62,7 @@ worker chan num = loop
     loop = do
       mi <- readTCChan chan
       case mi of
-        Nothing -> return ()
+        Nothing -> pure ()
         Just i -> do
           say $ pack $ concat ["Worker #", show num, " received value ", show i]
           loop
