@@ -28,4 +28,4 @@ main :: IO ()
 main = do
   chan <- newChan
   mapConcurrently_ (worker chan) [1 .. 5] `concurrently_`
-    mapM_ (writeChan chan) [1 .. 10]
+    writeList2Chan chan [1 .. 10]
