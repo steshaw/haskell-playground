@@ -9,8 +9,6 @@
     --
     -Wall -fwarn-tabs
 -}
-{-# LANGUAGE OverloadedStrings #-}
-
 import Control.Concurrent.Async
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TMQueue
