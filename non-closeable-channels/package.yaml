@@ -2,6 +2,9 @@ name: non-closeable-channels
 
 ghc-options: -Wall -fwarn-tabs
 
+dependencies:
+  - stm-chans
+
 executables:
   closeable-channels-stm:
     main: closeable-channels-stm.hs
