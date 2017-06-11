@@ -7,7 +7,6 @@
     --
     -Wall -fwarn-tabs
 -}
--- {-# LANGUAGE OverloadedStrings #-}
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Monad (forever)
