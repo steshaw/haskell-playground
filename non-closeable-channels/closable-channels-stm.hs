@@ -1,6 +1,16 @@
 #!/usr/bin/env stack
--- stack --resolver lts-6.23 --install-ghc runghc --package async --package text
+{-
+  stack --resolver lts-8.17 script
+    --package async
+    --package bytestring
+    --package stm
+    --package text
+    --
+    -Wall -fwarn-tabs
+-}
+
 {-# LANGUAGE OverloadedStrings #-}
+
 import Control.Applicative ((<|>))
 import Control.Concurrent.Async
 import Control.Concurrent.STM
@@ -55,7 +65,7 @@ worker chan num =
 main :: IO ()
 main = do
     chan <- newTCChan
-    mapConcurrently (worker chan) [1..5] `concurrently` do
+    mapConcurrently (worker chan) [1..5] `concurrently_` do
         mapM_ (writeTCChan chan) [1..10]
         closeTCChan chan
     return ()
