@@ -9,8 +9,8 @@
 -}
 {-# LANGUAGE OverloadedStrings #-}
 
-import Control.Concurrent
-import Control.Concurrent.Async
+import Control.Concurrent (Chan, newChan, readChan, writeChan)
+import Control.Concurrent.Async (mapConcurrently_, concurrently_)
 import Data.Text (Text, pack)
 import Data.Text.Encoding (encodeUtf8)
 
