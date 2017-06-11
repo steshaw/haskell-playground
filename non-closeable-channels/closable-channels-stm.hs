@@ -8,7 +8,6 @@
     --
     -Wall -fwarn-tabs
 -}
--- {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -23,8 +22,8 @@ say :: Text -> IO ()
 say = S8.putStrLn . encodeUtf8
 
 data TCChan a = TCChan
-  { channel :: (TChan a)
-  , isClosed :: (TVar Bool)
+  { channel :: TChan a
+  , isClosed :: TVar Bool
   } deriving (Show)
 
 instance Show (TChan a) where
