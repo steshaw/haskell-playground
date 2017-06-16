@@ -13,6 +13,7 @@ import Data.Attoparsec.Text.Lazy (Parser)
 
 import qualified Data.Map
 import qualified Data.Set
+import qualified Data.Vector
 import qualified Data.Attoparsec.Text.Lazy
 
 data Derivation = Derivation
@@ -41,6 +42,11 @@ listOf element = do
   void "]"
   pure es
 
+vectorOf :: Parser a -> Parser (Vector a)
+vectorOf element = do
+  es <- listOf element
+  pure $ Data.Vector.fromList es
+
 setOf :: Ord a => Parser a -> Parser (Set a)
 setOf element = do
   es <- listOf element
@@ -53,6 +59,9 @@ mapOf keyValue = do
 
 string :: Parser Text
 string = todo
+
+filepath :: Parser FilePath
+filepath = todo
 
 parseDerivation :: Parser Derivation
 parseDerivation = do
@@ -84,14 +93,29 @@ parseDerivation = do
          return (key, value)
     inputDrvs <- mapOf keyValue1
 
-    -- ...
+    void ","
+
+    inputSrcs <- setOf filepath
+    void ","
+    platform <- string
+    void ","
+    builder <- string
+    void ","
+    args <- vectorOf string
+    void ","
+
+    let keyValue2 = do
+          void "("
+          key <- string
+          void ","
+          value <- string
+          void ")"
+          return (key, value)
+    env <- mapOf keyValue2
+
+    void ")"
+
     todo
-
--- We will fill these in later
-
-
-filepath :: Parser FilePath
-filepath = todo
 
 main :: IO ()
 main = putStrLn "nix-drv"
