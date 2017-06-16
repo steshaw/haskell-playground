@@ -136,7 +136,7 @@ fastString = do
     return $ Data.Text.Lazy.toStrict text
 
 string :: Parser Text
-string = if True then slowString else fastString
+string = if False then slowString else fastString
 
 filePath :: Parser FilePath
 filePath = do
