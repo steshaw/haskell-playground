@@ -22,7 +22,6 @@ import qualified Data.Attoparsec.Text.Lazy
 import qualified Data.Text as T
 import qualified Prelude
 
-import Control.Applicative ((<|>))
 import Data.Monoid ((<>))
 
 import Criterion (Benchmark)
@@ -92,24 +91,27 @@ slowString = do
   s <- Data.Attoparsec.Text.Lazy.many' char
   void "\""
   pure $ T.pack s
-
-char :: Parser Char
-char = backSlashed <|> notBackslashed
   where
-    backSlashed = do
-      void "\\"
-      c <- Data.Attoparsec.Text.Lazy.anyChar
-      pure $ case c of
-          'n' -> '\n'
-          'r' -> '\r'
-          't' -> '\t'
-          _   -> c
-    notBackslashed =
-      let notQuoteOrBackslash c = c /= '"' && c /= '\\'
-      in Data.Attoparsec.Text.Lazy.satisfy notQuoteOrBackslash
+    char :: Parser Char
+    char = do
+      c1 <- Data.Attoparsec.Text.Lazy.notChar '"'
+      case c1 of
+        '\\' -> do
+          c2 <- Data.Attoparsec.Text.Lazy.anyChar
+          pure $ case c2 of
+            'n' -> '\n'
+            'r' -> '\r'
+            't' -> '\t'
+            _   -> c2
+        _ -> pure c1
 
 -- |
 -- Faster string parser. Should be good with Attoparsec.
+--
+-- Attoparsec warns us to "the Text-oriented parsers whenever
+-- possible, e.g. takeWhile1 instead of many1 anyChar. There is
+-- about a factor of 100 difference in performance between the
+-- two kinds of parser."
 --
 fastString :: Parser Text
 fastString = do
