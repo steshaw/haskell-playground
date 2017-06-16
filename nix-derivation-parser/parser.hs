@@ -204,7 +204,7 @@ parseDerivation = do
 -- ==========================================================================
 
 drvFile :: Prelude.FilePath
-drvFile = "/nix/store/2rq2qqngncvvdvh0f32kwi1d2gcn32k6-ghc-8.0.2-with-packages.drv"
+drvFile = "data/2rq2qqngncvvdvh0f32kwi1d2gcn32k6-ghc-8.0.2-with-packages.drv"
 
 benchmarks :: [Benchmark]
 benchmarks =
