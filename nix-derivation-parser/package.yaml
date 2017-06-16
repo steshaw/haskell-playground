@@ -1,0 +1,15 @@
+name: nix-derivation-parser
+
+dependencies:
+  - attoparsec
+  - base
+  - containers
+  - system-filepath
+  - text
+  - vector
+
+ghc-options: -O2 -Wall -fwarn-tabs
+
+executables:
+  nix-drv:
+    main: parser.hs
