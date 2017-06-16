@@ -15,6 +15,9 @@ import qualified Data.Map
 import qualified Data.Set
 import qualified Data.Vector
 import qualified Data.Attoparsec.Text.Lazy
+import qualified Data.Text as T
+
+import Control.Applicative ((<|>))
 
 data Derivation = Derivation
   { outputs   :: Map Text DerivationOutput  -- ^ keyed on symbolic IDs
@@ -58,10 +61,21 @@ mapOf keyValue = do
   pure $ Data.Map.fromList keyValues
 
 string :: Parser Text
-string = todo
+string = do
+  void "\""
+  s <- Data.Attoparsec.Text.Lazy.many1 char
+  void "\""
+  pure $ T.pack s
+
+char :: Parser Char
+char = do
+  void "\""; Data.Attoparsec.Text.Lazy.anyChar <|>
+    let notQuoteOrBackslash c = c /= '"' && c /= '\\'
+    in Data.Attoparsec.Text.Lazy.satisfy notQuoteOrBackslash
 
 filepath :: Parser FilePath
 filepath = todo
+-- path = '"/', { char }, '"'
 
 parseDerivation :: Parser Derivation
 parseDerivation = do
