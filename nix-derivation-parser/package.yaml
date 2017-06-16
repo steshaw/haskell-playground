@@ -4,6 +4,9 @@ dependencies:
   - attoparsec
   - base
   - containers
+  - criterion
+  - deepseq
+  - optparse-generic
   - system-filepath
   - text
   - vector
