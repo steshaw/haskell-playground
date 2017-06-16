@@ -89,15 +89,24 @@ mapOf keyValue = do
 slowString :: Parser Text
 slowString = do
   void "\""
-  s <- Data.Attoparsec.Text.Lazy.many1 char
+  s <- Data.Attoparsec.Text.Lazy.many' char
   void "\""
   pure $ T.pack s
 
 char :: Parser Char
-char = do
-  void "\""; Data.Attoparsec.Text.Lazy.anyChar <|>
-    let notQuoteOrBackslash c = c /= '"' && c /= '\\'
-    in Data.Attoparsec.Text.Lazy.satisfy notQuoteOrBackslash
+char = backSlashed <|> notBackslashed
+  where
+    backSlashed = do
+      void "\\"
+      c <- Data.Attoparsec.Text.Lazy.anyChar
+      pure $ case c of
+          'n' -> '\n'
+          'r' -> '\r'
+          't' -> '\t'
+          _   -> c
+    notBackslashed =
+      let notQuoteOrBackslash c = c /= '"' && c /= '\\'
+      in Data.Attoparsec.Text.Lazy.satisfy notQuoteOrBackslash
 
 -- |
 -- Faster string parser. Should be good with Attoparsec.
@@ -125,7 +134,7 @@ fastString = do
     return $ Data.Text.Lazy.toStrict text
 
 string :: Parser Text
-string = if False then slowString else fastString
+string = if True then slowString else fastString
 
 filePath :: Parser FilePath
 filePath = do
