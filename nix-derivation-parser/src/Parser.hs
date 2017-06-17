@@ -1,47 +1,47 @@
-{-# language DeriveGeneric #-}
-{-# language OverloadedStrings #-}
-{-# language RecordWildCards #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Parser where
 
+import Control.DeepSeq (NFData)
+import Control.Monad (void)
 import Data.Attoparsec.Text.Lazy (Parser)
-import Filesystem.Path.CurrentOS (FilePath)
 import Data.Map (Map)
+import Data.Monoid ((<>))
 import Data.Set (Set)
 import Data.Text (Text)
 import Data.Vector (Vector)
-import Prelude hiding (FilePath)
-import Control.Monad (void)
-import Data.Monoid ((<>))
-import Control.DeepSeq (NFData)
+import Filesystem.Path.CurrentOS (FilePath)
 import GHC.Generics (Generic)
+import Prelude hiding (FilePath)
 
 import qualified Data.Attoparsec.Text.Lazy
-import qualified Filesystem.Path.CurrentOS
-import qualified Data.Text
-import qualified Data.Text.Lazy
 import qualified Data.Map
 import qualified Data.Set
-import qualified Data.Vector
+import qualified Data.Text
 import qualified Data.Text as T
+import qualified Data.Text.Lazy
+import qualified Data.Vector
+import qualified Filesystem.Path.CurrentOS
 
 data Derivation = Derivation
-  { outputs   :: Map Text DerivationOutput  -- ^ keyed on symbolic IDs
+  { outputs :: Map Text DerivationOutput -- ^ keyed on symbolic IDs
   , inputDrvs :: Map FilePath (Set Text)
-  , inputSrcs :: Set FilePath               -- ^ inputs that are sources
-  , platform  :: Text
-  , builder   :: Text
-  , args      :: Vector Text
-  , env       :: Map Text Text
+  , inputSrcs :: Set FilePath -- ^ inputs that are sources
+  , platform :: Text
+  , builder :: Text
+  , args :: Vector Text
+  , env :: Map Text Text
   } deriving (Show, Generic)
 
 instance NFData Derivation
 
 data DerivationOutput = DerivationOutput
-    { path     :: FilePath
-    , hashAlgo :: Text    -- ^ hash used for expected hash computation
-    , hash     :: Text    -- ^ expected hash, may be null
-    } deriving (Show, Generic)
+  { path :: FilePath
+  , hashAlgo :: Text -- ^ hash used for expected hash computation
+  , hash :: Text -- ^ expected hash, may be null
+  } deriving (Show, Generic)
 
 instance NFData DerivationOutput
 
@@ -84,11 +84,12 @@ slowString = do
       case c1 of
         '\\' -> do
           c2 <- Data.Attoparsec.Text.Lazy.anyChar
-          pure $ case c2 of
-            'n' -> '\n'
-            'r' -> '\r'
-            't' -> '\t'
-            _   -> c2
+          pure $
+            case c2 of
+              'n' -> '\n'
+              'r' -> '\r'
+              't' -> '\t'
+              _ -> c2
         _ -> pure c1
 
 -- |
@@ -101,88 +102,82 @@ slowString = do
 --
 fastString :: Parser Text
 fastString = do
-    void "\""
-    let predicate c = not (c == '"' || c == '\\')
-    let loop = do
-            text0 <- Data.Attoparsec.Text.Lazy.takeWhile predicate
-            char0 <- Data.Attoparsec.Text.Lazy.anyChar
-            text2 <- case char0 of
-                '"'  -> return ""
-                _    -> do
-                    char1 <- Data.Attoparsec.Text.Lazy.anyChar
-                    char2 <- case char1 of
-                        'n' -> return '\n'
-                        'r' -> return '\r'
-                        't' -> return '\t'
-                        _   -> return char1
-                    text1 <- loop
-                    return (Data.Text.Lazy.cons char2 text1)
-            return (Data.Text.Lazy.fromStrict text0 <> text2)
-    text <- loop
-    return $ Data.Text.Lazy.toStrict text
+  void "\""
+  let predicate c = not (c == '"' || c == '\\')
+  let loop = do
+        text0 <- Data.Attoparsec.Text.Lazy.takeWhile predicate
+        char0 <- Data.Attoparsec.Text.Lazy.anyChar
+        text2 <-
+          case char0 of
+            '"' -> return ""
+            _ -> do
+              char1 <- Data.Attoparsec.Text.Lazy.anyChar
+              char2 <-
+                case char1 of
+                  'n' -> return '\n'
+                  'r' -> return '\r'
+                  't' -> return '\t'
+                  _ -> return char1
+              text1 <- loop
+              return (Data.Text.Lazy.cons char2 text1)
+        return (Data.Text.Lazy.fromStrict text0 <> text2)
+  text <- loop
+  return $ Data.Text.Lazy.toStrict text
 
 string :: Parser Text
-string = if False then slowString else fastString
+string =
+  if False
+    then slowString
+    else fastString
 
 filePath :: Parser FilePath
 filePath = do
-    text <- string
-    case Data.Text.uncons text of
-        Just ('/', _) ->
-            pure $ Filesystem.Path.CurrentOS.fromText text
-        _ ->
-            fail ("bad path ‘" <> Data.Text.unpack text <> "’ in derivation")
+  text <- string
+  case Data.Text.uncons text of
+    Just ('/', _) -> pure $ Filesystem.Path.CurrentOS.fromText text
+    _ -> fail ("bad path ‘" <> Data.Text.unpack text <> "’ in derivation")
 
 parseDerivation :: Parser Derivation
 parseDerivation = do
-    void "Derive("
-
-    let keyValue0 :: Parser (Text, DerivationOutput)
-        keyValue0 = do
-            void "("
-            key <- string
-            void ","
-            path <- filePath
-            void ","
-            hashAlgo <- string
-            void ","
-            hash <- string
-            void ")"
-            return (key, DerivationOutput {..})
-
-    outputs <- mapOf keyValue0
-
-    void ","
-
-    let keyValue1 = do
-         void "("
-         key <- filePath
-         void ","
-         value <- setOf string
-         void ")"
-         return (key, value)
-    inputDrvs <- mapOf keyValue1
-
-    void ","
-
-    inputSrcs <- setOf filePath
-    void ","
-    platform <- string
-    void ","
-    builder <- string
-    void ","
-    args <- vectorOf string
-    void ","
-
-    let keyValue2 = do
-          void "("
-          key <- string
-          void ","
-          value <- string
-          void ")"
-          return (key, value)
-    env <- mapOf keyValue2
-
-    void ")"
-
-    pure Derivation {..}
+  void "Derive("
+  let keyValue0 :: Parser (Text, DerivationOutput)
+      keyValue0 = do
+        void "("
+        key <- string
+        void ","
+        path <- filePath
+        void ","
+        hashAlgo <- string
+        void ","
+        hash <- string
+        void ")"
+        return (key, DerivationOutput {..})
+  outputs <- mapOf keyValue0
+  void ","
+  let keyValue1 = do
+        void "("
+        key <- filePath
+        void ","
+        value <- setOf string
+        void ")"
+        return (key, value)
+  inputDrvs <- mapOf keyValue1
+  void ","
+  inputSrcs <- setOf filePath
+  void ","
+  platform <- string
+  void ","
+  builder <- string
+  void ","
+  args <- vectorOf string
+  void ","
+  let keyValue2 = do
+        void "("
+        key <- string
+        void ","
+        value <- string
+        void ")"
+        return (key, value)
+  env <- mapOf keyValue2
+  void ")"
+  pure Derivation {..}
