@@ -54,14 +54,10 @@ listOf element = do
   pure es
 
 vectorOf :: Parser a -> Parser (Vector a)
-vectorOf element = do
-  es <- listOf element
-  pure $ Data.Vector.fromList es
+vectorOf element = Data.Vector.fromList <$> listOf element
 
 setOf :: Ord a => Parser a -> Parser (Set a)
-setOf element = do
-  es <- listOf element
-  pure $ Data.Set.fromList es
+setOf element = Data.Set.fromList <$> listOf element
 
 mapOf :: Ord k => Parser (k, v) -> Parser (Map k v)
 mapOf keyValue = do
