@@ -11,6 +11,9 @@ import Prelude hiding (FilePath)
 import Control.Monad (void)
 
 import Data.Attoparsec.Text.Lazy (Parser)
+import qualified Data.Attoparsec.Text.Lazy
+import Data.Attoparsec.Text.Lazy (Result(..))
+import qualified Data.Text.Lazy.IO
 
 import qualified Filesystem.Path.CurrentOS
 import qualified Data.Text
@@ -18,7 +21,6 @@ import qualified Data.Text.Lazy
 import qualified Data.Map
 import qualified Data.Set
 import qualified Data.Vector
-import qualified Data.Attoparsec.Text.Lazy
 import qualified Data.Text as T
 import qualified Prelude
 
@@ -28,12 +30,9 @@ import Criterion (Benchmark)
 
 import qualified Criterion
 import qualified Criterion.Main
-import qualified Data.Text.Lazy.IO
 
 import Control.DeepSeq (NFData)
 import GHC.Generics (Generic)
-
-import Data.Attoparsec.Text.Lazy (Result(..))
 
 import qualified Options.Generic
 
