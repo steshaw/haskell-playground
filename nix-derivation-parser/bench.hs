@@ -21,8 +21,5 @@ benchmarks = [Criterion.Main.env (Data.Text.Lazy.IO.readFile drvFile) bench0]
       Criterion.bench "example" (Criterion.nf parseExample example)
     parseExample = Data.Attoparsec.Text.Lazy.parse parseDerivation
 
-benchMain :: IO ()
-benchMain = Criterion.Main.defaultMain benchmarks
-
 main :: IO ()
-main = benchMain
+main = Criterion.Main.defaultMain benchmarks
