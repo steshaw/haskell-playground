@@ -14,13 +14,14 @@ import Data.Text (Text)
 import Data.Vector (Vector)
 import Filesystem.Path.CurrentOS (FilePath)
 import GHC.Generics (Generic)
-import Prelude hiding (FilePath)
+import Prelude hiding (id, FilePath)
 
 import qualified Data.Attoparsec.Text
 import qualified Data.Map
 import qualified Data.Set
 import qualified Data.Text
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as Text.Lazy
 import qualified Data.Vector
 import qualified Filesystem.Path.CurrentOS
 
@@ -102,8 +103,11 @@ slowString = do
 fastString :: Parser Text
 fastString = do
   void "\""
-  let predicate c = not (c == '"' || c == '\\')
-  let loop = do
+  let
+    predicate :: Char -> Bool
+    predicate c = not (c == '"' || c == '\\')
+    loop :: Parser Text.Lazy.Text
+    loop = do
         text0 <- Data.Attoparsec.Text.takeWhile predicate
         char0 <- Data.Attoparsec.Text.anyChar
         text2 <-
@@ -118,10 +122,10 @@ fastString = do
                   't' -> return '\t'
                   _ -> return char1
               text1 <- loop
-              return (Data.Text.cons char2 text1)
-        return $ text0 <> text2
+              return (Text.Lazy.cons char2 text1)
+        return $ Text.Lazy.fromStrict text0 <> text2
   text <- loop
-  return text
+  return $ Text.Lazy.toStrict text
 
 string :: Parser Text
 string =
@@ -142,7 +146,7 @@ parseDerivation = do
   let keyValue0 :: Parser (Text, DerivationOutput)
       keyValue0 = do
         void "("
-        key <- string
+        id <- string
         void ","
         path <- filePath
         void ","
@@ -150,7 +154,7 @@ parseDerivation = do
         void ","
         hash <- string
         void ")"
-        return (key, DerivationOutput {..})
+        return (id, DerivationOutput {..})
   outputs <- mapOf keyValue0
   void ","
   let keyValue1 = do
