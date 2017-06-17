@@ -5,6 +5,7 @@ ghc-options: -O2 -Wall -fwarn-tabs
 dependencies:
   - attoparsec
   - base
+  - bytestring
   - containers
   - deepseq
   - system-filepath

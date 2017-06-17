@@ -6,7 +6,7 @@ module Parser where
 
 import Control.DeepSeq (NFData)
 import Control.Monad (void)
-import Data.Attoparsec.Text (Parser)
+import Data.Attoparsec.ByteString.Char8 (Parser)
 import Data.Map (Map)
 import Data.Monoid ((<>))
 import Data.Set (Set)
@@ -16,7 +16,8 @@ import Filesystem.Path.CurrentOS (FilePath)
 import GHC.Generics (Generic)
 import Prelude hiding (FilePath, id)
 
-import qualified Data.Attoparsec.Text
+import qualified Data.Attoparsec.ByteString.Char8 as Parser
+import qualified Data.Attoparsec.ByteString.Char8 as P
 import qualified Data.Map
 import qualified Data.Set
 import qualified Data.Text
@@ -24,6 +25,10 @@ import qualified Data.Text as T
 import qualified Data.Text.Lazy as Text.Lazy
 import qualified Data.Vector
 import qualified Filesystem.Path.CurrentOS
+-- import qualified Data.ByteString as BS
+-- import qualified Data.ByteString.Char8 as BSC
+
+import Data.Text.Encoding as Text.Encoding
 
 data Derivation = Derivation
   { outputs :: Map Text DerivationOutput -- ^ keyed on symbolic IDs
@@ -49,7 +54,7 @@ instance NFData DerivationOutput
 listOf :: Parser a -> Parser [a]
 listOf element = do
   void "["
-  es <- Data.Attoparsec.Text.sepBy element ","
+  es <- Parser.sepBy element (P.string ",")
   void "]"
   pure es
 
@@ -70,16 +75,16 @@ mapOf keyValue = do
 slowString :: Parser Text
 slowString = do
   void "\""
-  s <- Data.Attoparsec.Text.many' char
+  s <- Parser.many' char
   void "\""
   pure $ T.pack s
   where
     char :: Parser Char
     char = do
-      c1 <- Data.Attoparsec.Text.notChar '"'
+      c1 <- Parser.notChar '"'
       case c1 of
         '\\' -> do
-          c2 <- Data.Attoparsec.Text.anyChar
+          c2 <- Parser.anyChar
           pure $
             case c2 of
               'n' -> '\n'
@@ -102,13 +107,13 @@ fastString = do
       predicate c = not (c == '"' || c == '\\')
       loop :: Parser Text.Lazy.Text
       loop = do
-        text0 <- Data.Attoparsec.Text.takeWhile predicate
-        char0 <- Data.Attoparsec.Text.anyChar
+        text0 <- Parser.takeWhile predicate
+        char0 <- Parser.anyChar
         text2 <-
           case char0 of
             '"' -> return ""
             _ -> do
-              char1 <- Data.Attoparsec.Text.anyChar
+              char1 <- Parser.anyChar
               char2 <-
                 case char1 of
                   'n' -> return '\n'
@@ -117,7 +122,7 @@ fastString = do
                   _ -> return char1
               text1 <- loop
               return (Text.Lazy.cons char2 text1)
-        return $ Text.Lazy.fromStrict text0 <> text2
+        return $ Text.Lazy.fromStrict (Text.Encoding.decodeUtf8 text0) <> text2
   void "\""
   Text.Lazy.toStrict <$> loop
 

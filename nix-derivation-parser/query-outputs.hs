@@ -2,18 +2,18 @@
 
 import Parser
 
-import Data.Attoparsec.Text.Lazy (Result(..))
+import Data.Attoparsec.ByteString.Lazy (Result(..))
 import Prelude hiding (FilePath)
 
-import qualified Data.Attoparsec.Text.Lazy
-import qualified Data.Text.Lazy.IO
+import qualified Data.Attoparsec.ByteString.Lazy as P
+import qualified Data.ByteString.Lazy.Char8 as SIO
 import qualified Options.Generic
 import qualified Prelude
 
 process :: Prelude.FilePath -> IO ()
 process fileName = do
-  text <- Data.Text.Lazy.IO.readFile fileName
-  case Data.Attoparsec.Text.Lazy.parse parseDerivation text of
+  text <- SIO.readFile fileName
+  case P.parse parseDerivation text of
     Fail _ _ msg -> fail ("Parse failed: " ++ msg)
     Done _ derivation -> do
       let printOutput output = print (path output)
