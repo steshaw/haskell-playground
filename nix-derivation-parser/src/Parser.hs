@@ -14,7 +14,7 @@ import Data.Text (Text)
 import Data.Vector (Vector)
 import Filesystem.Path.CurrentOS (FilePath)
 import GHC.Generics (Generic)
-import Prelude hiding (id, FilePath)
+import Prelude hiding (FilePath, id)
 
 import qualified Data.Attoparsec.Text
 import qualified Data.Map
@@ -102,12 +102,10 @@ slowString = do
 --
 fastString :: Parser Text
 fastString = do
-  void "\""
-  let
-    predicate :: Char -> Bool
-    predicate c = not (c == '"' || c == '\\')
-    loop :: Parser Text.Lazy.Text
-    loop = do
+  let predicate :: Char -> Bool
+      predicate c = not (c == '"' || c == '\\')
+      loop :: Parser Text.Lazy.Text
+      loop = do
         text0 <- Data.Attoparsec.Text.takeWhile predicate
         char0 <- Data.Attoparsec.Text.anyChar
         text2 <-
@@ -124,8 +122,8 @@ fastString = do
               text1 <- loop
               return (Text.Lazy.cons char2 text1)
         return $ Text.Lazy.fromStrict text0 <> text2
-  text <- loop
-  return $ Text.Lazy.toStrict text
+  void "\""
+  Text.Lazy.toStrict <$> loop
 
 string :: Parser Text
 string =
