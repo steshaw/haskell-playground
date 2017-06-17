@@ -1,29 +1,31 @@
 name: nix-derivation-parser
 
-dependencies:
-  - attoparsec
-  - base
-  - containers
-  - criterion
-  - deepseq
-  - optparse-generic
-  - system-filepath
-  - text
-  - vector
-
 ghc-options: -O2 -Wall -fwarn-tabs
 
 library:
   source-dirs: src
+  dependencies:
+    - attoparsec
+    - base
+    - containers
+    - deepseq
+    - system-filepath
+    - text
+    - vector
 
 executables:
   query-outputs:
     main: query-outputs.hs
     dependencies:
+      - attoparsec
+      - base
       - nix-derivation-parser
+      - optparse-generic
+      - text
 
 benchmarks:
   bench1:
     main: bench.hs
     dependencies:
+      - criterion
       - nix-derivation-parser
