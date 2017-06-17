@@ -14,12 +14,16 @@ dependencies:
 ghc-options: -O2 -Wall -fwarn-tabs
 
 library:
-  source-dirs: .
+  source-dirs: src
 
 executables:
   query-outputs:
     main: query-outputs.hs
+    dependencies:
+      - nix-derivation-parser
 
 benchmarks:
   bench1:
     main: bench.hs
+    dependencies:
+      - nix-derivation-parser
