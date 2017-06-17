@@ -13,6 +13,13 @@ dependencies:
 
 ghc-options: -O2 -Wall -fwarn-tabs
 
+library:
+  source-dirs: .
+
 executables:
-  nix-drv:
-    main: parser.hs
+  query-outputs:
+    main: query-outputs.hs
+
+benchmarks:
+  bench1:
+    main: bench.hs

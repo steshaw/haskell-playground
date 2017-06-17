@@ -2,6 +2,9 @@
 {-# language OverloadedStrings #-}
 {-# language RecordWildCards #-}
 
+module Parser where
+
+import Data.Attoparsec.Text.Lazy (Parser)
 import Filesystem.Path.CurrentOS (FilePath)
 import Data.Map (Map)
 import Data.Set (Set)
@@ -9,12 +12,11 @@ import Data.Text (Text)
 import Data.Vector (Vector)
 import Prelude hiding (FilePath)
 import Control.Monad (void)
+import Data.Monoid ((<>))
+import Control.DeepSeq (NFData)
+import GHC.Generics (Generic)
 
-import Data.Attoparsec.Text.Lazy (Parser)
 import qualified Data.Attoparsec.Text.Lazy
-import Data.Attoparsec.Text.Lazy (Result(..))
-import qualified Data.Text.Lazy.IO
-
 import qualified Filesystem.Path.CurrentOS
 import qualified Data.Text
 import qualified Data.Text.Lazy
@@ -22,21 +24,6 @@ import qualified Data.Map
 import qualified Data.Set
 import qualified Data.Vector
 import qualified Data.Text as T
-import qualified Prelude
-
-import Data.Monoid ((<>))
-
-import Criterion (Benchmark)
-
-import qualified Criterion
-import qualified Criterion.Main
-
-import Control.DeepSeq (NFData)
-import GHC.Generics (Generic)
-
-import qualified Options.Generic
-
-import qualified System.Environment as Env
 
 data Derivation = Derivation
   { outputs   :: Map Text DerivationOutput  -- ^ keyed on symbolic IDs
@@ -199,49 +186,3 @@ parseDerivation = do
     void ")"
 
     pure Derivation {..}
-
--- ==========================================================================
-
-drvFile :: Prelude.FilePath
-drvFile = "data/2rq2qqngncvvdvh0f32kwi1d2gcn32k6-ghc-8.0.2-with-packages.drv"
-
-benchmarks :: [Benchmark]
-benchmarks =
-    [ Criterion.Main.env
-        (Data.Text.Lazy.IO.readFile drvFile)
-        bench0
-    ]
-  where
-    bench0 example =
-        Criterion.bench "example" (Criterion.nf parseExample example)
-
-    parseExample =
-        Data.Attoparsec.Text.Lazy.parse parseDerivation
-
-benchMain :: IO ()
-benchMain = Criterion.Main.defaultMain benchmarks
-
--- ==========================================================================
-
-process :: Prelude.FilePath -> IO ()
-process fileName = do
-    text <- Data.Text.Lazy.IO.readFile fileName
-    case Data.Attoparsec.Text.Lazy.parse parseDerivation text of
-        Fail _ _ msg   -> fail ("Parse failed: " ++ msg)
-        Done _ derivation -> do
-            let printOutput output = print (path output)
-            mapM_ printOutput (outputs derivation)
-
-queryOutputsMain :: IO ()
-queryOutputsMain = do
-  paths <- Options.Generic.getRecord "Get the outputs of a Nix derivation"
-  mapM_ process (paths :: [Prelude.FilePath])
-
--- ==========================================================================
-
-main :: IO ()
-main = do
-  args <- Env.getArgs
-  case args of
-    ("query-outputs" : args') -> Env.withArgs args' queryOutputsMain
-    _ -> benchMain
