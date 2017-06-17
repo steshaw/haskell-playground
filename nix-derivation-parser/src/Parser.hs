@@ -25,8 +25,6 @@ import qualified Data.Text as T
 import qualified Data.Text.Lazy as Text.Lazy
 import qualified Data.Vector
 import qualified Filesystem.Path.CurrentOS
--- import qualified Data.ByteString as BS
--- import qualified Data.ByteString.Char8 as BSC
 
 import Data.Text.Encoding as Text.Encoding
 

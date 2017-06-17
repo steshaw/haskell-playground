@@ -2,7 +2,6 @@
 
 import Parser
 
-import Data.Attoparsec.ByteString.Lazy (Result(..))
 import Prelude hiding (FilePath)
 
 import qualified Data.Attoparsec.ByteString.Lazy as P
@@ -13,9 +12,9 @@ import qualified Prelude
 process :: Prelude.FilePath -> IO ()
 process fileName = do
   text <- SIO.readFile fileName
-  case P.parse parseDerivation text of
-    Fail _ _ msg -> fail ("Parse failed: " ++ msg)
-    Done _ derivation -> do
+  case P.eitherResult (P.parse parseDerivation text) of
+    Left msg -> fail ("Parse failed: " ++ msg)
+    Right derivation -> do
       let printOutput output = print (path output)
       mapM_ printOutput (outputs derivation)
 
