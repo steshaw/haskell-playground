@@ -6,7 +6,7 @@ module Parser where
 
 import Control.DeepSeq (NFData)
 import Control.Monad (void)
-import Data.Attoparsec.Text.Lazy (Parser)
+import Data.Attoparsec.Text (Parser)
 import Data.Map (Map)
 import Data.Monoid ((<>))
 import Data.Set (Set)
@@ -16,12 +16,11 @@ import Filesystem.Path.CurrentOS (FilePath)
 import GHC.Generics (Generic)
 import Prelude hiding (FilePath)
 
-import qualified Data.Attoparsec.Text.Lazy
+import qualified Data.Attoparsec.Text
 import qualified Data.Map
 import qualified Data.Set
 import qualified Data.Text
 import qualified Data.Text as T
-import qualified Data.Text.Lazy
 import qualified Data.Vector
 import qualified Filesystem.Path.CurrentOS
 
@@ -49,7 +48,7 @@ instance NFData DerivationOutput
 listOf :: Parser a -> Parser [a]
 listOf element = do
   void "["
-  es <- Data.Attoparsec.Text.Lazy.sepBy element ","
+  es <- Data.Attoparsec.Text.sepBy element ","
   void "]"
   pure es
 
@@ -74,16 +73,16 @@ mapOf keyValue = do
 slowString :: Parser Text
 slowString = do
   void "\""
-  s <- Data.Attoparsec.Text.Lazy.many' char
+  s <- Data.Attoparsec.Text.many' char
   void "\""
   pure $ T.pack s
   where
     char :: Parser Char
     char = do
-      c1 <- Data.Attoparsec.Text.Lazy.notChar '"'
+      c1 <- Data.Attoparsec.Text.notChar '"'
       case c1 of
         '\\' -> do
-          c2 <- Data.Attoparsec.Text.Lazy.anyChar
+          c2 <- Data.Attoparsec.Text.anyChar
           pure $
             case c2 of
               'n' -> '\n'
@@ -105,13 +104,13 @@ fastString = do
   void "\""
   let predicate c = not (c == '"' || c == '\\')
   let loop = do
-        text0 <- Data.Attoparsec.Text.Lazy.takeWhile predicate
-        char0 <- Data.Attoparsec.Text.Lazy.anyChar
+        text0 <- Data.Attoparsec.Text.takeWhile predicate
+        char0 <- Data.Attoparsec.Text.anyChar
         text2 <-
           case char0 of
             '"' -> return ""
             _ -> do
-              char1 <- Data.Attoparsec.Text.Lazy.anyChar
+              char1 <- Data.Attoparsec.Text.anyChar
               char2 <-
                 case char1 of
                   'n' -> return '\n'
@@ -119,10 +118,10 @@ fastString = do
                   't' -> return '\t'
                   _ -> return char1
               text1 <- loop
-              return (Data.Text.Lazy.cons char2 text1)
-        return (Data.Text.Lazy.fromStrict text0 <> text2)
+              return (Data.Text.cons char2 text1)
+        return $ text0 <> text2
   text <- loop
-  return $ Data.Text.Lazy.toStrict text
+  return text
 
 string :: Parser Text
 string =
