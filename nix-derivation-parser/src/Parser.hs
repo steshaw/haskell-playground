@@ -16,7 +16,6 @@ import Filesystem.Path.CurrentOS (FilePath)
 import GHC.Generics (Generic)
 import Prelude hiding (FilePath, id)
 
-import qualified Data.Attoparsec.ByteString.Char8 as Parser
 import qualified Data.Attoparsec.ByteString.Char8 as P
 import qualified Data.Map
 import qualified Data.Set
@@ -52,7 +51,7 @@ instance NFData DerivationOutput
 listOf :: Parser a -> Parser [a]
 listOf element = do
   void "["
-  es <- Parser.sepBy element (P.string ",")
+  es <- P.sepBy element (P.string ",")
   void "]"
   pure es
 
@@ -73,16 +72,16 @@ mapOf keyValue = do
 slowString :: Parser Text
 slowString = do
   void "\""
-  s <- Parser.many' char
+  s <- P.many' char
   void "\""
   pure $ T.pack s
   where
     char :: Parser Char
     char = do
-      c1 <- Parser.notChar '"'
+      c1 <- P.notChar '"'
       case c1 of
         '\\' -> do
-          c2 <- Parser.anyChar
+          c2 <- P.anyChar
           pure $
             case c2 of
               'n' -> '\n'
@@ -105,13 +104,13 @@ fastString = do
       predicate c = not (c == '"' || c == '\\')
       loop :: Parser Text.Lazy.Text
       loop = do
-        text0 <- Parser.takeWhile predicate
-        char0 <- Parser.anyChar
+        text0 <- P.takeWhile predicate
+        char0 <- P.anyChar
         text2 <-
           case char0 of
             '"' -> return ""
             _ -> do
-              char1 <- Parser.anyChar
+              char1 <- P.anyChar
               char2 <-
                 case char1 of
                   'n' -> return '\n'
