@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
+stack bench
+./build
 bench 'nix-store --query /nix/store/*.drv' './query-outputs /nix/store/*.drv' --output bench.html
