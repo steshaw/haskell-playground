@@ -12,6 +12,7 @@
 --
 {-# LANGUAGE OverloadedStrings #-}
 
+import Control.Applicative
 import Control.Monad
 
 import Data.Monoid ((<>))
@@ -26,31 +27,40 @@ type Environment = M.Map B.ByteString B.ByteString
 spaces :: A.Parser String
 spaces = A.many $ A.char ' '
 
+lexeme :: A.Parser a -> A.Parser a
+lexeme p = p <* spaces
+
 upTo :: Char -> A.Parser B.ByteString
 upTo delimiter =
-  spaces *> A.takeWhile (A.notInClass $ delimiter : " ") <* spaces <*
-  A.char delimiter <*
-  spaces
+  spaces *> lexeme (A.takeWhile (A.notInClass $ delimiter : " ")) <*
+  (lexeme $ A.char delimiter)
 
 entry :: A.Parser (B.ByteString, B.ByteString)
 entry = (,) <$> upTo ':' <*> upTo ';'
 
 environment :: A.Parser Environment
-environment = M.fromList <$> entry `A.sepBy'` A.endOfLine
+environment = entries <* lexeme (optional (A.char ';'))
+  where
+    entries = M.fromList <$> entry `A.sepBy'` A.endOfLine
+
+top :: A.Parser a -> A.Parser a
+top p = spaces *> p <* A.endOfInput
 
 parseEnvironment :: B.ByteString -> Maybe Environment
-parseEnvironment = A.maybeResult . flip A.feed B.empty . A.parse environment
+parseEnvironment =
+  A.maybeResult . flip A.feed B.empty . A.parse (top environment)
 
 go :: B.ByteString -> IO ()
 go s = do
   B.putStrLn $ "s = " <> s
-  print $ A.parse environment s `A.feed` ""
+  print $ A.parse (top environment) s `A.feed` ""
   print $ parseEnvironment s
   putStrLn ""
 
 main :: IO ()
 main = do
-  go "  one : 1; two  : 2;    "
+  go "  one : 1;   \n two  : 2;    "
+  go " one : 1;\n two : 2;  "
   go " one : 1;\n two : 2;"
   when False $ do
     s <- B.getContents
