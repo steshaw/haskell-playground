@@ -17,15 +17,14 @@ import Control.Monad
 
 import Data.Monoid ((<>))
 
-import qualified Control.Applicative as A (many)
 import qualified Data.Attoparsec.ByteString.Char8 as A
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Map as M
 
 type Environment = M.Map B.ByteString B.ByteString
 
-spaces :: A.Parser String
-spaces = A.many $ A.char ' '
+spaces :: A.Parser ()
+spaces = A.skipWhile (== ' ')
 
 lexeme :: A.Parser a -> A.Parser a
 lexeme p = p <* spaces
