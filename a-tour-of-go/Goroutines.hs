@@ -1,7 +1,9 @@
 #!/usr/bin/env stack
 {-
   stack script --resolver lts-9.17
+    --package base,async
 -}
+
 module A_Tour_of_Go.Concurrency.Goroutines where
 
 import Control.Concurrent.Async (async)
