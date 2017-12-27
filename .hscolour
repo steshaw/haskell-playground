@@ -1,20 +1,69 @@
 ColourPrefs
-  { keyword          = [Foreground (Rgb 211 169  98 ), Background (Rgb  0 0 0)]
-  , keyglyph         = [Foreground (Rgb 255 255 255 ), Background (Rgb  0 0 0)]
-  , layout           = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
-  , comment          = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
-  , conid            = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
-  , varid            = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
-  , conop            = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
-  , varop            = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
-  , string           = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
-  , char             = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
-  , number           = [Foreground (Rgb 204 204 204 ), Background (Rgb  0 0 0)]
-  , cpp              = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
-  , selection        = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
+  { keyword = [Foreground (Rgb 0 0 255)]
+  , keyglyph = [Foreground (Rgb 204 204 204)]
+  , layout = [Foreground (Rgb 211 169 98)]
+  , comment = [Foreground (Rgb 96 89 96)]
+  , conid = [Foreground (Rgb 205 168 105)]
+  , varid = [Foreground (Rgb 204 204 204)]
+  , conop = [Foreground Red, Bold]
+  , varop = [Foreground Red]
+  , string = [Foreground (Rgb 0 128 128)]
+  , char = [Foreground Red]
+  , number = [Foreground (Rgb 207 106 76)]
+  , cpp = [Foreground Magenta, Dim]
+  , selection = [Bold, Foreground Magenta]
   , variantselection = [Dim, Foreground Red, Underscore]
-  , definition       = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
+  , definition = [Foreground Blue]
   }
+
+--
+-- Trying styles from Stylish theme "GitHub Dark"
+-- https://github.com/StylishThemes/GitHub-Dark/blob/master/github-dark.css#L3812-L4202
+--
+-- constructors (pl-ent): 205 168 105
+-- number (pl-c1): 207 106 76
+-- normal identifiers (blob-code blob-code-inner): 204 204 204
+
+-- 223 96 63
+-- 211 169 98
+-- 96 89 96
+
+--
+--  , layout           = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+--
+--  , conid            = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+--  , varid            = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+--  , conop            = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+--  , varop            = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+--
+--  , char             = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+--  , number           = [Foreground (Rgb 204 204 204 ), Background (Rgb 20 20 20)]
+--  , cpp              = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+--  , selection        = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+--  , variantselection = [Dim, Foreground Red, Underscore]
+--  , definition       = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+
+{-
+ColourPrefs
+  { keyword          = [Foreground (Rgb 211 169  98 ), Background (Rgb 20 20 20)]
+  , keyglyph         = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+  , layout           = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+  , comment          = [Foreground (Rgb  95  90  96 ), Background (Rgb 20 20 20)]
+  , conid            = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+  , varid            = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+  , conop            = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+  , varop            = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+  , string           = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+  , char             = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+  , number           = [Foreground (Rgb 204 204 204 ), Background (Rgb 20 20 20)]
+  , cpp              = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+  , selection        = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+  , variantselection = [Dim, Foreground Red, Underscore]
+  , definition       = [Foreground (Rgb 255   0   0 ), Background (Rgb 20 20 20)]
+  }
+-}
+
+-- 95	90	96	
 
 -- 204	204	204	
 
