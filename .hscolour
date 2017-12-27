@@ -1,0 +1,31 @@
+ColourPrefs
+  { keyword          = [Foreground (Rgb 211 169  98 ), Background (Rgb  0 0 0)]
+  , keyglyph         = [Foreground (Rgb 255 255 255 ), Background (Rgb  0 0 0)]
+  , layout           = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
+  , comment          = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
+  , conid            = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
+  , varid            = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
+  , conop            = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
+  , varop            = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
+  , string           = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
+  , char             = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
+  , number           = [Foreground (Rgb 204 204 204 ), Background (Rgb  0 0 0)]
+  , cpp              = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
+  , selection        = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
+  , variantselection = [Dim, Foreground Red, Underscore]
+  , definition       = [Foreground (Rgb 255   0   0 ), Background (Rgb  0 0 0)]
+  }
+
+-- 204	204	204	
+
+-- This example configuration file would take effect if you moved it to ~/.hscolour.
+-- Note: Comments currently have to come *after* the above block
+
+{-
+  Local Variables:
+    mode: haskell
+    fill-column: 70
+    comment-column: 50
+  End:
+-}
+-- vim: ft=haskell
