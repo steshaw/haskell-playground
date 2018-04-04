@@ -40,3 +40,4 @@ hoas
 loops
 runLengthEncoding2
 /gc-latency
+/mutate
