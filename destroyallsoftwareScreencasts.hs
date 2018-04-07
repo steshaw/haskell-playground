@@ -69,35 +69,19 @@ tshow = fromList . show
 main :: IO ()
 main = do
   doc <- do
-    let rssFromFile = False
-    if rssFromFile
-    then Text.XML.readFile def "das-rss.xml"
-    else do
-      r <- get "https://www.destroyallsoftware.com/screencasts/feed"
-      pure $ r ^. responseBody & Text.XML.parseLBS_ def
+    r <- get "https://www.destroyallsoftware.com/screencasts/feed"
+    pure $ r ^. responseBody & Text.XML.parseLBS_ def
   let cursor = fromDocument doc
   let links = cursor $// element "item" >=> parseItem
-  let slow = False
-  let forLinks = if slow then forM else flip mapConcurrently
-  (bodies :: [(Text, Text)]) <- forLinks links $ \link -> do
+  (bodies :: [(Text, Text)]) <- (flip mapConcurrently) links $ \link -> do
     r <- get (T.unpack link)
     pure (link, r ^. responseBody & BSL.toStrict & decodeUtf8)
-  let selectMovie = True
-  if selectMovie
-  then
-    forM_ bodies $ \(link, body) -> do
-      let isMovie line = T.isInfixOf "source.src" line && T.isInfixOf ".mp4" line
-      let movies = filter isMovie (T.lines body)
-      let m1080p = case movies of
-                     [m4k, m1080p] -> m1080p
-                     _             -> ""
-      case T.splitOn "\"" m1080p of
-        [before, it, after] -> TIO.putStrLn it
-        _                   -> TIO.putStrLn $ "Bollocks: " <> tshow (T.splitOn "\"" m1080p)
-  else do
-    let scripts = forM bodies $ \(link, body) -> do
-                    let eitherDoc = Text.XML.parseText def (TL.fromStrict body)
-                    case eitherDoc of
-                      Left exception -> ["Exception: " <> tshow exception]
-                      Right doc -> getScript doc
-    mapM_ print (Prelude.concat scripts)
+  forM_ bodies $ \(link, body) -> do
+    let isMovie line = T.isInfixOf "source.src" line && T.isInfixOf ".mp4" line
+    let movies = filter isMovie (T.lines body)
+    let m1080p = case movies of
+                   [m4k, m1080p] -> m1080p
+                   _             -> ""
+    case T.splitOn "\"" m1080p of
+      [before, it, after] -> TIO.putStrLn it
+      _                   -> TIO.putStrLn $ "Bollocks: " <> tshow (T.splitOn "\"" m1080p)
