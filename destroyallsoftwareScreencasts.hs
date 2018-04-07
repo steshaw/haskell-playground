@@ -1,13 +1,14 @@
 #!/usr/bin/env stack
 {-
-  stack
-    --resolver lts-11.3 script
+  stack --resolver lts-11.3 exec
     --package async
     --package bytestring
     --package lens
     --package text
     --package wreq
     --package xml-conduit
+    --
+    ghc --make -O2 -threaded -with-rtsopts=-N
 -}
 
 {-
@@ -22,7 +23,8 @@ See <https://www.destroyallsoftware.com/sale>.
 
 Expected usage:
 
-$ destroyallsoftwareScreencasts.hs >destroyallsoftwareScreencasts.txt
+$ ./destroyallsoftwareScreencasts.hs # compiles to ./destroyallsoftwareScreencasts
+$ time ./destroyallsoftwareScreencasts >destroyallsoftwareScreencasts.txt
 $ vim destroyallsoftwareScreencasts.txt # you better check it isn't Bollocks up.
 $ wget -ci destroyallsoftwareScreencasts.txt # download screencasts
 
@@ -31,6 +33,7 @@ $ wget -ci destroyallsoftwareScreencasts.txt # download screencasts
 {-# LANGUAGE OverloadedStrings #-}
 {-# language ScopedTypeVariables #-}
 
+import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Lens hiding (element)
 import Control.Monad
@@ -52,6 +55,10 @@ import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.IO as TIO
 
+import System.IO (stderr)
+
+import GHC.Conc
+
 getScript :: Document -> [Text]
 getScript document = fromDocument document $// element "script" &/ content
 
@@ -63,6 +70,19 @@ tshow = fromList . show
 
 main :: IO ()
 main = do
+  let nc = numCapabilities
+  gnc <- getNumCapabilities
+  gnp <- getNumProcessors
+  ns <- numSparks
+  mapM_
+    (TIO.hPutStrLn stderr . tshow)
+    [ ("numProcessors", show nc)
+    , ("getNumCapabilities", show gnc)
+    , ("getNumProcessors", show gnp)
+    , ("numSparks", show ns)
+    , ("rtsSupportsBoundThreads", show rtsSupportsBoundThreads)
+    ]
+
   doc <- do
     r <- get "https://www.destroyallsoftware.com/screencasts/feed"
     pure $ r ^. responseBody & Text.XML.parseLBS_ def
