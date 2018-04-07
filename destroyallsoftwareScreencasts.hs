@@ -1,10 +1,10 @@
 #!/usr/bin/env stack
 {-
-  stack --resolver lts-11.3 script
+  stack
+    --resolver lts-11.3 script
     --package async
     --package bytestring
     --package lens
-    --package pcre-heavy
     --package text
     --package wreq
     --package xml-conduit
@@ -29,15 +29,10 @@ $ wget -ci destroyallsoftwareScreencasts.txt # download screencasts
 -}
 
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# language ScopedTypeVariables #-}
-{-# LANGUAGE TemplateHaskell #-}
-
--- import Text.Regex.TDFA
-import Text.Regex.PCRE.Heavy
 
 import Control.Concurrent.Async
-import Control.Lens hiding (element, re)
+import Control.Lens hiding (element)
 import Control.Monad
 import Data.Function
 import Data.Semigroup
