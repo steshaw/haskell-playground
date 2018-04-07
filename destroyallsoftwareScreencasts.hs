@@ -21,8 +21,9 @@ find all the 1080p screencast urls.
 
 See <https://www.destroyallsoftware.com/sale>.
 
-Expected usage:
+Expected usage on MacOS (with Homebrew):
 
+$ brew install haskell-stack
 $ ./destroyallsoftwareScreencasts.hs # compiles to ./destroyallsoftwareScreencasts
 $ time ./destroyallsoftwareScreencasts >destroyallsoftwareScreencasts.txt
 $ vim destroyallsoftwareScreencasts.txt # you better check it isn't Bollocks up.
