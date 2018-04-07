@@ -8,7 +8,7 @@
     --package wreq
     --package xml-conduit
     --
-    ghc --make -O2 -threaded -with-rtsopts=-N
+    ghc --make -Wall -O2 -threaded -with-rtsopts=-N
 -}
 
 {-
@@ -30,40 +30,32 @@ $ wget -ci destroyallsoftwareScreencasts.txt # download screencasts
 
 -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# language OverloadedStrings #-}
 {-# language ScopedTypeVariables #-}
 
-import Control.Concurrent
-import Control.Concurrent.Async
+import Control.Concurrent (rtsSupportsBoundThreads)
+import Control.Concurrent.Async (mapConcurrently)
 import Control.Lens hiding (element)
 import Control.Monad
-import Data.Function
 import Data.Semigroup
 import Text.XML
 import Text.XML.Cursor
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8)
-import Data.Text.Read (decimal)
-import Data.Monoid (mconcat)
 import Network.Wreq
-
-import GHC.Exts (fromList)
-
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy as BSL
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as TL
-import qualified Data.Text.IO as TIO
-
 import System.IO (stderr)
 
 import GHC.Conc
+import GHC.Exts (fromList)
 
+import qualified Data.ByteString.Lazy as BSL
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+
+{-
 getScript :: Document -> [Text]
 getScript document = fromDocument document $// element "script" &/ content
-
-parseItem :: Cursor -> [Text]
-parseItem cursor = cursor $/ element "link" &/ content
+-}
 
 tshow :: Show a => a -> Text
 tshow = fromList . show
@@ -76,27 +68,28 @@ main = do
   ns <- numSparks
   mapM_
     (TIO.hPutStrLn stderr . tshow)
-    [ ("numProcessors", show nc)
-    , ("getNumCapabilities", show gnc)
-    , ("getNumProcessors", show gnp)
-    , ("numSparks", show ns)
-    , ("rtsSupportsBoundThreads", show rtsSupportsBoundThreads)
+    [ ("numProcessors" :: Text, show nc)
+    , ("getNumCapabilities" :: Text, show gnc)
+    , ("getNumProcessors" :: Text, show gnp)
+    , ("numSparks" :: Text, show ns)
+    , ("rtsSupportsBoundThreads" :: Text, show rtsSupportsBoundThreads)
     ]
 
   doc <- do
     r <- get "https://www.destroyallsoftware.com/screencasts/feed"
     pure $ r ^. responseBody & Text.XML.parseLBS_ def
   let cursor = fromDocument doc
-  let links = cursor $// element "item" >=> parseItem
-  (bodies :: [(Text, Text)]) <- (flip mapConcurrently) links $ \link -> do
+  let links = cursor $// element "item" &/ element "link" &/ content
+  (bodies :: [(Text, Text)]) <- flip mapConcurrently links $ \link -> do
     r <- get (T.unpack link)
     pure (link, r ^. responseBody & BSL.toStrict & decodeUtf8)
-  forM_ bodies $ \(link, body) -> do
+  forM_ bodies $ \(_link, body) -> do
     let isMovie line = T.isInfixOf "source.src" line && T.isInfixOf ".mp4" line
     let movies = filter isMovie (T.lines body)
-    let m1080p = case movies of
-                   [m4k, m1080p] -> m1080p
-                   _             -> ""
-    case T.splitOn "\"" m1080p of
-      [before, it, after] -> TIO.putStrLn it
-      _                   -> TIO.putStrLn $ "Bollocks: " <> tshow (T.splitOn "\"" m1080p)
+    let src1080p = case movies of
+                     [_m4k, m1080p] -> m1080p
+                     _              -> ""
+    let split = T.splitOn "\"" src1080p
+    case split of
+      [_before, it, _after] -> TIO.putStrLn it
+      _                     -> TIO.putStrLn $ "Bollocks: " <> tshow split
