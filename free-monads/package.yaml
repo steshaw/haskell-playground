@@ -1,0 +1,15 @@
+name: free-monads
+
+ghc-options:
+- -Wall
+- -Werror
+# - -Wcompat
+# - -Wincomplete-record-updates
+- -fwarn-incomplete-record-updates
+# - -Wincomplete-uni-patterns
+- -fwarn-incomplete-uni-patterns
+# - -Wredundant-constraints
+
+library:
+  dependencies:
+    - base
