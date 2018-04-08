@@ -9,6 +9,7 @@ ghc-options:
 # - -Wincomplete-uni-patterns
 - -fwarn-incomplete-uni-patterns
 # - -Wredundant-constraints
+# - -Wmissing-import-lists
 
 library:
   dependencies:
