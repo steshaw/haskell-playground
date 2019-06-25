@@ -1,8 +1,5 @@
 module M where
 
--- foldr  : (a -> b -> b) -> b -> [a] -> b
--- foldr1 : (a -> a -> a) -> [a] -> a
-
 headOr :: Foldable t => a -> t a -> a
 headOr = foldr const
 
