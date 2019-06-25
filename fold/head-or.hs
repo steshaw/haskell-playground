@@ -3,7 +3,7 @@
 
 headOr :: Foldable t => a -> t a -> a
 headOr b = flip foldr b $
-  \a -> \_ -> a
+  \a -> const a
 
 eg1 :: Int
 eg1 = headOr 0 [1 .. 3]
