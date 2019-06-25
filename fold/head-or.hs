@@ -1,9 +1,9 @@
+-- foldr  : (a -> b -> b) -> b -> [a] -> b
+-- foldr1 : (a -> a -> a) -> [a] -> a
+
 headOr :: a -> [a] -> a
-headOr =
-  \a -> \xs ->
-    case xs of
-      [] -> a
-      (h : _) -> h
+headOr b = flip foldr b $
+  \a -> \_ -> a
 
 eg1 :: Int
 eg1 = headOr 0 [1 .. 3]
