@@ -4,8 +4,7 @@ module M where
 -- foldr1 : (a -> a -> a) -> [a] -> a
 
 headOr :: Foldable t => a -> t a -> a
-headOr b = flip foldr b $
-  const
+headOr b = flip foldr b const
 
 eg1 :: Int
 eg1 = headOr 0 [1 .. 3]
