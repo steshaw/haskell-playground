@@ -1,6 +1,6 @@
 #!/usr/bin/env stack
 {-
-  stack script --resolver lts-9.17
+  stack script --resolver lts-14.27
     --package base,async
 -}
 
