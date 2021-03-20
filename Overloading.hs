@@ -1,5 +1,6 @@
 -- https://stackoverflow.com/a/51056617/482382
 -- https://blog.sumtypeofway.com/posts/existential-haskell.html
+-- https://lukepalmer.wordpress.com/2010/01/24/haskell-antipattern-existential-typeclass/
 
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE GADTs #-}
