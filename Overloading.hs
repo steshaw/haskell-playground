@@ -1,4 +1,7 @@
+-- https://stackoverflow.com/a/51056617/482382
+
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
 
 import Control.Concurrent
@@ -33,6 +36,10 @@ hello x = do
   putStrLn "bar x"
   bar x
 
+------------------------------------------------------------------------
+
+data Request = forall a. Request (IO a) (MVar a)
+
 data Object = forall a. Show a => Object { getObject :: a }
 
 objects = [Object one, Object "hi", Object 'a']
@@ -44,7 +51,17 @@ showObj :: [Object] -> String
 showObj [] = ""
 showObj ((Object x):xs) = show x ++ showObj xs
 
-data Request = forall a. Request (IO a) (MVar a)
+------------------------------------------------------------------------
+
+data Object2 where
+  Object2 :: Show a => a -> Object2
+
+objects2 = [Object2 1, Object2 'a', Object2 "hi"]
+
+show2 :: [Object2] -> String
+show2 xs = intercalate ", " $ map (\case (Object2 o) -> show o) xs
+
+------------------------------------------------------------------------
 
 main = do
   putStrLn "foo a"
