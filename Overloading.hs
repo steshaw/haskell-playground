@@ -1,4 +1,5 @@
 -- https://stackoverflow.com/a/51056617/482382
+-- https://blog.sumtypeofway.com/posts/existential-haskell.html
 
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE GADTs #-}
