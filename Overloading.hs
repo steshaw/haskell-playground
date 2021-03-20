@@ -45,6 +45,7 @@ data Object = forall a. Show a => Object { getObject :: a }
 objects = [Object one, Object "hi", Object 'a']
 
 show_ :: [Object] -> String
+--                                Cannot replace with `(show . getObject)`.
 show_ xs = intercalate ", " $ map (\case (Object o) -> show o) xs
 
 showObj :: [Object] -> String
