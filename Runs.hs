@@ -1,0 +1,65 @@
+{-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wcompat #-}
+{-# OPTIONS_GHC -Widentities #-}
+{-# OPTIONS_GHC -Wincomplete-uni-patterns #-}
+{-# OPTIONS_GHC -Wincomplete-record-updates #-}
+{-# OPTIONS_GHC -Wredundant-constraints #-}
+{-# OPTIONS_GHC -Wmissing-export-lists #-}
+{-# OPTIONS_GHC -Wpartial-fields #-}
+{-# OPTIONS_GHC -Wmissing-deriving-strategies #-}
+
+{-# LANGUAGE LambdaCase #-}
+
+module Runs (main) where
+
+import Control.Monad (forM_)
+import qualified Data.List as L
+import qualified Data.List.NonEmpty as NEL
+
+runs1 :: Eq x => [x] -> [(x, Integer)]
+runs1 [] = []
+runs1 (x : xs) =
+  let (xs1, remaining) = span (== x) xs
+  in (x, L.genericLength xs1 + 1) : runs1 remaining
+
+runs2 :: Eq x => [x] -> [(x, Integer)]
+runs2 = map foo . L.group
+ where
+  foo :: [a] -> (a, Integer)
+  foo xs@(x : _) = (x, L.genericLength xs)
+  foo [] = undefined -- :-o
+
+runs3 :: Eq x => [x] -> [(x, Integer)]
+runs3 = map foo . NEL.group
+ where
+  foo :: NEL.NonEmpty a -> (a, Integer)
+  foo xs = case NEL.uncons xs of
+    (x, Nothing) -> (x, 1)
+    (x, Just xs') -> (x, 1 + L.genericLength (NEL.toList xs'))
+
+testEg1 :: (String -> [(Char, Integer)]) -> Bool
+testEg1 f = f "aaaabbbacc" == [('a', 4), ('b', 3), ('a', 1), ('c', 2)]
+
+testEg2 :: (String -> [(Char, Integer)]) -> Bool
+testEg2 f = f "aaaabbbcca" == [('a', 4), ('b', 3), ('c', 2), ('a', 1)]
+
+main :: IO ()
+main = do
+  forM_ [testEg1, testEg2] $ \tf -> do
+    forM_ [runs1, runs2, runs3] $ \runs -> do
+      print $ tf runs
+
+  let tfRuns = do
+        tf <- [testEg1, testEg2]
+        runs <- [runs1, runs2, runs3]
+        pure (tf, runs)
+  forM_ tfRuns $ \case (tf, runs) -> print (tf runs)
+
+  sequence_ $ do
+    tf <- [testEg1, testEg2]
+    runs <- [runs1, runs2, runs3]
+    pure $ print $ tf runs
+
+  sequence_ $ do
+    tf <- [testEg1, testEg2]
+    print . tf <$> [runs1, runs2, runs3]
