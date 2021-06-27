@@ -17,6 +17,16 @@ import Control.Monad (forM_)
 import qualified Data.List as L
 import qualified Data.List.NonEmpty as NEL
 
+runs0 :: Eq x => [x] -> [(x, Integer)]
+runs0 xs = L.reverse $ L.foldl' f [] xs
+  where
+    f [] a = [(a, 1)]
+    f ((x,count) : ys) a =
+      if a == x then
+        (x, count + 1) : ys
+      else
+        (a, 1) : (x, count) : ys
+
 runs1 :: Eq x => [x] -> [(x, Integer)]
 runs1 [] = []
 runs1 (x : xs) =
@@ -49,7 +59,7 @@ testEg2 f = f "aaaabbbcca" == [('a', 4), ('b', 3), ('c', 2), ('a', 1)]
 
 main :: IO ()
 main = do
-  let runss = [runs1, runs2, runs2a, runs3]
+  let runss = [runs0, runs1, runs2, runs2a, runs3]
   let tests = [testEg1, testEg2]
 
   forM_ tests $ \tf -> do
