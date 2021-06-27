@@ -12,6 +12,7 @@
 
 module Runs (main) where
 
+import Control.Arrow ((&&&))
 import Control.Monad (forM_)
 import qualified Data.List as L
 import qualified Data.List.NonEmpty as NEL
@@ -29,6 +30,9 @@ runs2 = map foo . L.group
   foo xs@(x : _) = (x, L.genericLength xs)
   foo [] = undefined -- :-o
 
+runs2a :: Eq x => [x] -> [(x, Integer)]
+runs2a = map (head {- :-o -} &&& L.genericLength) . L.group
+
 runs3 :: Eq x => [x] -> [(x, Integer)]
 runs3 = map foo . NEL.group
  where
@@ -45,21 +49,24 @@ testEg2 f = f "aaaabbbcca" == [('a', 4), ('b', 3), ('c', 2), ('a', 1)]
 
 main :: IO ()
 main = do
-  forM_ [testEg1, testEg2] $ \tf -> do
-    forM_ [runs1, runs2, runs3] $ \runs -> do
+  let runss = [runs1, runs2, runs2a, runs3]
+  let tests = [testEg1, testEg2]
+
+  forM_ tests $ \tf -> do
+    forM_ runss $ \runs -> do
       print $ tf runs
 
   let tfRuns = do
-        tf <- [testEg1, testEg2]
-        runs <- [runs1, runs2, runs3]
+        tf <- tests
+        runs <- runss
         pure (tf, runs)
   forM_ tfRuns $ \case (tf, runs) -> print (tf runs)
 
   sequence_ $ do
-    tf <- [testEg1, testEg2]
-    runs <- [runs1, runs2, runs3]
+    tf <- tests
+    runs <- runss
     pure $ print $ tf runs
 
   sequence_ $ do
-    tf <- [testEg1, testEg2]
-    print . tf <$> [runs1, runs2, runs3]
+    tf <- tests
+    print . tf <$> runss
