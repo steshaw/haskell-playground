@@ -12,10 +12,13 @@
 
 module Runs (main) where
 
+import Prelude hiding (head)
+
 import Control.Arrow ((&&&))
 import Control.Monad (forM_)
 import qualified Data.List as L
 import qualified Data.List.NonEmpty as NEL
+import qualified Prelude as P
 
 runs0 :: Eq x => [x] -> [(x, Integer)]
 runs0 xs = L.reverse $ L.foldl' f [] xs
@@ -40,8 +43,16 @@ runs2 = map foo . L.group
   foo xs@(x : _) = (x, L.genericLength xs)
   foo [] = undefined -- :-o
 
+unsafeHeadXXX :: [a] -> a
+unsafeHeadXXX = P.head
+
 runs2a :: Eq x => [x] -> [(x, Integer)]
-runs2a = map (head {- :-o -} &&& L.genericLength) . L.group
+runs2a = map f . L.group
+  where
+    f s = (unsafeHeadXXX s, L.genericLength s)
+
+runs2b :: Eq x => [x] -> [(x, Integer)]
+runs2b = map (unsafeHeadXXX &&& L.genericLength) . L.group
 
 runs3 :: Eq x => [x] -> [(x, Integer)]
 runs3 = map foo . NEL.group
@@ -59,7 +70,7 @@ testEg2 f = f "aaaabbbcca" == [('a', 4), ('b', 3), ('c', 2), ('a', 1)]
 
 main :: IO ()
 main = do
-  let runss = [runs0, runs1, runs2, runs2a, runs3]
+  let runss = [runs0, runs1, runs2, runs2a, runs2b, runs3]
   let tests = [testEg1, testEg2]
 
   forM_ tests $ \tf -> do
