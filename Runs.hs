@@ -15,7 +15,8 @@ module Runs (main) where
 import Prelude hiding (head)
 
 import Control.Arrow ((&&&))
-import Control.Monad (forM_)
+import Control.Monad (forM_, when)
+import GHC.Stack
 import qualified Data.List as L
 import qualified Data.List.NonEmpty as NEL
 import qualified Prelude as P
@@ -62,11 +63,20 @@ runs3 = map foo . NEL.group
     (x, Nothing) -> (x, 1)
     (x, Just xs') -> (x, 1 + L.genericLength (NEL.toList xs'))
 
-testEg1 :: (String -> [(Char, Integer)]) -> Bool
-testEg1 f = f "aaaabbbacc" == [('a', 4), ('b', 3), ('a', 1), ('c', 2)]
+shouldEq :: (HasCallStack, Eq a, Show a) => a -> a -> IO ()
+shouldEq a b =
+  when (a /= b) $ do
+    let msg = "Oh dear, a should equal b:"
+    putStrLn msg
+    putStrLn $ "Expected: " <> show a
+    putStrLn $ "Actual  : " <> show b
+    putStrLn (prettyCallStack callStack)
 
-testEg2 :: (String -> [(Char, Integer)]) -> Bool
-testEg2 f = f "aaaabbbcca" == [('a', 4), ('b', 3), ('c', 2), ('a', 1)]
+testEg1 :: HasCallStack => (String -> [(Char, Integer)]) -> IO ()
+testEg1 f = f "aaaabbbacc" `shouldEq` [('a', 4), ('b', 3), ('a', 1), ('c', 2)]
+
+testEg2 :: HasCallStack => (String -> [(Char, Integer)]) -> IO ()
+testEg2 f = f "aaaabbbcca" `shouldEq` [('a', 4), ('b', 3), ('c', 2), ('a', 1)]
 
 main :: IO ()
 main = do
@@ -75,19 +85,19 @@ main = do
 
   forM_ tests $ \tf -> do
     forM_ runss $ \runs -> do
-      print $ tf runs
+      tf runs
 
   let tfRuns = do
         tf <- tests
         runs <- runss
         pure (tf, runs)
-  forM_ tfRuns $ \case (tf, runs) -> print (tf runs)
+  forM_ tfRuns $ \case (tf, runs) -> tf runs
 
   sequence_ $ do
     tf <- tests
     runs <- runss
-    pure $ print $ tf runs
+    pure $ tf runs
 
   sequence_ $ do
     tf <- tests
-    print . tf <$> runss
+    tf <$> runss
