@@ -1,6 +1,6 @@
 #!/usr/bin/env stack
 {-
-  stack --resolver lts-10.3 script
+  stack --resolver lts-18.0 script
     --package scientific
 -}
 

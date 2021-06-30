@@ -1,6 +1,6 @@
 #!/usr/bin/env stack
 {-
-  stack script --resolver lts-8.8
+  stack script --resolver lts-18.0
     --package bytestring
     --package http-types
     --package wai

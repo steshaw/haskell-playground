@@ -1,6 +1,6 @@
 #!/usr/bin/env stack
 {-
-  stack script --resolver lts-10.1
+  stack script --resolver lts-18.0
     --package containers
     --package hscolour
     --package mime-types

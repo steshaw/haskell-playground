@@ -1,7 +1,7 @@
 #!/usr/bin/env stack
 {-
   stack script
-    --resolver lts-8.5
+    --resolver lts-18.0
     --package template-haskell
     --
     -Wall -fwarn-tabs -ddump-splices
