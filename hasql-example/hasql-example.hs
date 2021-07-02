@@ -1,6 +1,6 @@
 #!/usr/bin/env stack
 {-
-  stack script --resolver lts-12.14
+  stack script --resolver lts-13.0
     --package contravariant
     --package hasql
 -}
@@ -27,7 +27,12 @@ main = do
   result <- Session.run (sumAndDivModSession 3 8 3) connection
   print result
   where
-    connectionSettings = Connection.settings "localhost" 5432 "postgres" "" "postgres"
+    host = "localhost"
+    port = 5432
+    user = "postgres"
+    password = "password"
+    database = "postgres"
+    connectionSettings = Connection.settings host port user password database
 
 -- * Sessions
 --
