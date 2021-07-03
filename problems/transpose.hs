@@ -1,6 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
 
-import Prelude
 import Control.Monad (when)
 
 input :: [String]
