@@ -1,18 +1,22 @@
--- From https://github.com/nikita-volkov/hasql/#example
-
 {-# LANGUAGE OverloadedStrings #-}
+
+--
+-- From https://github.com/nikita-volkov/hasql/#example
+--
+
+module Main (main) where
 
 import Prelude
 
-import Data.Int ( Int64 )
-import Data.Functor.Contravariant ( (>$<) )
+import Data.Functor.Contravariant ((>$<))
+import Data.Int (Int64)
 import Hasql.Session (Session)
-import Hasql.Statement (Statement(..))
+import Hasql.Statement (Statement (..))
 
-import qualified Hasql.Session as S
+import qualified Hasql.Connection as C
 import qualified Hasql.Decoders as D
 import qualified Hasql.Encoders as E
-import qualified Hasql.Connection as C
+import qualified Hasql.Session as S
 
 main :: IO ()
 main = do
@@ -31,6 +35,8 @@ main = do
     connectionSettings = C.settings host port user password database
 
 -- * Sessions
+
+--
 --
 -- Session is an abstraction over the database connection and all possible
 -- errors.
@@ -41,18 +47,15 @@ main = do
 -- your project.
 -------------------------
 
-sumAndDivModSession
-  :: Int64 -- ^
-  -> Int64 -- ^
-  -> Int64 -- ^
-  -> Session (Int64, Int64)
+sumAndDivModSession :: Int64 -> Int64 -> Int64 -> Session (Int64, Int64)
 sumAndDivModSession a b c = do
   -- Get the sum of a and b
   total <- S.statement (a, b) sumStatement
   -- Divide the sum by c and get the modulo as well
   S.statement (total, c) divModStatement
-
 -- * Statements
+
+--
 --
 -- Statement is a definition of an individual SQL-statement,
 -- accompanied by a specification of how to encode its parameters and
@@ -65,22 +68,26 @@ sumAndDivModSession a b c = do
 sumStatement :: Statement (Int64, Int64) Int64
 sumStatement =
   Statement sql encoder decoder True
- where
-  sql = "select $1 + $2"
-  encoder =
-    (fst >$< E.param (E.nonNullable E.int8)) <>
-    (snd >$< E.param (E.nonNullable E.int8))
-  decoder = D.singleRow (D.column (D.nonNullable D.int8))
+  where
+    sql = "select $1 + $2"
+    encoder =
+      (<>)
+        (fst >$< E.param (E.nonNullable E.int8))
+        (snd >$< E.param (E.nonNullable E.int8))
+    decoder = D.singleRow (D.column (D.nonNullable D.int8))
 
 divModStatement :: Statement (Int64, Int64) (Int64, Int64)
-divModStatement = Statement sql encoder decoder True
- where
-  sql = "select $1 / $2, $1 % $2"
-  encoder =
-    (fst >$< E.param (E.nonNullable E.int8)) <>
-    (snd >$< E.param (E.nonNullable E.int8))
-  decoder = D.singleRow row where
-    row =
-      (,) <$>
-      D.column (D.nonNullable D.int8) <*>
-      D.column (D.nonNullable D.int8)
+divModStatement =
+  Statement sql encoder decoder True
+  where
+    sql = "select $1 / $2, $1 % $2"
+    encoder =
+      (<>)
+        (fst >$< E.param (E.nonNullable E.int8))
+        (snd >$< E.param (E.nonNullable E.int8))
+    decoder = D.singleRow row
+      where
+        row =
+          (,)
+            <$> D.column (D.nonNullable D.int8)
+            <*> D.column (D.nonNullable D.int8)
