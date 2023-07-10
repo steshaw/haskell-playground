@@ -1,12 +1,12 @@
-import Control.Monad
+import Control.Monad (when)
 
 data Status = Open | Closed
   deriving (Eq, Show)
-data Issue = Issue {ident :: Int, status :: Status}
+data Issue = Issue {id :: Int, status :: Status}
   deriving (Eq, Show)
 
 openIssues issues =
-  unless (null (filter (\it -> status it == Open) issues)) $
+  when (any (\it -> status it == Open) issues) $
     putStrLn "There are some open issues"
 
 main = do
@@ -18,7 +18,8 @@ main = do
 
   putStrLn "Some open:"
   openIssues issues -- Prints "There are some open issues".
-  let allClosed = (flip fmap) issues $ \it ->
+  let for = flip fmap
+  let allClosed = for issues $ \it ->
         if status it == Open then it {status = Closed} else it
   putStrLn "All closed:"
   openIssues allClosed -- Prints nothing.
